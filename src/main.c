@@ -4,8 +4,9 @@
  * Created: 04.09.2025 09:17:49
  * Author : felixla
  */ 
-#include <avr/io.h>
+#include "globaldec.h"
 #include "UART_driver.h"
+#include <avr/io.h>
 #include <util/delay.h>
 #include <stdio.h>
 
