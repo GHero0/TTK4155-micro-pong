@@ -10,7 +10,7 @@
 #include <stdlib.h>
 void SRAM_test(void)
 {
-	volatile char *ext_ram = (char *)0x1800; // Start address for the SRAM
+	volatile char *ext_ram = (char *)0x1400; // Start address for the SRAM
 	uint16_t ext_ram_size = 0x800;
 	uint16_t write_errors = 0;
 	uint16_t retrieval_errors = 0;
@@ -62,5 +62,12 @@ int main(void)
 	while (1)
 	{
 		SRAM_test();
+		// volatile char *ext_ram = (char *)0x0000; // Start address
+		// ext_ram[0x13FF] = 'z';
+		// uint8_t retreived_value = ext_ram[0x13FF];
+		//printf("Writing to 0b0001 0000 0000 0000 \n");
+		//printf(" Writing 'z'\n");
+		//printf("Reading %c\n",retreived_value);
+		// _delay_ms(1000);
 	}
 }
