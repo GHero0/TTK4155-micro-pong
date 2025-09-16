@@ -7,6 +7,7 @@
  * Actual global variable definitions should be in a globaldec.h
  */
 #include "constants.h"
-
+#include <avr/io.h>
+#include <stdio.h>
 
 #endif
