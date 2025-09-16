@@ -54,4 +54,5 @@ FILE uart_input = FDEV_SETUP_STREAM(NULL, uart_getchar, _FDEV_SETUP_READ);
 int UART_stdio_init(){
     stdout = &uart_output;
     stdin = &uart_input;
+    return 0;
 }

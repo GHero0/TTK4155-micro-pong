@@ -37,7 +37,13 @@ void test_UART_Receive(){
     }
 
     while(!(part2_end)){
-        scanf("%4s", received_buffer); // Read 4 chars + null terminator
+        if (fgets(received_buffer, sizeof(received_buffer), stdin) != NULL) {
+            // Remove trailing newline if present
+            size_t len = strlen(received_buffer);
+            if (len > 0 && received_buffer[len - 1] == '\n') {
+                received_buffer[len - 1] = '\0';
+            }
+        }
         printf("Received string: %s\n", received_buffer);
         if (strcmp(received_buffer, "exit") == 0) part2_end = true;
     }
