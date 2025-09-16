@@ -1,7 +1,7 @@
 #ifndef UART_DRIVER_H
 #define UART_DRIVER_H
 
-#include "constants.h"
+#include "../global.h"
 
 
 void USART_Init(void);
