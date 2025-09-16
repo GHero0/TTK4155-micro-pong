@@ -1,4 +1,4 @@
-#include "UART_driver.h"
+#include "drivers/UART_driver.h"
 #include <avr/io.h>
 #include <stdio.h>
 
@@ -26,13 +26,13 @@ unsigned char USART_Receive(void){
     return UDR0;
 }
 
-// void USART_Transmit_String (char*String){
-// 	while(*String)
-// 	{
-// 		USART_Transmit(*String);
-// 		String++;
-// 	}
-// }
+void USART_Transmit_String (char*String){
+	while(*String)
+	{
+		USART_Transmit(*String);
+		String++;
+	}
+}
 
 int uart_putchar(char c, FILE *stream)
 {

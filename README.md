@@ -24,10 +24,19 @@ For Linux users please ensure that when you compile the project you do specify e
 
 ```
 .
-├── src/            # Every *.c and *.h 
+├── src/            # Every necessary *.c 
 │   ├── main.c
 │   ├── drivers/
 │   └── ...
+│
+├── include/        # Every *.h
+│   ├── drivers/
+│   ├── global.h    
+│   ├── globaldec.h # Global variables declaration
+│   ├── constants.h # Constants declaration
+│   └── ...
+│
+├── tests/          # Every test *.c 
 │
 ├── docs/           # Documentation
 │   ├── datasheets/ # Datasheets
@@ -44,8 +53,6 @@ For Linux users please ensure that when you compile the project you do specify e
 
 <details>
 <summary><strong>Small guide on contributing, click to expand</strong></summary>
-<!-- The original content goes here -->
-
 <br>
 
 We use a simple three-branch workflow:
