@@ -1,4 +1,6 @@
 #include "drivers/UART_driver.h"
+#include "global.h"
+
 #include <avr/io.h>
 #include <stdio.h>
 

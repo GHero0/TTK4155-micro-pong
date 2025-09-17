@@ -1,7 +1,9 @@
 #include "tests/test_UART_driver.h"
 #include "drivers/UART_driver.h"
+
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
 
 void test_UART_Transmit(){
     unsigned char i;

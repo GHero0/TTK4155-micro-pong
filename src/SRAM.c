@@ -1,4 +1,5 @@
-#include "global.h"
+#include "SRAM.h"
+
 #include <avr/io.h>
 
 void SRAM_Init()
