@@ -1,4 +1,9 @@
 #include "tests/test_latch.h"
+#include "global.h"
+
+#include <util/delay.h>
+#include <avr/io.h>
+#include <stdio.h>
 
 void test_latch_cycle(unsigned char PIN)
 {

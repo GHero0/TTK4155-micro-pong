@@ -5,9 +5,6 @@
 #include "tests/test_latch.h"
 #include "tests/test_SRAM.h"
 
-#include <avr/io.h>
-#include <util/delay.h>
-#include <stdio.h>
 
 int main(void)
 {
