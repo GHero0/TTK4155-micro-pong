@@ -2,8 +2,6 @@
 #include "global.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <util/delay.h>
-
 
 void Inter_Init(void)
 {
