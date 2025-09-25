@@ -6,7 +6,24 @@
  * It is meant for defining global constants, structs, enums, and constant values.
  */
 
+#include <stdint.h>
+
 #define F_CPU 5000000 // clock frequency 5 MHz
 
+typedef struct
+{
+    int16_t X;  // Q8.8: –100.00 … +100.00
+    int16_t Y;  // Q8.8: –100.00 … +100.00
+} JOY_POS;
+
+
+typedef enum
+{
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
+    NEUTRAL,
+} JOY_DIR;
 
 #endif
