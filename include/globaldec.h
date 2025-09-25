@@ -38,5 +38,13 @@ unsigned int SCALE_Y = 0;
 unsigned char DEADZONE_X = 10;
 unsigned char DEADZONE_Y = 10;
 
+// IO-Board 
+BUTTONS buttons = {0,0,0};
+// Maybe change later on ... ! 
+unsigned char slider = 0;  
+unsigned char touch_x = 0; 
+unsigned char touch_y = 0; 
+unsigned char touch_size = 0;
+unsigned char leds = 0;
 
 #endif

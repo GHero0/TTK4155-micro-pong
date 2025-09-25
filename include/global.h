@@ -36,4 +36,14 @@ extern unsigned int SCALE_Y;
 extern unsigned char DEADZONE_X;
 extern unsigned char DEADZONE_Y; 
 
+// IO-Board Buttons
+extern BUTTONS buttons;
+// Maybe change later on ... ! 
+extern unsigned char slider;  
+extern unsigned char touch_x; 
+extern unsigned char touch_y; 
+extern unsigned char touch_size;
+extern unsigned char leds;
+
+
 #endif

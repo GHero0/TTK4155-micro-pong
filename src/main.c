@@ -5,12 +5,7 @@
 #include "PWM.h"
 #include "joystick.h"
 #include "drivers/SPI.h"
-#include "tests/test_UART_driver.h"
-#include "tests/test_latch.h"
-#include "tests/test_SRAM.h"
-#include "tests/test_inter.h"
-#include "tests/test_adc.h"
-#include "tests/test_joystick.h"
+#include "drivers/IO_board.h"
 
 #include <avr/io.h>
 #include <stdio.h>
@@ -29,6 +24,8 @@ int main(void)
 
     while (1)
     {
-        
+        IO_board_update();
+        leds ++;
+        _delay_ms(100);
     }
 }
