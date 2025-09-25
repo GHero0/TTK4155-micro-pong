@@ -6,7 +6,7 @@
 void SPI_Init(void)
 {
     // Set MOSI, SCK, SS1 as Output
-    DDRB = (1 << MOSI) | (1 << SCK) | (1 << SS1);
+    DDRB |= (1 << MOSI) | (1 << SCK) | (1 << SS1) | (1 << SS2);
     // Enable SPI, Set as Master
     SPCR = (1 << SPE) | (1 << MSTR);
 }
@@ -18,6 +18,11 @@ void SPI_Select_Slave(unsigned char slave)
     } else {
         PORTB |= (1 << SS1);  // Set SS1 high to deselect slave 1
     }
+	if (slave == 2) {
+		PORTB &= ~(1 << SS2); // Set SS1 low to select slave 2
+	} else {
+		PORTB |= (1 << SS2);  // Set SS1 high to deselect slave 2
+	}
 }
 
 void SPI_Write_byte(unsigned char data)

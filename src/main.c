@@ -4,13 +4,14 @@
 #include "inter.h"
 #include "PWM.h"
 #include "joystick.h"
-#include "drivers/SPI.h"
 #include "tests/test_UART_driver.h"
 #include "tests/test_latch.h"
 #include "tests/test_SRAM.h"
 #include "tests/test_inter.h"
 #include "tests/test_adc.h"
 #include "tests/test_joystick.h"
+#include "drivers/SPI.h"
+#include "drivers/OLED.h"
 
 #include <avr/io.h>
 #include <stdio.h>
@@ -25,10 +26,12 @@ int main(void)
     SRAM_Init();
     Inter_Init();
     Joystick_init();
-    SPI_Init();
-
+	
+	// test_OLED();
+	test_OLED();
+	
     while (1)
     {
-        
+	    
     }
 }

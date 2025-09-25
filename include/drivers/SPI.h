@@ -4,6 +4,7 @@
 #include <avr/io.h>
 
 #define SS1 PB4
+#define SS2 PB3
 #define MOSI PB5
 #define MISO PB6
 #define SCK PB7
