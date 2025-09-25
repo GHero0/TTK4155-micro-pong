@@ -1,6 +1,6 @@
 #include "joystick.h"
 #include "global.h"
-#include "stdlib.h"
+#include <stdlib.h>
 
 // single SCALE used for both axes (if ranges differ, define SCALE_X and SCALE_Y)
 void Joystick_init(void)

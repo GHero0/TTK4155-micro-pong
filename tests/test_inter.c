@@ -4,7 +4,7 @@
 
 void test_inter(void)
 {
-    if (INTF1 == 1)
+    if (GIFR & (1 << INTF1))
     {
         printf("Hello!");
     } else {
