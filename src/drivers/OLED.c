@@ -114,15 +114,17 @@ void OLED_DISP_DC_Command(void) { PORTB &= ~(1 << DISP_DC); } // CMD
 
 void OLED_Init(void)
 {
-	// Set the level of the outputs
+	// Set the level of the outputs (so when DDRB toggles, pins already have desired state)
 	PORTB |=  (1 << SS2);     // CS HIGH (idle)
 	PORTB &= ~(1 << DISP_DC); // D/C = 0 (command only)
 	PORTB |=  (1 << PB1);     // RES HIGH (idle)
 	
-	DDRB |= (1 << DISP_DC) | (1 << PB1) | (1 << SS2);  // Set in output : D/C, RES, CS/SS2/DISP_CS
+	// Configure as outputs : D/C, RES, CS/SS2/DISP_CS
+	DDRB |= (1 << DISP_DC) | (1 << PB1) | (1 << SS2);
 	
 	// Default setting : will only take commands
 	OLED_DISP_DC_Command();
+	
 	// DISPLAY_RES trigger/pulse
 	PORTB &= ~(1 << PB1); // RES LOW
 	_delay_ms(1);
@@ -141,77 +143,97 @@ void OLED_Init(void)
 	// Display Off
 	SPI_Write_byte(0xAE);
 	_delay_us(3);
+	
 	// Set display clock divide ratio / oscillator frequency
 	SPI_Write_byte(0xD5);
 	_delay_us(3);
 	SPI_Write_byte(0x80);
 	_delay_us(3);
+	
 	// Set multiplex ratio (1/64 duty)
 	SPI_Write_byte(0xA8);
 	_delay_us(3);
 	SPI_Write_byte(0x3F);
 	_delay_us(3);
+	
 	// Set display offset (0)
 	SPI_Write_byte(0xD3);
 	_delay_us(3);
 	SPI_Write_byte(0x00);
 	_delay_us(3);
+	
 	// Set display start line (0)
 	SPI_Write_byte(0x40);
 	_delay_us(3);
+	
 	// Set segment re-map (col addr 127 ? SEG0)
 	SPI_Write_byte(0xA1);
 	_delay_us(3);
+	
 	// Set COM scan direction (remap mode)
 	SPI_Write_byte(0xC8);
 	_delay_us(3);
+	
 	// Set COM pins hardware configuration
 	SPI_Write_byte(0xDA);
 	_delay_us(3);
 	SPI_Write_byte(0x12);
 	_delay_us(3);
+	
 	// Set contrast control (0x7F = reset value)
 	SPI_Write_byte(0x81);
 	_delay_us(3);
 	SPI_Write_byte(0x7F);
 	_delay_us(3);
+	
 	// Resume to RAM content display (output follows RAM)
 	SPI_Write_byte(0xA4);
 	_delay_us(3);
+	
 	// Set normal display (not inverted)
 	SPI_Write_byte(0xA6);
 	_delay_us(3);
+	
 	// Set pre-charge period
 	SPI_Write_byte(0xD9);
 	_delay_us(3);
 	SPI_Write_byte(0x22);
 	_delay_us(3);
+	
 	// Set VCOMH deselect level
 	SPI_Write_byte(0xDB);
 	_delay_us(3);
 	SPI_Write_byte(0x20);
 	_delay_us(3);
+	
 	/* Useful if charge pump (Enable) implemented
 	SPI_Write_byte(0x8D);
 	_delay_us(3);
 	SPI_Write_byte(0x14);
 	_delay_us(3); 
 	*/
+	
 	// Display ON
 	SPI_Write_byte(0xAF);
 	
-	// addressing + full window + stop scroll
-	SPI_Write_byte(0x20); 
-	SPI_Write_byte(0x00); // Memory Addressing Mode = Horizontal
-	SPI_Write_byte(0x21); 
-	SPI_Write_byte(0x00); 
-	SPI_Write_byte(0x7F); // Columns 0..127
-	SPI_Write_byte(0x22); 
-	SPI_Write_byte(0x00); 
-	SPI_Write_byte(0x07); // Pages 0..7
-	SPI_Write_byte(0x2E); // Deactivate scroll
+	// Memory addressing mode = Horizontal
+	SPI_Write_byte(0x20);
+	SPI_Write_byte(0x00);
+
+	// Column window: 0..127
+	SPI_Write_byte(0x21);
+	SPI_Write_byte(0x00);
+	SPI_Write_byte(0x7F);
+
+	// Page (line) window: 0..7
+	SPI_Write_byte(0x22);
+	SPI_Write_byte(0x00);
+	SPI_Write_byte(0x07);
+
+	// Idle scroll
+	SPI_Write_byte(0x2E);
 	
-	// To let the other slaves use the SPI bus
+	// To let the other slaves use the SPI bus (release the OLED)
 	SPI_Select_Slave(0);
 }
 
@@ -229,21 +251,7 @@ void OLED_Reset(void)
 	PORTB |= (1 << PB1); 
 	_delay_ms(1);
 
-	// Reapply addressing + stop scroll + ON
-	OLED_DISP_DC_Command();
-	SPI_Select_Slave(2);
-	SPI_Write_byte(0x20); 
-	SPI_Write_byte(0x00); // Horizontal addressing
-	SPI_Write_byte(0x21); 
-	SPI_Write_byte(0x00 + OLED_COLUMN_OFFSET); 
-	SPI_Write_byte(0x7F + OLED_COLUMN_OFFSET);
-	SPI_Write_byte(0x22); 
-	SPI_Write_byte(0x00);                   
-	SPI_Write_byte(0x07);
-	SPI_Write_byte(0x2E); // Idle scroll
-	SPI_Write_byte(0xAF); // Display ON
-	SPI_Select_Slave(0);
-
+	// Initialize OLED again + reset its position to (0, 0)
 	OLED_Init();
 	OLED_Home();
 }
@@ -253,15 +261,23 @@ void OLED_Home(void)
 	pos_line = 0;
 	pos_column = 0;
 
-	// Set window to line 0, column 0
+	// Command mode
 	OLED_DISP_DC_Command();
+
+	// Select OLED
 	SPI_Select_Slave(2);
-	SPI_Write_byte(0x21); 
-	SPI_Write_byte(pos_column + OLED_COLUMN_OFFSET); 
+
+	// Column window: current column..127
+	SPI_Write_byte(0x21);
+	SPI_Write_byte(pos_column + OLED_COLUMN_OFFSET);
 	SPI_Write_byte(0x7F + OLED_COLUMN_OFFSET);
-	SPI_Write_byte(0x22); 
-	SPI_Write_byte(pos_line);                  
+
+	// Page window: current line only
+	SPI_Write_byte(0x22);
 	SPI_Write_byte(pos_line);
+	SPI_Write_byte(pos_line);
+
+	// Release OLED
 	SPI_Select_Slave(0);
 }
 
@@ -275,18 +291,26 @@ void OLED_Go_To_Line(int line_index)
 	{
 		line_index = 7;
 	}
-	pos_line = (uint8_t) line_index;
+	// Save new line
+	pos_line = (uint8_t)line_index;
 
+	// Command mode
 	OLED_DISP_DC_Command();
+
+	// Select OLED
 	SPI_Select_Slave(2);
-	
-	// keep current column (pos_column) to 127 on this line
-	SPI_Write_byte(0x21); 
-	SPI_Write_byte(pos_column + OLED_COLUMN_OFFSET); 
+
+	// Keep current column..127 on this line
+	SPI_Write_byte(0x21);
+	SPI_Write_byte(pos_column + OLED_COLUMN_OFFSET);
 	SPI_Write_byte(0x7F + OLED_COLUMN_OFFSET);
-	SPI_Write_byte(0x22); 
-	SPI_Write_byte(pos_line);                 
+
+	// Page window: this line only
+	SPI_Write_byte(0x22);
 	SPI_Write_byte(pos_line);
+	SPI_Write_byte(pos_line);
+
+	// Release OLED
 	SPI_Select_Slave(0);
 }
 
@@ -300,51 +324,90 @@ void OLED_Go_To_Column(int column_index)
 	{
 		column_index = 127;
 	}
-	pos_column = (uint8_t) column_index;
+	// Save new column
+	pos_column = (uint8_t)column_index;
 
+	// Command mode
 	OLED_DISP_DC_Command();
+
+	// Select OLED
 	SPI_Select_Slave(2);
-	// window on current line, from new pos_column to 127
-	SPI_Write_byte(0x21); 
-	SPI_Write_byte(pos_column + OLED_COLUMN_OFFSET); 
+
+	// Window on current line: from new column to 127
+	SPI_Write_byte(0x21);
+	SPI_Write_byte(pos_column + OLED_COLUMN_OFFSET);
 	SPI_Write_byte(0x7F + OLED_COLUMN_OFFSET);
-	SPI_Write_byte(0x22); 
-	SPI_Write_byte(pos_line);                  
+
+	// Page window: this line only
+	SPI_Write_byte(0x22);
 	SPI_Write_byte(pos_line);
+	SPI_Write_byte(pos_line);
+
+	// Release OLED
 	SPI_Select_Slave(0);
 }
 
 void OLED_Clear_Line(int line_index)
 {
-	if (line_index < 0) line_index = 0;
-	if (line_index > 7) line_index = 7;
+	if (line_index < 0) 
+	{
+		line_index = 0;
+	}
+	if (line_index > 7) 
+	{
+		line_index = 7;
+	}
 
-	// Window: full width on this line
+	// Command mode
 	OLED_DISP_DC_Command();
+
+	// Select OLED
 	SPI_Select_Slave(2);
+
+	// Full width on this line
 	SPI_Write_byte(0x21);
 	SPI_Write_byte(0x00 + OLED_COLUMN_OFFSET);
 	SPI_Write_byte(0x7F + OLED_COLUMN_OFFSET);
+
+	// Target this line only
 	SPI_Write_byte(0x22);
 	SPI_Write_byte((uint8_t)line_index);
 	SPI_Write_byte((uint8_t)line_index);
 
-	// Data: 128 zeros
+	// Data mode: write 128 zeros
 	OLED_DISP_DC_Data();
-	for (uint16_t i = 0; i < 128; ++i) SPI_Write_byte(0x00);
+	for (uint16_t i = 0; i < 128; ++i) 
+	{
+		SPI_Write_byte(0x00);
+	}
 	SPI_Select_Slave(0);
 
-	// If cursor is on this line, reset column and window for subsequent writes
-	if (pos_line == (uint8_t)line_index) {
+	// Release OLED
+	SPI_Select_Slave(0);
+
+	// If cursor is on this line, reset its column and window
+	if (pos_line == (uint8_t)line_index)
+	{
+		// Reset column
 		pos_column = 0;
+
+		// Command mode
 		OLED_DISP_DC_Command();
+
+		// Select OLED
 		SPI_Select_Slave(2);
+
+		// Full width again for subsequent writes
 		SPI_Write_byte(0x21);
 		SPI_Write_byte(0x00 + OLED_COLUMN_OFFSET);
 		SPI_Write_byte(0x7F + OLED_COLUMN_OFFSET);
+
+		// Current line only
 		SPI_Write_byte(0x22);
 		SPI_Write_byte(pos_line);
 		SPI_Write_byte(pos_line);
+
+		// Release OLED
 		SPI_Select_Slave(0);
 	}
 }
@@ -367,95 +430,148 @@ void OLED_Go_To_Pos(int line_index, int column_index)
 	{
 		column_index  = 127;
 	}
-	pos_line = (uint8_t) line_index; pos_column = (uint8_t) column_index;
+	// Save cursor
+	pos_line   = (uint8_t)line_index;
+	pos_column = (uint8_t)column_index;
 
+	// Command mode
 	OLED_DISP_DC_Command();
+
+	// Select OLED
 	SPI_Select_Slave(2);
-	SPI_Write_byte(0x21); 
-	SPI_Write_byte(pos_column + OLED_COLUMN_OFFSET); 
+
+	// Column window: from pos_column to 127
+	SPI_Write_byte(0x21);
+	SPI_Write_byte(pos_column + OLED_COLUMN_OFFSET);
 	SPI_Write_byte(0x7F + OLED_COLUMN_OFFSET);
-	SPI_Write_byte(0x22); 
-	SPI_Write_byte(pos_line);                 
+
+	// Page window: this line only
+	SPI_Write_byte(0x22);
 	SPI_Write_byte(pos_line);
+	SPI_Write_byte(pos_line);
+
+	// Release OLED
 	SPI_Select_Slave(0);
 }
 
-/* Print one 5x7 character (+1 space column). Wrap to next line at end. */
+// Print one 5x7 character (+1 space column). Wrap to next line at end.
 void OLED_PutChar(char c)
 {
-	if (c == '\n') {
-		if (pos_line < 7) 
-		{ 
-			pos_line++; 
+	// Handle newline
+	if (c == '\n')
+	{
+		// Next line if possible
+		if (pos_line < 7)
+		{
+			pos_line++;
 			pos_column = 0;
 		}
-		// set new line window
+
+		// Command mode
 		OLED_DISP_DC_Command();
+
+		// Select OLED
 		SPI_Select_Slave(2);
-		SPI_Write_byte(0x21); 
-		SPI_Write_byte(0x00 + OLED_COLUMN_OFFSET);  
+
+		// Full width window on current line
+		SPI_Write_byte(0x21);
+		SPI_Write_byte(0x00 + OLED_COLUMN_OFFSET);
 		SPI_Write_byte(0x7F + OLED_COLUMN_OFFSET);
-		SPI_Write_byte(0x22); 
-		SPI_Write_byte(pos_line);                  
+
+		// Page window: this line only
+		SPI_Write_byte(0x22);
 		SPI_Write_byte(pos_line);
+		SPI_Write_byte(pos_line);
+
+		// Release OLED
 		SPI_Select_Slave(0);
 		return;
 	}
-	if (c < 32 || c > 126) 
+	
+	// Sanitize range (print '?' otherwise)
+	if (c < 32 || c > 126) // (c < 32 : Ctrl commands) & (c > 126 : Exceed ASCII table).
 	{
 		c = '?';
 	}
-
-	// 6 columns per char (5 glyph/draw character + 1 spacing)
-	if (pos_column > 122) { // not enough room for a char -> wrap
-		if (pos_line < 7) 
-		{ 
-			pos_line++; 
-			pos_column = 0; 
-		}
-		else 
+	
+	// 6 columns per char (5 glyph/draw character + 1 space)
+	// If not enough room for 6 columns, wrap to next line
+	if (pos_column > 122)
+	{
+		// Next line if possible
+		if (pos_line < 7)
 		{
-			return; // no space
+			pos_line++;
+			pos_column = 0;
 		}
+		else
+		{
+			// No space left on screen
+			return;
+		}
+
+		// Command mode
 		OLED_DISP_DC_Command();
+
+		// Select OLED
 		SPI_Select_Slave(2);
-		SPI_Write_byte(0x21); 
-		SPI_Write_byte(0x00 + OLED_COLUMN_OFFSET);  
+
+		// Full width on new line
+		SPI_Write_byte(0x21);
+		SPI_Write_byte(0x00 + OLED_COLUMN_OFFSET);
 		SPI_Write_byte(0x7F + OLED_COLUMN_OFFSET);
-		SPI_Write_byte(0x22); 
-		SPI_Write_byte(pos_line);                  
+
+		// This line only
+		SPI_Write_byte(0x22);
 		SPI_Write_byte(pos_line);
+		SPI_Write_byte(pos_line);
+
+		// Release OLED
 		SPI_Select_Slave(0);
 	}
 
-	uint16_t idx = (uint16_t)(c - 32) * 5; // 5 columns per glyph
+	// Compute font index (5 bytes/columns per char)
+	uint16_t idx = (uint16_t)(c - 32) * 5;
+
+	// Read 5 columns from PROGMEM
 	uint8_t b0 = pgm_read_byte(&font5x7[idx + 0]);
 	uint8_t b1 = pgm_read_byte(&font5x7[idx + 1]);
 	uint8_t b2 = pgm_read_byte(&font5x7[idx + 2]);
 	uint8_t b3 = pgm_read_byte(&font5x7[idx + 3]);
 	uint8_t b4 = pgm_read_byte(&font5x7[idx + 4]);
 
-	// Ensure the window starts at current column (s_col..127 on current line)
+	// Command mode
 	OLED_DISP_DC_Command();
+
+	// Select OLED
 	SPI_Select_Slave(2);
-	SPI_Write_byte(0x21); 
-	SPI_Write_byte(pos_column + OLED_COLUMN_OFFSET);     
+
+	// Ensure window starts at current column (pos_column..127)
+	SPI_Write_byte(0x21);
+	SPI_Write_byte(pos_column + OLED_COLUMN_OFFSET);
 	SPI_Write_byte(0x7F + OLED_COLUMN_OFFSET);
-	SPI_Write_byte(0x22); 
-	SPI_Write_byte(pos_line);                      
+
+	// Page window: current line only
+	SPI_Write_byte(0x22);
 	SPI_Write_byte(pos_line);
+	SPI_Write_byte(pos_line);
+
 	// Send 5 glyph columns + 1 spacing column
 	OLED_DISP_DC_Data();
-	SPI_Write_byte(b0); 
-	SPI_Write_byte(b1); 
-	SPI_Write_byte(b2); 
-	SPI_Write_byte(b3); 
+	SPI_Write_byte(b0);
+	SPI_Write_byte(b1);
+	SPI_Write_byte(b2);
+	SPI_Write_byte(b3);
 	SPI_Write_byte(b4);
-	SPI_Write_byte(0x00); // space
+	SPI_Write_byte(0x00); // spacing column
 	SPI_Select_Slave(0);
 
+	// Advance cursor position
 	pos_column += 6;
-	if (pos_column > 127) pos_column = 127;
+	if (pos_column > 127)
+	{
+		pos_column = 127;
+	}
 }
 
 void OLED_Print(char* print_string)
@@ -481,24 +597,34 @@ void OLED_Clear_Screen(void)
 }
 
 void OLED_FillScreen(uint8_t line, uint8_t val){
-	// Only the first 8 lines/rows on the total width
+	// Command mode
 	OLED_DISP_DC_Command();
+
+	// Select OLED
 	SPI_Select_Slave(2);
-	SPI_Write_byte(0x21); 
-	SPI_Write_byte(0x00); 
-	SPI_Write_byte(0x7F); // columns 0..127
-	SPI_Write_byte(0x22); 
-	SPI_Write_byte(line); 
-	SPI_Write_byte(line); // this line only
+
+	// Full columns: 0..127
+	SPI_Write_byte(0x21);
+	SPI_Write_byte(0x00);
+	SPI_Write_byte(0x7F);
+
+	// Target this single line (page)
+	SPI_Write_byte(0x22);
+	SPI_Write_byte(line);
+	SPI_Write_byte(line);
+
+	// Data mode: write 128 identical bytes
 	OLED_DISP_DC_Data();
-	for (int i = 0; i < 128; ++i) 
+	for (int i = 0; i < 128; ++i)
 	{
-		SPI_Write_byte(val); // 128 octets
+		SPI_Write_byte(val);
 	}
+
+	// Release OLED
 	SPI_Select_Slave(0);
 }
 
-/*
+/* Actions in : OLED_INIT();
 	AEh         ; Display Off
 	D5h, 0x80   ; Set display clock divide ratio / oscillator frequency
 	A8h, 0x3F   ; Set multiplex ratio (1/64 duty)
@@ -512,6 +638,6 @@ void OLED_FillScreen(uint8_t line, uint8_t val){
 	A6h         ; Set normal display (not inverted)
 	D9h, 0x22   ; Set pre-charge period
 	DBh, 0x20   ; Set VCOMH deselect level
-	8Dh, 0x14   ; Charge pump (Enable) (if implemented)
+//  8Dh, 0x14   ; Charge pump (Enable) (if implemented)
 	AFh         ; Display ON
 */
