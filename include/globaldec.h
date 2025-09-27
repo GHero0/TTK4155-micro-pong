@@ -41,10 +41,8 @@ unsigned char DEADZONE_Y = 10;
 // IO-Board 
 BUTTONS buttons = {0,0,0};
 // Maybe change later on ... ! 
+TOUCH_PAD touch_pad = {0,0,0};
 unsigned char slider = 0;  
-unsigned char touch_x = 0; 
-unsigned char touch_y = 0; 
-unsigned char touch_size = 0;
-unsigned char leds = 0;
+LED_STATE leds[LED_COUNT] = {0};
 
 #endif

@@ -7,7 +7,9 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 
+#define LED_COUNT 6
 #define F_CPU 5000000 // clock frequency 5 MHz
 
 typedef struct
@@ -69,5 +71,19 @@ typedef struct __attribute__((packed))
         };
     };
 } BUTTONS;
+
+
+typedef struct {
+    unsigned char pwm;
+    bool on;
+} LED_STATE;
+
+typedef struct {
+    unsigned char x;
+    unsigned char y;
+    unsigned char size;
+} TOUCH_PAD;
+
+
 
 #endif

@@ -39,11 +39,7 @@ extern unsigned char DEADZONE_Y;
 // IO-Board Buttons
 extern BUTTONS buttons;
 // Maybe change later on ... ! 
+extern TOUCH_PAD touch_pad;
 extern unsigned char slider;  
-extern unsigned char touch_x; 
-extern unsigned char touch_y; 
-extern unsigned char touch_size;
-extern unsigned char leds;
-
-
+extern LED_STATE leds[LED_COUNT];
 #endif
