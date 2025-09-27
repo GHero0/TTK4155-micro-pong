@@ -27,7 +27,7 @@ int main(void)
     Inter_Init();
     Joystick_init();
 	
-	// test_OLED();
+	// test of OLED's functions
 	test_OLED();
 	
     while (1)

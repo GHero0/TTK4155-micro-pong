@@ -235,6 +235,10 @@ void OLED_Init(void)
 	
 	// To let the other slaves use the SPI bus (release the OLED)
 	SPI_Select_Slave(0);
+	
+	// Clear the screen + reset the cursor position to (0, 0)
+	OLED_Clear_Screen();
+	OLED_Home();
 }
 
 void OLED_Reset(void)
@@ -625,6 +629,9 @@ void OLED_FillScreen(uint8_t line, uint8_t val){
 }
 
 /* Actions in : OLED_INIT();
+	- Set the outputs 
+	- Trigger DISP_RES pin
+	
 	AEh         ; Display Off
 	D5h, 0x80   ; Set display clock divide ratio / oscillator frequency
 	A8h, 0x3F   ; Set multiplex ratio (1/64 duty)
