@@ -12,6 +12,8 @@
 #include <util/delay.h>
 #include <stdlib.h>
 
+#include "tests/test_IO_board.h"
+
 int main(void)
 {
     PWM_init();
@@ -21,11 +23,9 @@ int main(void)
     Inter_Init();
     Joystick_init();
     SPI_Init();
-
+    
     while (1)
     {
-        IO_board_update();
-        leds ++;
-        _delay_ms(100);
+        test_IO_board();
     }
 }
