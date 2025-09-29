@@ -36,21 +36,27 @@ static inline bool JoyBtn_WasPressed(void)
 #define SM1_COUNT 4
 #define SM2_COUNT 3
 
-static const char* main_items[MAIN_COUNT] = { "Launch Game",
-											  "Sub-Menu 1",
-											  "Sub-Menu 2"
-											  };
+static const char* main_items[MAIN_COUNT] = 
+{ 
+	"Launch Game",
+	"Sub-Menu 1",
+	"Sub-Menu 2"
+};
 
-static const char* sm1_items[SM1_COUNT] = { "SM1 - Option 1",
-											"SM1 - Option 2",
-											"SM1 - Option 3",
-											"Back" 
-											};
+static const char* sm1_items[SM1_COUNT] = 
+{ 
+	"SM1 - Option 1",
+	"SM1 - Option 2",
+	"SM1 - Option 3",
+	"Back" 
+};
 
-static const char* sm2_items[SM2_COUNT] = { "SM2 - Option 1",
-											"SM2 - Option 2",
-											"Back" 
-											};
+static const char* sm2_items[SM2_COUNT] = 
+{ 
+	"SM2 - Option 1",
+	"SM2 - Option 2",
+	"Back" 
+};
 
 // Menu drawing
 static void MENU_Draw(void)
