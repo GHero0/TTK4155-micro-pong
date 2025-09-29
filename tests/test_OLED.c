@@ -14,7 +14,7 @@ void test_function_Clear_Screen_From_Noise(void)
 	}
 }
 
-void test_OLED()
+void test_OLED(void)
 {
 	// Initialize the OLED device
 	OLED_Init();

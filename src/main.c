@@ -26,12 +26,14 @@ int main(void)
     SRAM_Init();
     Inter_Init();
     Joystick_init();
+	OLED_Init();
+	MENU_Init();
 	
 	// test of OLED's functions
 	test_OLED();
 	
     while (1)
     {
-	    
+	    test_MENU();
     }
 }
