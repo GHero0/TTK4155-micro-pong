@@ -1,8 +1,3 @@
-#include <avr/io.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <util/delay.h>
-
 #include "MENU.h"
 #include "drivers/OLED.h"
 #include "drivers/IO_board.h"

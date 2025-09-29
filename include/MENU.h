@@ -1,6 +1,11 @@
 #ifndef MENU_H_
 #define MENU_H_
 
+#include <avr/io.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <util/delay.h>
+
 typedef enum 
 {
 	MENU_MAIN = 0,
