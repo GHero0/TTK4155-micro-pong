@@ -42,4 +42,14 @@ extern BUTTONS buttons;
 extern TOUCH_PAD touch_pad;
 extern unsigned char slider;  
 extern LED_STATE leds[LED_COUNT];
+// OLED frame buffer
+extern unsigned char * volatile framebuffer;
+extern unsigned char * volatile doublebuffer;
+// Pointer aliases for convenience
+extern unsigned char * volatile current_buffer;// draw here
+extern unsigned char * volatile screen_buffer;  // send to OLED
+// OLED 30Hz refresh
+extern unsigned char screen_ms_divider;
+extern unsigned char Flag_screen;
+
 #endif
