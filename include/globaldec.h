@@ -9,6 +9,7 @@
  * ensuring they can be accessed throughout the program.
  */
 #include "constants.h"
+#include <avr/pgmspace.h>
 
 volatile char *sram = (char *)0x1400;    // Start address for the SRAM
 volatile char *adc = (char *)0x1200;     // Start address for the ADC
@@ -38,5 +39,15 @@ unsigned int SCALE_Y = 0;
 unsigned char DEADZONE_X = 10;
 unsigned char DEADZONE_Y = 10;
 
+
+// OLED frame buffer
+unsigned char * volatile framebuffer = (unsigned char *)0x1400;
+unsigned char * volatile doublebuffer = (unsigned char *)0x1800;
+// Pointer aliases for convenience
+unsigned char * volatile current_buffer;
+unsigned char * volatile screen_buffer;
+// OLED 30Hz refresh 
+unsigned char screen_ms_divider = 0;
+unsigned char Flag_screen = 0;
 
 #endif

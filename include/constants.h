@@ -8,7 +8,7 @@
 
 #include <stdint.h>
 
-#define F_CPU 5000000 // clock frequency 5 MHz
+#define F_CPU 5000000UL
 
 typedef struct
 {

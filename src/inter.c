@@ -25,3 +25,15 @@ ISR(INT2_vect)
     adc_ch3 = *adc;
     Flag_ADC_ready = 1;
 }
+
+ISR(TIMER0_COMP_vect)
+{
+    screen_ms_divider++;
+    if (screen_ms_divider >= 32)
+    {
+        screen_ms_divider = 0;
+        Flag_screen = 1;
+    }
+}
+
+

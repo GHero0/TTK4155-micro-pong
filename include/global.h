@@ -36,4 +36,14 @@ extern unsigned int SCALE_Y;
 extern unsigned char DEADZONE_X;
 extern unsigned char DEADZONE_Y; 
 
+// OLED frame buffer
+extern unsigned char * volatile framebuffer;
+extern unsigned char * volatile doublebuffer;
+// Pointer aliases for convenience
+extern unsigned char * volatile current_buffer;// draw here
+extern unsigned char * volatile screen_buffer;  // send to OLED
+// OLED 30Hz refresh
+extern unsigned char screen_ms_divider;
+extern unsigned char Flag_screen;
+
 #endif

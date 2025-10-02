@@ -4,8 +4,8 @@
 #include <avr/io.h>
 #include <stdio.h>
 
-#define BAUD 9600
-#define MYUBRR F_CPU/16/BAUD-1
+#define BAUD 9600  
+#define MYUBRR ((F_CPU/16/BAUD) - 1) 
 
 
 
@@ -15,7 +15,7 @@ void USART_Init(){
     UBRR0L = (unsigned char)(MYUBRR);
 
     UCSR0B |= (1<<RXEN0)|(1<<TXEN0); // 00011000
-    UCSR0C |= (1<<URSEL0)|(3<<UCSZ00);
+    UCSR0C = (1 << URSEL0) | (1 << UCSZ01) | (1 << UCSZ00);
 }
 
 void USART_Transmit(unsigned char data){
