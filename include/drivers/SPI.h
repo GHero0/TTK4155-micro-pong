@@ -3,6 +3,7 @@
 
 #include <avr/io.h>
 
+#define SS3 PB0
 #define SS1 PB4
 #define MOSI PB5
 #define MISO PB6
