@@ -36,8 +36,8 @@ unsigned char JOY_X_CENTER = 164;
 unsigned char JOY_Y_CENTER = 164;
 unsigned int SCALE_X = 0;
 unsigned int SCALE_Y = 0;
-unsigned char DEADZONE_X = 10;
-unsigned char DEADZONE_Y = 10;
+unsigned char DEADZONE_X = 20;
+unsigned char DEADZONE_Y = 20;
 
 // IO-Board 
 BUTTONS buttons = {{0},{0},{0}};
@@ -55,5 +55,28 @@ unsigned char * volatile screen_buffer;
 // OLED 30Hz refresh 
 unsigned char screen_ms_divider = 0;
 unsigned char Flag_screen = 0;
+
+
+unsigned char tile_2bpp[16] = {
+    0b11000000, 0b10000000,
+    0b11000000, 0b01000000,
+    0b01100000, 0b00100000,
+    0b00110000, 0b00010000,
+    0b00001100, 0b00001000,
+    0b00001100, 0b00000100,
+    0b00000011, 0b00000010,
+    0b00000011, 0b00000001
+};
+
+unsigned char tile_1bpp[8] = {
+    0b11000000, 
+    0b11000000, 
+    0b01100000, 
+    0b00110000, 
+    0b00001100, 
+    0b00000110, 
+    0b00000011, 
+    0b00000011
+};
 
 #endif

@@ -52,4 +52,9 @@ extern unsigned char * volatile screen_buffer;  // send to OLED
 extern unsigned char screen_ms_divider;
 extern unsigned char Flag_screen;
 
+
+extern unsigned char tile_2bpp[16];
+
+extern unsigned char tile_1bpp[8];
+
 #endif

@@ -9,16 +9,17 @@
 #include "drivers/OLED.h"
 #include "sprites.h"
 #include "images.h"
+#include "UI.h"
 
 #include <avr/io.h>
 #include <stdio.h>
 #include <util/delay.h>
 #include <stdlib.h>
 
-#include <tests/test_IO_board.h>
-
 int main(void)
 {
+    // CLKPR = (1 << CLKPCE);           // Enable prescaler change
+    // CLKPR = (1 << CLKPS0);           // Set prescaler to /2 (CLKPS = 0001)
     PWM_init();
     USART_Init();
     UART_stdio_init();
@@ -29,67 +30,54 @@ int main(void)
     OLED_Init();
     FrameBufferInit();
 
-    int X = 45;
-    int Y = 25;
-    int x = 0;
-    int y = 0;
+    FrameBufferClear();
+    FrameBufferSwap();
+    FrameBufferClear();
+    FrameBufferPush();
+
+    int X = 32;
+    int Y = -64;
+    unsigned char step = 0;
+    char c = 0;
     while (1)
     {
-        IO_board_update();
-
-        // printf("\033[2J\033[H%02X %02X %02X %3d %3d %3d %3d\n",
-        //    buttons.right, buttons.left, buttons.nav,
-        //    slider, touch_pad.x, touch_pad.y, touch_pad.size);
-        // printf("L^ R^ N^ SL^ TX^ TY^ TS^");
-
         FrameBufferClear();
-        for (unsigned short i = 0; i < 512; i++)
+    
+        joystick_indicator(16,32,0);   
+        joystick_indicator(104,32,1);   
+        // button_indicator(X,Y,0,7);
+        
+        
+        
+        if (Flag_screen)
         {
-            current_buffer[i] = 0xFF;
-        }
-        draw_sprite_1bpp(logo_1bpp, X, Y);
-        draw_sprite_2bpp(logo_2bpp, x, y, 1);
-
-        if (Flag_screen == 1)
-        {
-            FrameBufferPush();
-            FrameBufferSwap();
+            draw_task_bar();
+            draw_window(64,0,3,3);
+            draw_string(
+                "[Hey]",X,Y);
+            // draw_line(0,0,X,Y);
             Flag_screen = 0;
         }
-        Joystick_convert();
-        switch (joystick_dir)
-        {
-        case UP:
-            Y = (Y - 1);
-            break;
-        case DOWN:
-            Y = (Y + 1);
-            break;
-        case LEFT:
-            X = (X - 1);
-            break;
-        case RIGHT:
-            X = (X + 1);
-            break;
-        default:
-            break;
-        }
+        
+                    FrameBufferPush();
+                    FrameBufferSwap();
+                    IO_board_update();
+                    Joystick_convert();
 
-        if (buttons.NU)
-        {
-            y--;
-        }
-        if (buttons.ND)
-        {
-            y++;
-        }
-        if (buttons.NL)
-        {
-            x--;
-        }
-        if (buttons.NR)
-        {
-            x++;
-        }
+        
+
+
+        // Map touchpad
+        X = touch_pad.x >> 1;
+        Y = 63 - (touch_pad.y >> 2);
+
+        if (X < 0)
+            X = 0;
+        if (X > 127)
+            X = 127;
+        if (Y < 0)
+            Y = 0;
+        if (Y > 63)
+            Y = 63;
     }
 }

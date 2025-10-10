@@ -85,11 +85,43 @@ void FrameBufferClear()
 }
 
 
-void FrameBufferPush()
+static inline __attribute__((always_inline))
+unsigned char pack_bits(
+    unsigned char b0, unsigned char b1, unsigned char b2, unsigned char b3,
+    unsigned char b4, unsigned char b5, unsigned char b6, unsigned char b7,
+    const unsigned char bit_pos)
+{
+    unsigned char result;
+    __asm__ volatile(
+        "clr %0\n\t"
+        "sbrc %1, %9\n\t"
+        "ori %0, 0x01\n\t"
+        "sbrc %2, %9\n\t"
+        "ori %0, 0x02\n\t"
+        "sbrc %3, %9\n\t"
+        "ori %0, 0x04\n\t"
+        "sbrc %4, %9\n\t"
+        "ori %0, 0x08\n\t"
+        "sbrc %5, %9\n\t"
+        "ori %0, 0x10\n\t"
+        "sbrc %6, %9\n\t"
+        "ori %0, 0x20\n\t"
+        "sbrc %7, %9\n\t"
+        "ori %0, 0x40\n\t"
+        "sbrc %8, %9\n\t"
+        "ori %0, 0x80\n\t"
+        : "=r"(result)
+        : "r"(b0), "r"(b1), "r"(b2), "r"(b3),
+          "r"(b4), "r"(b5), "r"(b6), "r"(b7),
+          "I"(bit_pos)
+    );
+    return result;
+}
+
+void FrameBufferPush(void)
 {
     OLED_DISP_DC_Command();
     SPI_Select_Slave(2);
-    
     SPI_Write_byte(0x21);
     SPI_Write_byte(0x00);
     SPI_Write_byte(0x7F);
@@ -98,78 +130,132 @@ void FrameBufferPush()
     SPI_Write_byte(0x07);
 
     OLED_DISP_DC_Data();
-    
-    volatile unsigned char *fb = screen_buffer;  // Use screen_buffer, not framebuffer!
-    
-    for (unsigned char p = 0; p < 8; p++)
-    {
-        unsigned int base_row = p << 3;
-        
-        for (unsigned char i = 0; i < 16; i++)
-        {
-            // Cache the 8 row addresses
-            unsigned int r0 = i + ((base_row + 0) << 4);
-            unsigned int r1 = i + ((base_row + 1) << 4);
-            unsigned int r2 = i + ((base_row + 2) << 4);
-            unsigned int r3 = i + ((base_row + 3) << 4);
-            unsigned int r4 = i + ((base_row + 4) << 4);
-            unsigned int r5 = i + ((base_row + 5) << 4);
-            unsigned int r6 = i + ((base_row + 6) << 4);
-            unsigned int r7 = i + ((base_row + 7) << 4);
-            
-            // Load all 8 bytes at once
-            unsigned char b0 = fb[r0];
-            unsigned char b1 = fb[r1];
-            unsigned char b2 = fb[r2];
-            unsigned char b3 = fb[r3];
-            unsigned char b4 = fb[r4];
-            unsigned char b5 = fb[r5];
-            unsigned char b6 = fb[r6];
-            unsigned char b7 = fb[r7];
-            
-            // Pack bit 7
-            SPI_Write_byte(((b0 & 0x80) >> 7) | ((b1 & 0x80) >> 6) | ((b2 & 0x80) >> 5) | 
-                          ((b3 & 0x80) >> 4) | ((b4 & 0x80) >> 3) | ((b5 & 0x80) >> 2) | 
-                          ((b6 & 0x80) >> 1) | ((b7 & 0x80) >> 0));
-            
-            // Pack bit 6
-            SPI_Write_byte(((b0 & 0x40) >> 6) | ((b1 & 0x40) >> 5) | ((b2 & 0x40) >> 4) | 
-                          ((b3 & 0x40) >> 3) | ((b4 & 0x40) >> 2) | ((b5 & 0x40) >> 1) | 
-                          ((b6 & 0x40) >> 0) | ((b7 & 0x40) << 1));
-            
-            // Pack bit 5
-            SPI_Write_byte(((b0 & 0x20) >> 5) | ((b1 & 0x20) >> 4) | ((b2 & 0x20) >> 3) | 
-                          ((b3 & 0x20) >> 2) | ((b4 & 0x20) >> 1) | ((b5 & 0x20) >> 0) | 
-                          ((b6 & 0x20) << 1) | ((b7 & 0x20) << 2));
-            
-            // Pack bit 4
-            SPI_Write_byte(((b0 & 0x10) >> 4) | ((b1 & 0x10) >> 3) | ((b2 & 0x10) >> 2) | 
-                          ((b3 & 0x10) >> 1) | ((b4 & 0x10) >> 0) | ((b5 & 0x10) << 1) | 
-                          ((b6 & 0x10) << 2) | ((b7 & 0x10) << 3));
-            
-            // Pack bit 3
-            SPI_Write_byte(((b0 & 0x08) >> 3) | ((b1 & 0x08) >> 2) | ((b2 & 0x08) >> 1) | 
-                          ((b3 & 0x08) >> 0) | ((b4 & 0x08) << 1) | ((b5 & 0x08) << 2) | 
-                          ((b6 & 0x08) << 3) | ((b7 & 0x08) << 4));
-            
-            // Pack bit 2
-            SPI_Write_byte(((b0 & 0x04) >> 2) | ((b1 & 0x04) >> 1) | ((b2 & 0x04) >> 0) | 
-                          ((b3 & 0x04) << 1) | ((b4 & 0x04) << 2) | ((b5 & 0x04) << 3) | 
-                          ((b6 & 0x04) << 4) | ((b7 & 0x04) << 5));
-            
-            // Pack bit 1
-            SPI_Write_byte(((b0 & 0x02) >> 1) | ((b1 & 0x02) >> 0) | ((b2 & 0x02) << 1) | 
-                          ((b3 & 0x02) << 2) | ((b4 & 0x02) << 3) | ((b5 & 0x02) << 4) | 
-                          ((b6 & 0x02) << 5) | ((b7 & 0x02) << 6));
-            
-            // Pack bit 0
-            SPI_Write_byte(((b0 & 0x01) >> 0) | ((b1 & 0x01) << 1) | ((b2 & 0x01) << 2) | 
-                          ((b3 & 0x01) << 3) | ((b4 & 0x01) << 4) | ((b5 & 0x01) << 5) | 
-                          ((b6 & 0x01) << 6) | ((b7 & 0x01) << 7));
+    const unsigned char *fb = screen_buffer;
+
+    for (unsigned char p = 0; p < 8; p++) {
+        // Precompute row pointers for this page using bit shifts instead of *16
+        const unsigned char *base = fb + (p << 7);  // (p * 8 * 16) = p << 7
+
+        const unsigned char *row0 = base + (0 << 4);
+        const unsigned char *row1 = base + (1 << 4);
+        const unsigned char *row2 = base + (2 << 4);
+        const unsigned char *row3 = base + (3 << 4);
+        const unsigned char *row4 = base + (4 << 4);
+        const unsigned char *row5 = base + (5 << 4);
+        const unsigned char *row6 = base + (6 << 4);
+        const unsigned char *row7 = base + (7 << 4);
+
+        for (unsigned char i = 0; i < 16; i++) {
+            unsigned char b0 = *row0++;
+            unsigned char b1 = *row1++;
+            unsigned char b2 = *row2++;
+            unsigned char b3 = *row3++;
+            unsigned char b4 = *row4++;
+            unsigned char b5 = *row5++;
+            unsigned char b6 = *row6++;
+            unsigned char b7 = *row7++;
+
+            // Pack all 8 bits using assembly
+            SPI_Write_byte(pack_bits(b0, b1, b2, b3, b4, b5, b6, b7, 7));
+            SPI_Write_byte(pack_bits(b0, b1, b2, b3, b4, b5, b6, b7, 6));
+            SPI_Write_byte(pack_bits(b0, b1, b2, b3, b4, b5, b6, b7, 5));
+            SPI_Write_byte(pack_bits(b0, b1, b2, b3, b4, b5, b6, b7, 4));
+            SPI_Write_byte(pack_bits(b0, b1, b2, b3, b4, b5, b6, b7, 3));
+            SPI_Write_byte(pack_bits(b0, b1, b2, b3, b4, b5, b6, b7, 2));
+            SPI_Write_byte(pack_bits(b0, b1, b2, b3, b4, b5, b6, b7, 1));
+            SPI_Write_byte(pack_bits(b0, b1, b2, b3, b4, b5, b6, b7, 0));
         }
     }
+
     SPI_Select_Slave(0);
-}   
+}
+
+
+// void FrameBufferPush()
+// {
+//     OLED_DISP_DC_Command();
+//     SPI_Select_Slave(2);
+    
+//     SPI_Write_byte(0x21);
+//     SPI_Write_byte(0x00);
+//     SPI_Write_byte(0x7F);
+//     SPI_Write_byte(0x22);
+//     SPI_Write_byte(0x00);
+//     SPI_Write_byte(0x07);
+
+//     OLED_DISP_DC_Data();
+    
+//     volatile unsigned char *fb = screen_buffer;  // Use screen_buffer, not framebuffer!
+    
+//     for (unsigned char p = 0; p < 8; p++)
+//     {
+//         unsigned int base_row = p << 3;
+        
+//         for (unsigned char i = 0; i < 16; i++)
+//         {
+//             // Cache the 8 row addresses
+//             unsigned int r0 = i + ((base_row + 0) << 4);
+//             unsigned int r1 = i + ((base_row + 1) << 4);
+//             unsigned int r2 = i + ((base_row + 2) << 4);
+//             unsigned int r3 = i + ((base_row + 3) << 4);
+//             unsigned int r4 = i + ((base_row + 4) << 4);
+//             unsigned int r5 = i + ((base_row + 5) << 4);
+//             unsigned int r6 = i + ((base_row + 6) << 4);
+//             unsigned int r7 = i + ((base_row + 7) << 4);
+            
+//             // Load all 8 bytes at once
+//             unsigned char b0 = fb[r0];
+//             unsigned char b1 = fb[r1];
+//             unsigned char b2 = fb[r2];
+//             unsigned char b3 = fb[r3];
+//             unsigned char b4 = fb[r4];
+//             unsigned char b5 = fb[r5];
+//             unsigned char b6 = fb[r6];
+//             unsigned char b7 = fb[r7];
+            
+//             // Pack bit 7
+//             SPI_Write_byte(((b0 & 0x80) >> 7) | ((b1 & 0x80) >> 6) | ((b2 & 0x80) >> 5) | 
+//                           ((b3 & 0x80) >> 4) | ((b4 & 0x80) >> 3) | ((b5 & 0x80) >> 2) | 
+//                           ((b6 & 0x80) >> 1) | ((b7 & 0x80) >> 0));
+            
+//             // Pack bit 6
+//             SPI_Write_byte(((b0 & 0x40) >> 6) | ((b1 & 0x40) >> 5) | ((b2 & 0x40) >> 4) | 
+//                           ((b3 & 0x40) >> 3) | ((b4 & 0x40) >> 2) | ((b5 & 0x40) >> 1) | 
+//                           ((b6 & 0x40) >> 0) | ((b7 & 0x40) << 1));
+            
+//             // Pack bit 5
+//             SPI_Write_byte(((b0 & 0x20) >> 5) | ((b1 & 0x20) >> 4) | ((b2 & 0x20) >> 3) | 
+//                           ((b3 & 0x20) >> 2) | ((b4 & 0x20) >> 1) | ((b5 & 0x20) >> 0) | 
+//                           ((b6 & 0x20) << 1) | ((b7 & 0x20) << 2));
+            
+//             // Pack bit 4
+//             SPI_Write_byte(((b0 & 0x10) >> 4) | ((b1 & 0x10) >> 3) | ((b2 & 0x10) >> 2) | 
+//                           ((b3 & 0x10) >> 1) | ((b4 & 0x10) >> 0) | ((b5 & 0x10) << 1) | 
+//                           ((b6 & 0x10) << 2) | ((b7 & 0x10) << 3));
+            
+//             // Pack bit 3
+//             SPI_Write_byte(((b0 & 0x08) >> 3) | ((b1 & 0x08) >> 2) | ((b2 & 0x08) >> 1) | 
+//                           ((b3 & 0x08) >> 0) | ((b4 & 0x08) << 1) | ((b5 & 0x08) << 2) | 
+//                           ((b6 & 0x08) << 3) | ((b7 & 0x08) << 4));
+            
+//             // Pack bit 2
+//             SPI_Write_byte(((b0 & 0x04) >> 2) | ((b1 & 0x04) >> 1) | ((b2 & 0x04) >> 0) | 
+//                           ((b3 & 0x04) << 1) | ((b4 & 0x04) << 2) | ((b5 & 0x04) << 3) | 
+//                           ((b6 & 0x04) << 4) | ((b7 & 0x04) << 5));
+            
+//             // Pack bit 1
+//             SPI_Write_byte(((b0 & 0x02) >> 1) | ((b1 & 0x02) >> 0) | ((b2 & 0x02) << 1) | 
+//                           ((b3 & 0x02) << 2) | ((b4 & 0x02) << 3) | ((b5 & 0x02) << 4) | 
+//                           ((b6 & 0x02) << 5) | ((b7 & 0x02) << 6));
+            
+//             // Pack bit 0
+//             SPI_Write_byte(((b0 & 0x01) >> 0) | ((b1 & 0x01) << 1) | ((b2 & 0x01) << 2) | 
+//                           ((b3 & 0x01) << 3) | ((b4 & 0x01) << 4) | ((b5 & 0x01) << 5) | 
+//                           ((b6 & 0x01) << 6) | ((b7 & 0x01) << 7));
+//         }
+//     }
+//     SPI_Select_Slave(0);
+// }   
 // ----------
 // Older code
 // ----------

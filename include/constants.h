@@ -23,8 +23,8 @@ typedef enum
 {
     UP,
     DOWN,
-    LEFT,
     RIGHT,
+    LEFT,
     NEUTRAL,
 } JOY_DIR;
 
