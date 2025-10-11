@@ -79,4 +79,10 @@ unsigned char tile_1bpp[8] = {
     0b00000011
 };
 
+signed char X_window_1 = 0;
+signed char Y_window_1 = 0;
+
+signed char X_window_2 = 0;
+signed char Y_window_2 = 0;
+
 #endif

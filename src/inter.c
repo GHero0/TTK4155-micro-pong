@@ -28,12 +28,8 @@ ISR(INT2_vect)
 
 ISR(TIMER0_COMP_vect)
 {
-    screen_ms_divider++;
-    if (screen_ms_divider >= 8)
-    {
-        screen_ms_divider = 0;
         Flag_screen = 1;
-    }
 }
+
 
 

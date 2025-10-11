@@ -283,114 +283,105 @@ inline void ROT_90CCW_1bpp(void)
     tile_1bpp[7] = tmp[7];
 }
 
-void draw_tile_2bpp(int X, int Y) {
+void draw_tile_2bpp(signed char X, signed char Y) {
     unsigned char *fb = current_buffer;
-        // NON-WARP MODE - clipping
-        for (unsigned char r = 0; r < 8; r++) {
-            int py = Y + r;
-            if (py < 0 || py >= 64) continue;
-            
-            unsigned int row_offset = (unsigned int)py << 4;
-            unsigned char tr = tile_2bpp[r << 1];
-            unsigned char tr2 = tile_2bpp[(r << 1) + 1];
-            
-            // Pre-extract all 8 pixels
-            unsigned char pix0 = (tr >> 6) & 3;
-            unsigned char pix1 = (tr >> 4) & 3;
-            unsigned char pix2 = (tr >> 2) & 3;
-            unsigned char pix3 = tr & 3;
-            unsigned char pix4 = (tr2 >> 6) & 3;
-            unsigned char pix5 = (tr2 >> 4) & 3;
-            unsigned char pix6 = (tr2 >> 2) & 3;
-            unsigned char pix7 = tr2 & 3;
-            
-            // Draw pixel 0
-            int px0 = X + 0;
-            if ((unsigned int)px0 < 128 && pix0 != 2) {
-                unsigned int idx = row_offset + (px0 >> 3);
-                unsigned char mask = 1 << (7 - (px0 & 7));
-                if (pix0 == 3) fb[idx] |= mask;
-                else if (pix0 == 0) fb[idx] &= ~mask;
-                else fb[idx] ^= mask;
-            }
-            
-            // Draw pixel 1
-            int px1 = X + 1;
-            if ((unsigned int)px1 < 128 && pix1 != 2) {
-                unsigned int idx = row_offset + (px1 >> 3);
-                unsigned char mask = 1 << (7 - (px1 & 7));
-                if (pix1 == 3) fb[idx] |= mask;
-                else if (pix1 == 0) fb[idx] &= ~mask;
-                else fb[idx] ^= mask;
-            }
-            
-            // Draw pixel 2
-            int px2 = X + 2;
-            if ((unsigned int)px2 < 128 && pix2 != 2) {
-                unsigned int idx = row_offset + (px2 >> 3);
-                unsigned char mask = 1 << (7 - (px2 & 7));
-                if (pix2 == 3) fb[idx] |= mask;
-                else if (pix2 == 0) fb[idx] &= ~mask;
-                else fb[idx] ^= mask;
-            }
-            
-            // Draw pixel 3
-            int px3 = X + 3;
-            if ((unsigned int)px3 < 128 && pix3 != 2) {
-                unsigned int idx = row_offset + (px3 >> 3);
-                unsigned char mask = 1 << (7 - (px3 & 7));
-                if (pix3 == 3) fb[idx] |= mask;
-                else if (pix3 == 0) fb[idx] &= ~mask;
-                else fb[idx] ^= mask;
-            }
-            
-            // Draw pixel 4
-            int px4 = X + 4;
-            if ((unsigned int)px4 < 128 && pix4 != 2) {
-                unsigned int idx = row_offset + (px4 >> 3);
-                unsigned char mask = 1 << (7 - (px4 & 7));
-                if (pix4 == 3) fb[idx] |= mask;
-                else if (pix4 == 0) fb[idx] &= ~mask;
-                else fb[idx] ^= mask;
-            }
-            
-            // Draw pixel 5
-            int px5 = X + 5;
-            if ((unsigned int)px5 < 128 && pix5 != 2) {
-                unsigned int idx = row_offset + (px5 >> 3);
-                unsigned char mask = 1 << (7 - (px5 & 7));
-                if (pix5 == 3) fb[idx] |= mask;
-                else if (pix5 == 0) fb[idx] &= ~mask;
-                else fb[idx] ^= mask;
-            }
-            
-            // Draw pixel 6
-            int px6 = X + 6;
-            if ((unsigned int)px6 < 128 && pix6 != 2) {
-                unsigned int idx = row_offset + (px6 >> 3);
-                unsigned char mask = 1 << (7 - (px6 & 7));
-                if (pix6 == 3) fb[idx] |= mask;
-                else if (pix6 == 0) fb[idx] &= ~mask;
-                else fb[idx] ^= mask;
-            }
-            
-            // Draw pixel 7
-            int px7 = X + 7;
-            if ((unsigned int)px7 < 128 && pix7 != 2) {
-                unsigned int idx = row_offset + (px7 >> 3);
-                unsigned char mask = 1 << (7 - (px7 & 7));
-                if (pix7 == 3) fb[idx] |= mask;
-                else if (pix7 == 0) fb[idx] &= ~mask;
-                else fb[idx] ^= mask;
-            }
+    for (unsigned char r = 0; r < 8; r++) {
+        signed char py = Y + r;
+        if (py < 0 || py >= 64) continue;
+        
+        unsigned short row_offset = (unsigned char)py << 4;
+        unsigned char tr = tile_2bpp[r << 1];
+        unsigned char tr2 = tile_2bpp[(r << 1) + 1];
+        
+        unsigned char pix0 = (tr >> 6) & 3;
+        unsigned char pix1 = (tr >> 4) & 3;
+        unsigned char pix2 = (tr >> 2) & 3;
+        unsigned char pix3 = tr & 3;
+        unsigned char pix4 = (tr2 >> 6) & 3;
+        unsigned char pix5 = (tr2 >> 4) & 3;
+        unsigned char pix6 = (tr2 >> 2) & 3;
+        unsigned char pix7 = tr2 & 3;
+        
+        signed char px0 = X + 0;
+        if ((unsigned char)px0 < 128 && pix0 != 2) {
+            unsigned short idx = row_offset + ((unsigned char)px0 >> 3);
+            unsigned char mask = 1 << (7 - (px0 & 7));
+            if (pix0 == 3) fb[idx] |= mask;
+            else if (pix0 == 0) fb[idx] &= ~mask;
+            else fb[idx] ^= mask;
         }
+
+        signed char px1 = X + 1;
+        if ((unsigned char)px1 < 128 && pix1 != 2) {
+            unsigned short idx = row_offset + ((unsigned char)px1 >> 3);
+            unsigned char mask = 1 << (7 - (px1 & 7));
+            if (pix1 == 3) fb[idx] |= mask;
+            else if (pix1 == 0) fb[idx] &= ~mask;
+            else fb[idx] ^= mask;
+        }
+
+        signed char px2 = X + 2;
+        if ((unsigned char)px2 < 128 && pix2 != 2) {
+            unsigned short idx = row_offset + ((unsigned char)px2 >> 3);
+            unsigned char mask = 1 << (7 - (px2 & 7));
+            if (pix2 == 3) fb[idx] |= mask;
+            else if (pix2 == 0) fb[idx] &= ~mask;
+            else fb[idx] ^= mask;
+        }
+
+        signed char px3 = X + 3;
+        if ((unsigned char)px3 < 128 && pix3 != 2) {
+            unsigned short idx = row_offset + ((unsigned char)px3 >> 3);
+            unsigned char mask = 1 << (7 - (px3 & 7));
+            if (pix3 == 3) fb[idx] |= mask;
+            else if (pix3 == 0) fb[idx] &= ~mask;
+            else fb[idx] ^= mask;
+        }
+
+        signed char px4 = X + 4;
+        if ((unsigned char)px4 < 128 && pix4 != 2) {
+            unsigned short idx = row_offset + ((unsigned char)px4 >> 3);
+            unsigned char mask = 1 << (7 - (px4 & 7));
+            if (pix4 == 3) fb[idx] |= mask;
+            else if (pix4 == 0) fb[idx] &= ~mask;
+            else fb[idx] ^= mask;
+        }
+
+        signed char px5 = X + 5;
+        if ((unsigned char)px5 < 128 && pix5 != 2) {
+            unsigned short idx = row_offset + ((unsigned char)px5 >> 3);
+            unsigned char mask = 1 << (7 - (px5 & 7));
+            if (pix5 == 3) fb[idx] |= mask;
+            else if (pix5 == 0) fb[idx] &= ~mask;
+            else fb[idx] ^= mask;
+        }
+
+        signed char px6 = X + 6;
+        if ((unsigned char)px6 < 128 && pix6 != 2) {
+            unsigned short idx = row_offset + ((unsigned char)px6 >> 3);
+            unsigned char mask = 1 << (7 - (px6 & 7));
+            if (pix6 == 3) fb[idx] |= mask;
+            else if (pix6 == 0) fb[idx] &= ~mask;
+            else fb[idx] ^= mask;
+        }
+
+        signed char px7 = X + 7;
+        if ((unsigned char)px7 < 128 && pix7 != 2) {
+            unsigned short idx = row_offset + ((unsigned char)px7 >> 3);
+            unsigned char mask = 1 << (7 - (px7 & 7));
+            if (pix7 == 3) fb[idx] |= mask;
+            else if (pix7 == 0) fb[idx] &= ~mask;
+            else fb[idx] ^= mask;
+        }
+    }
 }
 
-inline void fetch_tile_from_tilemap_2bpp(int N) {
+
+inline void fetch_tile_from_tilemap_2bpp(unsigned short N) {
     unsigned char base_Y = N >> 4;
     unsigned char base_X = N & 0x0F;
     
-    unsigned int base_addr = (base_Y << 8) + (base_X << 1);
+    unsigned char base_addr = (base_Y << 8) + (base_X << 1);
     const unsigned char *ptr = &tilemap_2bpp[base_addr];
     
     for (unsigned char i = 0; i < 8; i++) {
@@ -400,8 +391,8 @@ inline void fetch_tile_from_tilemap_2bpp(int N) {
     }
 }
 
-void draw_sprite_2bpp(SPRITE Sp, int X, int Y){
-    int base_y = Y;
+void draw_sprite_2bpp(SPRITE Sp, signed char X, signed char Y){
+    signed char base_y = Y;
     
     for (unsigned char row = 0; row < Sp.height_tile; row++) {
         int base_x = X;
@@ -428,8 +419,8 @@ void draw_sprite_2bpp(SPRITE Sp, int X, int Y){
     }
 }
 
-inline void fetch_tile_from_tilemap_1bpp(int N) {
-    unsigned int base_addr = ((N >> 4) << 7) + (N & 0x0F);
+inline void fetch_tile_from_tilemap_1bpp(unsigned short N) {
+    unsigned short base_addr = ((N >> 4) << 7) + (N & 0x0F);
     const unsigned char *src = &tilemap_1bpp[base_addr];
     
     tile_1bpp[0] = pgm_read_byte(src);      src += 16;
@@ -442,54 +433,53 @@ inline void fetch_tile_from_tilemap_1bpp(int N) {
     tile_1bpp[7] = pgm_read_byte(src);
 }
 
-void draw_tile_1bpp(int X, int Y) {
-    int x_byte = X >> 3;
+void draw_tile_1bpp(signed char X, signed char Y) {
+    signed char x_byte = X >> 3;
     if (x_byte < -1 || x_byte >= 16) return;
     
     unsigned char *fb = current_buffer;
-    int x_bit = X & 7;
+    unsigned char x_bit = X & 7;
     
-    // Aligned fast path
-    if (x_bit == 0 && x_byte >= 0 && x_byte < 16 && Y >= 0 && Y < 64) {
-        unsigned int idx = (Y << 4) + x_byte;
-        fb[idx]      = tile_1bpp[0];
-        fb[idx + 16] = tile_1bpp[1];
-        fb[idx + 32] = tile_1bpp[2];
-        fb[idx + 48] = tile_1bpp[3];
-        fb[idx + 64] = tile_1bpp[4];
-        fb[idx + 80] = tile_1bpp[5];
-        fb[idx + 96] = tile_1bpp[6];
+    if (x_bit == 0 && x_byte >= 0 && x_byte < 16 && Y >= 0 && Y <= 56) {
+        unsigned short idx = ((unsigned short)Y << 4) + (unsigned char)x_byte;
+        fb[idx]       = tile_1bpp[0];
+        fb[idx + 16]  = tile_1bpp[1];
+        fb[idx + 32]  = tile_1bpp[2];
+        fb[idx + 48]  = tile_1bpp[3];
+        fb[idx + 64]  = tile_1bpp[4];
+        fb[idx + 80]  = tile_1bpp[5];
+        fb[idx + 96]  = tile_1bpp[6];
         fb[idx + 112] = tile_1bpp[7];
         return;
     }
     
-    // Misaligned path
     unsigned char lm = 0xFF << (8 - x_bit);
     unsigned char rm = 0xFF >> x_bit;
     unsigned char sr = x_bit;
     unsigned char sl = 8 - x_bit;
     
     for (unsigned char r = 0; r < 8; r++) {
-        int py = Y + r;
+        signed char py = Y + r;
         if (py < 0 || py >= 64) continue;
         
-        unsigned int offs = py << 4;
+        unsigned short offs = ((unsigned short)py << 4);
         unsigned char row = tile_1bpp[r];
         unsigned char left = row >> sr;
         unsigned char right = row << sl;
         
         if (x_byte >= 0 && x_byte < 16) {
-            unsigned int idx = offs + x_byte;
+            unsigned short idx = offs + (unsigned char)x_byte;
             fb[idx] = (fb[idx] & lm) | left;
         }
         if (x_byte < 15) {
-            unsigned int idx = offs + x_byte + 1;
+            unsigned short idx = offs + (unsigned char)(x_byte + 1);
             fb[idx] = (fb[idx] & rm) | right;
         }
     }
 }
 
-void draw_sprite_1bpp(SPRITE Sp, int X, int Y){
+
+void draw_sprite_1bpp(SPRITE Sp, signed char X, signed char Y){
     for (unsigned char row = 0; row < Sp.height_tile; row++) {
         for (unsigned char col = 0; col < Sp.width_tile; col++) {
             unsigned char tile_index = col + row * Sp.width_tile;
@@ -647,134 +637,69 @@ void draw_rectangle(int X, int Y, unsigned char width_in_tiles, unsigned char he
     }
 }
 
-
-void draw_line(int x0, int y0, int x1, int y1) {
-    // Quick bounds check - if both points clearly outside, skip clipping
-    if ((x0 < 0 && x1 < 0) || (x0 >= 128 && x1 >= 128) || 
+// TODO: Change its parameters and propagate to the subsidiary functions 
+void draw_line(signed char x0, signed char y0, signed char x1, signed char y1) {
+    // Clipped if outside of the screen
+    if ((x0 < 0 && x1 < 0) || (x0 >= 128 && x1 >= 128) ||
         (y0 < 0 && y1 < 0) || (y0 >= 64 && y1 >= 64)) return;
-    
-    // Cohen-Sutherland line clipping (optimized)
-    int out0 = ((x0 < 0) << 0) | ((x0 >= 128) << 1) | ((y0 < 0) << 2) | ((y0 >= 64) << 3);
-    int out1 = ((x1 < 0) << 0) | ((x1 >= 128) << 1) | ((y1 < 0) << 2) | ((y1 >= 64) << 3);
-    
-    while (out0 | out1) {
-        if (out0 & out1) return;
-        
-        int out = out0 ? out0 : out1;
-        int x, y;
-        
-        if (out & 8) { // Above
-            x = x0 + (x1 - x0) * (63 - y0) / (y1 - y0);
-            y = 63;
-        } else if (out & 4) { // Below
-            x = x0 + (x1 - x0) * (-y0) / (y1 - y0);
-            y = 0;
-        } else if (out & 2) { // Right
-            y = y0 + (y1 - y0) * (127 - x0) / (x1 - x0);
-            x = 127;
-        } else { // Left
-            y = y0 + (y1 - y0) * (-x0) / (x1 - x0);
-            x = 0;
+
+    // Horizontal line
+    if (y0 == y1) {
+        if (x0 > x1) {
+            signed char t = x0; x0 = x1; x1 = t;
         }
-        
-        if (out == out0) {
-            x0 = x; y0 = y;
-            out0 = ((x0 < 0) << 0) | ((x0 >= 128) << 1) | ((y0 < 0) << 2) | ((y0 >= 64) << 3);
-        } else {
-            x1 = x; y1 = y;
-            out1 = ((x1 < 0) << 0) | ((x1 >= 128) << 1) | ((y1 < 0) << 2) | ((y1 >= 64) << 3);
-        }
-    }
-    
-    int dx = x1 - x0;
-    int dy = y1 - y0;
-    
-    // Horizontal line (ultra-optimized)
-    if (dy == 0) {
-        if (dx < 0) { int t = x0; x0 = x1; x1 = t; }
-        
+
+        if (x1 < 0 || x0 >= 128) return;  // outside of the screen 
+
+        if (x0 < 0) x0 = 0;
+        if (x1 >= 128) x1 = 127;
+
         unsigned char start_byte = x0 >> 3;
         unsigned char end_byte = x1 >> 3;
         unsigned char start_bit = x0 & 7;
         unsigned char end_bit = x1 & 7;
-        unsigned int idx = (y0 << 4) + start_byte;
-        
+        unsigned short idx = ((unsigned char)y0 << 4) + start_byte;
+
         if (start_byte == end_byte) {
-            // Single byte
             unsigned char mask = (0xFF >> start_bit) & (0xFF << (7 - end_bit));
             current_buffer[idx] |= mask;
         } else {
-            // Multiple bytes
             current_buffer[idx++] |= 0xFF >> start_bit;
-            unsigned char bytes = end_byte - start_byte - 1;
-            while (bytes--) current_buffer[idx++] = 0xFF;
+            while (++start_byte < end_byte) {
+                current_buffer[idx++] = 0xFF;
+            }
             current_buffer[idx] |= 0xFF << (7 - end_bit);
         }
         return;
     }
-    
-    // Vertical line (ultra-optimized)
-    if (dx == 0) {
-        if (dy < 0) { int t = y0; y0 = y1; y1 = t; }
-        
+
+    // Vertical line
+    if (x0 == x1) {
+        if (y0 > y1) {
+            signed char t = y0; y0 = y1; y1 = t;
+        }
+
+        if (y1 < 0 || y0 >= 64) return;
+
+        if (y0 < 0) y0 = 0;
+        if (y1 >= 64) y1 = 63;
+
         unsigned char x_byte = x0 >> 3;
         unsigned char x_mask = 0x80 >> (x0 & 7);
-        unsigned int idx = (y0 << 4) + x_byte;
-        unsigned char rows = y1 - y0 + 1;
-        
-        do {
+        unsigned short idx = ((unsigned char)y0 << 4) + x_byte;
+
+        for (signed char y = y0; y <= y1; y++) {
             current_buffer[idx] |= x_mask;
             idx += 16;
-        } while (--rows);
+        }
         return;
-    }
-    
-    // Diagonal/general line (optimized Bresenham)
-    int sx = (dx > 0) ? 1 : -1;
-    int sy = (dy > 0) ? 1 : -1;
-    
-    if (dx < 0) dx = -dx;
-    if (dy < 0) dy = -dy;
-    
-    int err = dx - dy;
-    int x = x0;
-    int y = y0;
-    
-    // Precompute for faster inner loop
-    int dx2 = dx << 1;
-    int dy2 = dy << 1;
-    
-    // Unrolled for primary axis
-    if (dx > dy) {
-        // X-dominant
-        do {
-            unsigned int idx = (y << 4) + (x >> 3);
-            current_buffer[idx] |= 0x80 >> (x & 7);
-            
-            if (x == x1) break;
-            
-            int e2 = err << 1;
-            if (e2 > -dy2) { err -= dy; x += sx; }
-            if (e2 < dx2) { err += dx; y += sy; }
-        } while (1);
-    } else {
-        // Y-dominant
-        do {
-            unsigned int idx = (y << 4) + (x >> 3);
-            current_buffer[idx] |= 0x80 >> (x & 7);
-            
-            if (y == y1) break;
-            
-            int e2 = err << 1;
-            if (e2 > -dy2) { err -= dy; x += sx; }
-            if (e2 < dx2) { err += dx; y += sy; }
-        } while (1);
     }
 }
 
+
 // ! Worst implementation ever 
 // TODO: Need to fix later 
-void draw_char(char c, int X, int Y) {
+void draw_char(char c, char X, char Y) {
     
     if (c < 32 || c > 126) return; // Unsupported character
     if (c > 96 && c <= 122){
@@ -788,15 +713,15 @@ void draw_char(char c, int X, int Y) {
     draw_tile_1bpp(X,Y);
 }
 
-void draw_string(const char* str, int X, int Y) {
-    int x = X;
-    int y = Y;
+void draw_string(const char* str, char X, char Y) {
+    char x = X;
+    char y = Y;
     unsigned char c_pos;
     
     while (*str) {
         if (*str == '\n') {
             x = X; // Reset to initial X
-            y += 5; // Move down one character height
+            y += 6; // Move down one character height
         } else {
             c_pos = *str;
             if (*str > 96) c_pos -= 32;

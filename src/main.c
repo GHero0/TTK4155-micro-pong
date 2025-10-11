@@ -16,6 +16,17 @@
 #include <util/delay.h>
 #include <stdlib.h>
 
+void draw_printf(char x, char y, const char* fmt, ...) {
+    char buf[32]; // adjust as needed (keep small on AVR)
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, args);
+    va_end(args);
+
+    draw_string(buf, x, y);
+}
+
+
 int main(void)
 {
     // CLKPR = (1 << CLKPCE);           // Enable prescaler change
@@ -39,33 +50,51 @@ int main(void)
     int Y = -64;
     unsigned char step = 0;
     char c = 0;
+    signed char y = -16;
+    Y_window_1 = -64;
+    Y_window_2 = -64;
+    X_window_1 = 16;
+    X_window_2 = 64;
     while (1)
     {
         FrameBufferClear();
-    
-        joystick_indicator(16,32,0);   
-        joystick_indicator(104,32,1);   
-        // button_indicator(X,Y,0,7);
-        
-        
+
         
         if (Flag_screen)
         {
+            draw_line(127,0,X,Y);
+
+            if (step < 10){
+                step++;
+            } else {
+                step = 0;
+            }
+            if ( Y_window_1 < 8){
+                Y_window_1+=2;
+            }
+            if (Y_window_2 < 16){
+                Y_window_2+=2;
+            }
+            draw_window(X_window_2,Y_window_2,6,3);
+            draw_window(X_window_1,Y_window_1,5,4);
+            // button_indicator(X,Y,0,7);
+            
+            // button_indicator(64,8,1,6);
+            draw_printf(X_window_1+8, Y_window_1+16, "X:%d\nY:%d", joystick_pos.X >> 8, joystick_pos.Y >> 8);
             draw_task_bar();
-            draw_window(64,0,3,3);
-            draw_string(
-                "[Hey]",X,Y);
-            // draw_line(0,0,X,Y);
+            
+            
+            joystick_indicator(X_window_2+8,Y_window_2+16, 0);
+            joystick_indicator(X_window_2+32,Y_window_2+16, 1);
+            cursor();
+            FrameBufferPush();
+            FrameBufferSwap();
+
             Flag_screen = 0;
         }
-        
-                    FrameBufferPush();
-                    FrameBufferSwap();
-                    IO_board_update();
-                    Joystick_convert();
 
-        
-
+        IO_board_update();
+        Joystick_convert();
 
         // Map touchpad
         X = touch_pad.x >> 1;

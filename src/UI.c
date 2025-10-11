@@ -39,19 +39,18 @@ void draw_task_bar(void)
 {
     unsigned char Y = 56;
 
+    fetch_tile_from_tilemap_1bpp(59); // Black background
+    for (unsigned char col = 0; col < 14; col++)
+    {
+        draw_tile_1bpp(col << 3, Y);
+    }
+
     fetch_tile_from_tilemap_1bpp(10);
     draw_tile_1bpp(2, Y + 1); // Start button
     fetch_tile_from_tilemap_1bpp(9);
     draw_tile_1bpp(8 + 2, Y + 1); // Search button
 
-    static unsigned char blink_counter = 0;
-
-    // Increment blink counter every time taskbar is drawn
-    blink_counter++;
-    if (blink_counter >= 60)
-        blink_counter = 0; // Slower cycle
-
-    fetch_tile_from_tilemap_1bpp((blink_counter < 30) ? 6 : 59);
+    fetch_tile_from_tilemap_1bpp(6);
     draw_tile_1bpp(15, Y); // Task view button
 
     // Draw fancy dithering background
@@ -61,13 +60,6 @@ void draw_task_bar(void)
     fetch_tile_from_tilemap_1bpp(5); // Dark gray tile
     SYM_H_1bpp();
     draw_tile_1bpp((14 << 3), Y);
-
-    // Draw background where no icons are present
-    fetch_tile_from_tilemap_1bpp(59); // Black background
-    for (unsigned char col = 3; col < 13; col++)
-    {
-        draw_tile_1bpp(col << 3, Y);
-    }
 
     // Draw rectangle border
     draw_line(0, Y - 1, 127, Y - 1); // Top border
@@ -192,7 +184,7 @@ void joystick_indicator(char X, char Y, unsigned char hand)
         }
     }
 }
-
+// * Woudl need to be changed at some point
 void button_indicator(char X, char Y, unsigned char hand, unsigned char number)
 {
     char x = X;
@@ -223,27 +215,24 @@ void button_indicator(char X, char Y, unsigned char hand, unsigned char number)
     // --- Shift all tiles by +1 pixel if the corresponding button is pressed ---
     if (pressed)
     {
-        
-            y++;
-            x++;
-        
-        
-    } else {
-        draw_rectangle(x+1, y+1, 3, 1);
-
+        y++;
+        x++;
+    }
+    else
+    {
+        draw_rectangle(x + 1, y + 1, 3, 1);
     }
 
     // --- Draw background frame ---
-    
 
     fetch_tile_from_tilemap_1bpp(59);
-    draw_tile_1bpp(x,y);
-    draw_tile_1bpp(x+8,y);
-    draw_tile_1bpp(x+16,y);
+    draw_tile_1bpp(x, y);
+    draw_tile_1bpp(x + 8, y);
+    draw_tile_1bpp(x + 16, y);
     draw_rectangle(x, y, 3, 1);
 
     // --- Draw 'B' for button ---
-    fetch_tile_from_tilemap_2bpp(48);
+    fetch_tile_from_tilemap_2bpp(16);
     draw_tile_2bpp(x + 6, y);
 
     // --- Draw hand indicator (L or R) ---
@@ -255,14 +244,29 @@ void button_indicator(char X, char Y, unsigned char hand, unsigned char number)
 
     switch (number)
     {
-    case 1: tile_id = 17; break;
-    case 2: tile_id = 17 + 16; break;
-    case 3: tile_id = 17 + 32; break;
-    case 4: tile_id = 18; break;
-    case 5: tile_id = 18 + 16; break;
-    case 6: tile_id = 18 + 32; break;
-    case 7: tile_id = 19; break; // Left hand only
-    default: break;
+    case 1:
+        tile_id = 17;
+        break;
+    case 2:
+        tile_id = 17 + 16;
+        break;
+    case 3:
+        tile_id = 17 + 32;
+        break;
+    case 4:
+        tile_id = 18;
+        break;
+    case 5:
+        tile_id = 18 + 16;
+        break;
+    case 6:
+        tile_id = 18 + 32;
+        break;
+    case 7:
+        tile_id = 19;
+        break; // Left hand only
+    default:
+        break;
     }
 
     // --- Draw number tile if valid ---
@@ -273,4 +277,47 @@ void button_indicator(char X, char Y, unsigned char hand, unsigned char number)
     }
 }
 
+void cursor()
+{
+    static int x = 8; // Use int to avoid overflow issues
+    static int y = 8;
 
+    signed char dx = joystick_pos.X >> 8; // [-100, 100]
+    signed char dy = joystick_pos.Y >> 8;
+
+    // Deadzone threshold
+    const int deadzone = 3;
+
+    // Move cursor if joystick input exceeds deadzone
+    if (dx > deadzone || dx < -deadzone)
+        x += dx / 32;  // Adjust sensitivity by divisor
+    if (dy > deadzone || dy < -deadzone)
+        y -= dy / 32;  // Invert Y axis
+
+    // Clamp cursor position to screen bounds
+    if (x < -4) x = -4;
+    if (x > 124) x = 124; // 128 - 8 tile width
+    if (y < -4) y = -4;
+    if (y > 60) y = 60;   // 64 - 8 tile height
+
+    unsigned char abs_dx = dx < 0 ? -dx : dx;
+    unsigned char abs_dy = dy < 0 ? -dy : dy;
+    unsigned char speed = abs_dx + abs_dy;
+
+    unsigned char tile_index;
+    if (speed > 150)
+        tile_index = 3;
+    else if (speed > 100)
+        tile_index = 2;
+    else if (speed > 70)
+        tile_index = 1;
+    else
+        tile_index = 0;
+
+    // Choose base tile and draw without complicated offset logic
+    unsigned char base_tile = 4 + tile_index;
+
+    fetch_tile_from_tilemap_2bpp(base_tile);
+
+    draw_tile_2bpp((unsigned char)x, (unsigned char)y);
+}
