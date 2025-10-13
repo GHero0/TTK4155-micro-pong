@@ -45,10 +45,9 @@ void CAN_Write(uint8_t address_byte, uint8_t* buffer, uint8_t n)
 	SPI_Write_byte(0x02);
 	_delay_us(3);
 	
+	SPI_Write_byte(address_byte);	
 	for (uint8_t i = 0; i < n; i++)
 	{
-		SPI_Write_byte(address_byte + i);
-		_delay_us(3);
 		SPI_Write_byte(buffer[i]);
 	}
 	

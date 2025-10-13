@@ -47,7 +47,7 @@ int main(void)
 	_delay_ms(1000);
 	
 	// --- SEND MESSAGE --- //
-	uint16_t msg_id = 0x7F0F; // {0x1010 0101 0000 1111};
+	uint16_t msg_id = 0x7FF; // ID Value <= 0x7FF
 	char msg_data_length = 8;
 	char msg_data[8] = {0x7F,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
 	messageCAN_t msgCAN;
