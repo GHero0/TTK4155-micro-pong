@@ -153,20 +153,22 @@ void CAN_Send_Message(messageCAN_t message_to_send)
 	// Write at the TX0BCTRL register the message to send
 	CAN_Write(0x36, message_to_send.message_data, message_to_send.message_data_length);
 	
-	// Put the TXREQ down to high value : '1'
+	// Put the TXREQ from low to high value : '1'
 	CAN_Bit_Modify(TXB0CTRL, 0x08, 0xFF);
 	
 	// Request to send on TX0
 	CAN_Request_To_Send(0x01);
+	_delay_us(30); // Do we really need this delay ?
 	
 	// --- Reading test --- //
-	uint8_t buffer_read[14] = {0};
-	CAN_Read(RXB0CTRL, buffer_read, 0x0E); // 0X0E = 14 bits
-	printf("\n---");
-	for(int i = 0; i < 14; i++)
+	uint8_t buffer_read[13] = {0};
+	CAN_Read(RXB0SIDH, buffer_read, 0x0D); // 0X0D = 13 bytes
+	printf("\n---\n");
+	for(int i = 0; i < 13; i++)
 	{
 		printf("Test buffer_read[%d] = 0x%02X\n", i, buffer_read[i]);
 	}
+	printf("---\n");
 	// --- READING TEST --- //
 }
 
@@ -209,69 +211,69 @@ void CAN_Read_Print_All_Control_Registers()
 {
 	uint8_t buffer[1] = {0};
 	CAN_Read(BFPCTRL, buffer, 1);
-	printf("0x%02X\n", buffer[0]);
+	printf("BFPCTRL :\t0x%02X\n", buffer[0]);
 	
 	buffer[0] = 0;
 	CAN_Read(TXRTSCTRL, buffer, 1);
-	printf("0x%02X\n", buffer[0]);
+	printf("TXRTSCTRL :\t0x%02X\n", buffer[0]);
 	
 	buffer[0] = 0;
 	CAN_Read(CANSTAT, buffer, 1);
-	printf("0x%02X\n", buffer[0]);
+	printf("CANSTAT :\t0x%02X\n", buffer[0]);
 	
 	buffer[0] = 0;
 	CAN_Read(CANCTRL, buffer, 1);
-	printf("0x%02X\n", buffer[0]);
+	printf("CANCTRL :\t0x%02X\n", buffer[0]);
 	
 	buffer[0] = 0;
 	CAN_Read(TEC, buffer, 1);
-	printf("0x%02X\n", buffer[0]);
+	printf("TEC :\t\t0x%02X\n", buffer[0]);
 	
 	buffer[0] = 0;
 	CAN_Read(REC, buffer, 1);
-	printf("0x%02X\n", buffer[0]);
+	printf("REC :\t\t0x%02X\n", buffer[0]);
 	
 	buffer[0] = 0;
 	CAN_Read(CNF3, buffer, 1);
-	printf("0x%02X\n", buffer[0]);
+	printf("CNF3 :\t\t0x%02X\n", buffer[0]);
 	
 	buffer[0] = 0;
 	CAN_Read(CNF2, buffer, 1);
-	printf("0x%02X\n", buffer[0]);
+	printf("CNF2 :\t\t0x%02X\n", buffer[0]);
 	
 	buffer[0] = 0;
 	CAN_Read(CNF1, buffer, 1);
-	printf("0x%02X\n", buffer[0]);
+	printf("CNF1 :\t\t0x%02X\n", buffer[0]);
 	
 	buffer[0] = 0;
 	CAN_Read(CANINTE, buffer, 1);
-	printf("0x%02X\n", buffer[0]);
+	printf("CANINTE :\t0x%02X\n", buffer[0]);
 	
 	buffer[0] = 0;
 	CAN_Read(CANINTF, buffer, 1);
-	printf("0x%02X\n", buffer[0]);
+	printf("CANINTF :\t0x%02X\n", buffer[0]);
 	
 	buffer[0] = 0;
 	CAN_Read(EFLG, buffer, 1);
-	printf("0x%02X\n", buffer[0]);
+	printf("EFLG :\t\t0x%02X\n", buffer[0]);
 	
 	buffer[0] = 0;
 	CAN_Read(TXB0CTRL, buffer, 1);
-	printf("0x%02X\n", buffer[0]);
+	printf("TXB0CTRL :\t0x%02X\n", buffer[0]);
 	
 	buffer[0] = 0;
 	CAN_Read(TXB1CTRL, buffer, 1);
-	printf("0x%02X\n", buffer[0]);
+	printf("TXB1CTRL :\t0x%02X\n", buffer[0]);
 	
 	buffer[0] = 0;
-	CAN_Read(TXB1CTRL, buffer, 1);
-	printf("0x%02X\n", buffer[0]);
+	CAN_Read(TXB2CTRL, buffer, 1);
+	printf("TXB2CTRL :\t0x%02X\n", buffer[0]);
 	
 	buffer[0] = 0;
 	CAN_Read(RXB0CTRL, buffer, 1);
-	printf("0x%02X\n", buffer[0]);
+	printf("RXB0CTRL :\t0x%02X\n", buffer[0]);
 	
 	buffer[0] = 0;
 	CAN_Read(RXB1CTRL, buffer, 1);
-	printf("0x%02X\n", buffer[0]);
+	printf("RXB1CTRL :\t0x%02X\n", buffer[0]);
 }

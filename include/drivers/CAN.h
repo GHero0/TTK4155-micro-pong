@@ -23,6 +23,8 @@
 #define RXB0CTRL	0x60
 #define RXB1CTRL	0x70
 
+#define RXB0SIDH	0x61
+
 // CAN Message struct
 typedef struct {
 	uint16_t message_id;
