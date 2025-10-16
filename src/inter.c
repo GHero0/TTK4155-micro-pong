@@ -20,7 +20,7 @@ void Inter_Init(void)
 	GICR &= ~(1 << INT0);
 	// Will interrupt on  rising edge
 	MCUCR |= (1 << ISC01);
-	MCUCR |= (1 << ISC00);
+	MCUCR &= ~(1 << ISC00);
 	// Clear Interrupt Flag
 	GIFR |= (1 << INTF0);
 	// INT0 Enabled in General Interrupt Control
@@ -41,6 +41,5 @@ ISR(INT2_vect)
 
 ISR(INT0_vect)
 {
-	printf("interrupt here\n");
 	Flag_CAN = 1;
 }

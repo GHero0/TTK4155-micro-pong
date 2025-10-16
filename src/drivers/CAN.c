@@ -216,7 +216,7 @@ messageCAN_t CAN_Receive_Message()
 	shifted_id = ((shifted_id << 3) | (buffer_read[1] >> 5));
 	received_message.message_id = shifted_id;
 	received_message.message_data_length = buffer_read[4];
-	for (uint8_t i = 5; i < 12; i++)
+	for (uint8_t i = 5; i < 13; i++)
 	{
 		uint8_t j = i - 5;
 		received_message.message_data[j] = buffer_read[i];

@@ -46,22 +46,25 @@ int main(void)
 	
 	_delay_ms(1000);
 	
+	/* --- ERASE THIS (Since it's in CAN_Init() function --- */
 	// Enabling RX0 and RX1 interrupts
 	CAN_Bit_Modify(CANINTE, 0x03, 0xFF);
 	
 	// --- SEND MESSAGE --- //
+
 	messageCAN_t msgReceived;
 	
 	uint16_t msg_id = 0x001;
 	char msg_data_length = 8;
-	char msg_data[8] = {0x7F,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+	char msg_data[8] = {0x7F,0x00,0x00,0x00,0x00,0x00,0x70,0x30};
 	messageCAN_t msgCAN;
 	msgCAN.message_id = msg_id;
 	msgCAN.message_data_length = msg_data_length;
 	msgCAN.message_data = msg_data;
+
 	CAN_Send_Message(msgCAN);
 	msgReceived = CAN_Receive_Message();
-	printf("--- MSG 1 ---\n");
+	printf("\n--- MSG 1 ---\n");
 	printf("id1 : \t\t0x%02X\ndata_length1 : \t0x%02X\n", msgReceived.message_id, msgReceived.message_data_length);
 	for (uint8_t i = 0; i < 8; i++)
 	{
@@ -69,11 +72,6 @@ int main(void)
 	}
 	printf("\n");
 	_delay_ms(1000);
-	if(Flag_CAN == 1)
-	{
-		printf("\n\nInterrupt\n\n");
-		Flag_CAN = 0;
-	}
 
 	uint16_t msg_id2 = 0x002;
 	char msg_data_length2 = 8;
@@ -92,11 +90,6 @@ int main(void)
 	}
 	printf("\n");
 	_delay_ms(1000);
-	if(Flag_CAN == 1)
-	{
-		printf("\n\nInterrupt\n\n");
-		Flag_CAN = 0;
-	}
 	
 	uint16_t msg_id3 = 0x003;
 	char msg_data_length3 = 8;
@@ -115,14 +108,34 @@ int main(void)
 	}
 	printf("\n");
 	
-	if(Flag_CAN == 1)
-	{
-		printf("\n\nInterrupt\n\n");
-		Flag_CAN = 0;
-	}
-	
 	while(1)
 	{
 		
 	}
+
+/*		
+	Flag_CAN = 1;
+	
+	uint16_t msg_id = 0x001;
+	char msg_data_length = 8;
+	char msg_data[8] = {0x7F,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+	messageCAN_t msgCAN;
+	msgCAN.message_id = msg_id;
+	msgCAN.message_data_length = msg_data_length;
+	msgCAN.message_data = msg_data;
+	
+	while(1)
+	{
+		CAN_Send_Message(msgCAN);
+		_delay_ms(500);
+			
+		if(Flag_CAN == 1)
+		{
+			printf("INTERRUPT HERE\n");
+			CAN_Receive_Message();
+			_delay_ms(1);
+			Flag_CAN = 0;	
+		}
+	}
+*/
 }
