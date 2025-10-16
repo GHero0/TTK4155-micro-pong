@@ -139,6 +139,9 @@ void CAN_Init()
 	// Set the normal mode
 	uint8_t buffer[1] = {0b00000111};
 	CAN_Write(0x0F, buffer, 1);
+	
+	// Enabling RX0 and RX1 interrupts
+	CAN_Bit_Modify(CANINTE, 0x03, 0xFF);
 }
 
 void CAN_Send_Message(messageCAN_t message_to_send)

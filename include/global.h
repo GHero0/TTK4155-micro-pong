@@ -36,4 +36,7 @@ extern unsigned int SCALE_Y;
 extern unsigned char DEADZONE_X;
 extern unsigned char DEADZONE_Y; 
 
+// CAN interrupt
+extern char Flag_CAN;
+
 #endif

@@ -38,5 +38,7 @@ unsigned int SCALE_Y = 0;
 unsigned char DEADZONE_X = 10;
 unsigned char DEADZONE_Y = 10;
 
+// CAN interrupts
+char Flag_CAN = 0; // Receive message
 
 #endif

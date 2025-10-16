@@ -46,6 +46,9 @@ int main(void)
 	
 	_delay_ms(1000);
 	
+	// Enabling RX0 and RX1 interrupts
+	CAN_Bit_Modify(CANINTE, 0x03, 0xFF);
+	
 	// --- SEND MESSAGE --- //
 	messageCAN_t msgReceived;
 	
@@ -66,6 +69,11 @@ int main(void)
 	}
 	printf("\n");
 	_delay_ms(1000);
+	if(Flag_CAN == 1)
+	{
+		printf("\n\nInterrupt\n\n");
+		Flag_CAN = 0;
+	}
 
 	uint16_t msg_id2 = 0x002;
 	char msg_data_length2 = 8;
@@ -84,6 +92,11 @@ int main(void)
 	}
 	printf("\n");
 	_delay_ms(1000);
+	if(Flag_CAN == 1)
+	{
+		printf("\n\nInterrupt\n\n");
+		Flag_CAN = 0;
+	}
 	
 	uint16_t msg_id3 = 0x003;
 	char msg_data_length3 = 8;
@@ -101,9 +114,15 @@ int main(void)
 		printf("data[%d] : \t0x%02X\n", i, msgReceived.message_data[i]);
 	}
 	printf("\n");
+	
+	if(Flag_CAN == 1)
+	{
+		printf("\n\nInterrupt\n\n");
+		Flag_CAN = 0;
+	}
+	
+	while(1)
+	{
 		
-    while (1)
-    {
-		
-    }
+	}
 }
