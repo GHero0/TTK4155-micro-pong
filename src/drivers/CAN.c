@@ -143,66 +143,89 @@ void CAN_Init()
 
 void CAN_Send_Message(messageCAN_t message_to_send)
 {
+	// Check that data_length is not greater than 8
+	if(message_to_send.message_data_length > 8)
+	{
+		message_to_send.message_data_length = 8;
+	}
+	// Check if data_length is not equal to 0 (if 0 then we don't try to send antyhing)
+	if(message_to_send.message_data_length == 0)
+	{
+		return;
+	}
+	
+	// Wait until TXB0 is cleared
+	uint16_t timeout = 60000;
+	while (timeout > 0) {
+		uint8_t txb0 = 0;
+		CAN_Read(TXB0CTRL, &txb0, 1);
+		if ((txb0 & 0x08) == 0) 
+		{
+			break; // TXREQ cleared => buffer free
+		}
+		
+		timeout--;
+	}
+	
 	// Write the 2 bytes ID inside the corresponding register
 	CAN_Write_byte(0x31, (message_to_send.message_id >> 3));
 	CAN_Write_byte(0x32, (message_to_send.message_id << 5));
 	
 	// Write the 1 byte data length inside the corresponding register
-	CAN_Write_byte(0x35, (message_to_send.message_data_length));
+	CAN_Write_byte(0x35, message_to_send.message_data_length);
 
 	// Write at the TX0BCTRL register the message to send
-	CAN_Write(0x36, message_to_send.message_data, message_to_send.message_data_length);
-	
-	// Put the TXREQ from low to high value : '1'
-	CAN_Bit_Modify(TXB0CTRL, 0x08, 0xFF);
-	
+	CAN_Write(0x36, (uint8_t*) message_to_send.message_data, message_to_send.message_data_length);
+
 	// Request to send on TX0
 	CAN_Request_To_Send(0x01);
-	_delay_us(30); // Do we really need this delay ?
 	
-	// --- Reading test --- //
-	uint8_t buffer_read[13] = {0};
-	CAN_Read(RXB0SIDH, buffer_read, 0x0D); // 0X0D = 13 bytes
-	printf("\n---\n");
-	for(int i = 0; i < 13; i++)
+	// Check if sending is finished
+	timeout = 60000;
+	while(timeout > 0)
 	{
-		printf("Test buffer_read[%d] = 0x%02X\n", i, buffer_read[i]);
+		uint8_t txb0 = 0;
+		CAN_Read(TXB0CTRL, &txb0, 1);
+		if ((txb0 & 0x08) == 0)
+		{
+			 break; // TXREQ==0
+		}
+		
+		uint8_t intf = 0;
+		CAN_Read(CANINTF, &intf, 1);
+		if (intf & 0x04) {
+			break; // TX0IF set
+		}
+		
+		timeout--;
 	}
-	printf("---\n");
-	// --- READING TEST --- //
 }
-
-// void CAN_Send_Message(messageCAN_t message_to_send)
-// {
-// 	// Write the 2 bytes ID inside the corresponding register
-// 	CAN_Write(0x31, message_to_send.message_id, 2);
-// 	
-// 	// Write the 1 byte data length inside the corresponding register
-// 	CAN_Write(0x35, message_to_send.message_data_length, 1);
-// 	
-// 	// Write at the TX0BCTRL register the message to send
-// 	CAN_Write(0x36, message_to_send.message_data, message_to_send.message_data_length[0]);
-// 
-// 	// Put the TXREQ down to high value : '1'
-// 	CAN_Bit_Modify(TXB0CTRL, 0x08, 0xFF);
-// 	
-// 	// Request to send on TX0
-// 	CAN_Request_To_Send(0x01);
-// 	
-// 	// --- Reading test --- //
-// 	uint8_t buffer_read[14] = {0};
-// 	CAN_Read(RXB0CTRL, buffer_read, 0x0E); // 0X0E = 14 bits
-// 	printf("\n---");
-// 	for(int i = 0; i < 14; i++)
-// 	{
-// 		printf("Test buffer_read[%d] = 0x%02X\n", i, buffer_read[i]);
-// 	}
-// 	// --- READING TEST --- //
-// }
 
 messageCAN_t CAN_Receive_Message()
 {
 	messageCAN_t received_message;
+	
+	uint8_t buffer_read[13] = {0};
+	CAN_Read(RXB0SIDH, buffer_read, 0X0D); // 0X0D = 13
+	
+	// Loading received_message with ID/Data_length/Datas
+	uint16_t shifted_id = buffer_read[0];
+	shifted_id = ((shifted_id << 3) | (buffer_read[1] >> 5));
+	received_message.message_id = shifted_id;
+	received_message.message_data_length = buffer_read[4];
+	for (uint8_t i = 5; i < 12; i++)
+	{
+		uint8_t j = i - 5;
+		received_message.message_data[j] = buffer_read[i];
+	}
+	
+	uint8_t CANintf = 0;
+	CAN_Read(CANINTF, &CANintf, 1);
+	if (CANintf & 0x01) {
+		CAN_Bit_Modify(CANINTF, 0x01, 0x00);   // clear TX0IF
+	}
+	uint8_t buffer_read_ = 0;
+	CAN_Read(CANINTF, &buffer_read_, 1);
 	
 	return received_message;
 }
