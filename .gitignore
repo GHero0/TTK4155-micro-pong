@@ -7,3 +7,5 @@ GccApplication1.componentinfo.xml
 GccApplication1.cproj
 ext_memory.c
 include/ext_memory.h
+*.cproj
+*.xml

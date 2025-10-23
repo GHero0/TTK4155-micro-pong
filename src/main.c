@@ -1,20 +1,17 @@
 #include "globaldec.h"
-#include "drivers/UART_driver.h"
 #include "SRAM.h"
 #include "inter.h"
 #include "PWM.h"
 #include "joystick.h"
-#include "tests/test_UART_driver.h"
-#include "tests/test_latch.h"
-#include "tests/test_SRAM.h"
-#include "tests/test_inter.h"
-#include "tests/test_adc.h"
-#include "tests/test_joystick.h"
+#include "drivers/UART_driver.h"
+#include "drivers/SPI.h"
+#include "drivers/IO_board.h"
+#include "drivers/OLED.h"
+#include "sprites.h"
+#include "images.h"
+#include "UI.h"
 
-#include <avr/io.h>
-#include <stdio.h>
-#include <util/delay.h>
-#include <stdlib.h>
+#include "tests/test_UI.h"
 
 int main(void)
 {
@@ -24,9 +21,33 @@ int main(void)
     SRAM_Init();
     Inter_Init();
     Joystick_init();
+    SPI_Init();
+    OLED_Init();
+    FrameBufferInit();
 
+    FrameBufferClear();
+    FrameBufferSwap();
+    FrameBufferClear();
+    FrameBufferPush();
+
+    
     while (1)
     {
-        test_joystick();
+        if (Flag_screen)
+        {
+            FrameBufferClear();
+
+            debug_window();
+            
+            FrameBufferPush();
+            FrameBufferSwap();
+
+            Flag_screen = 0;
+        }
+
+        IO_board_update();
+        Joystick_convert();
+
+        map_touchpad();
     }
 }

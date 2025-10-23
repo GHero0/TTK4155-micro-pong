@@ -9,6 +9,7 @@
  * ensuring they can be accessed throughout the program.
  */
 #include "constants.h"
+#include <avr/pgmspace.h>
 
 volatile char *sram = (char *)0x1400;    // Start address for the SRAM
 volatile char *adc = (char *)0x1200;     // Start address for the ADC
@@ -35,8 +36,53 @@ unsigned char JOY_X_CENTER = 164;
 unsigned char JOY_Y_CENTER = 164;
 unsigned int SCALE_X = 0;
 unsigned int SCALE_Y = 0;
-unsigned char DEADZONE_X = 10;
-unsigned char DEADZONE_Y = 10;
+unsigned char DEADZONE_X = 20;
+unsigned char DEADZONE_Y = 20;
 
+// IO-Board 
+BUTTONS buttons = {{0},{0},{0}};
+// Maybe change later on ... ! 
+TOUCH_PAD touch_pad = {0,0,0};
+unsigned char slider = 0;  
+LED_STATE leds[LED_COUNT] = {0};
+
+// OLED frame buffer
+unsigned char * volatile framebuffer = (unsigned char *)0x1400;
+unsigned char * volatile doublebuffer = (unsigned char *)0x1800;
+// Pointer aliases for convenience
+unsigned char * volatile current_buffer;
+unsigned char * volatile screen_buffer;
+// OLED 30Hz refresh 
+unsigned char screen_ms_divider = 0;
+unsigned char Flag_screen = 0;
+
+
+unsigned char tile_2bpp[16] = {
+    0b11000000, 0b10000000,
+    0b11000000, 0b01000000,
+    0b01100000, 0b00100000,
+    0b00110000, 0b00010000,
+    0b00001100, 0b00001000,
+    0b00001100, 0b00000100,
+    0b00000011, 0b00000010,
+    0b00000011, 0b00000001
+};
+
+unsigned char tile_1bpp[8] = {
+    0b11000000, 
+    0b11000000, 
+    0b01100000, 
+    0b00110000, 
+    0b00001100, 
+    0b00000110, 
+    0b00000011, 
+    0b00000011
+};
+
+signed char X_window_1 = 0;
+signed char Y_window_1 = 0;
+
+signed char X_window_2 = 0;
+signed char Y_window_2 = 0;
 
 #endif

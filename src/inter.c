@@ -25,3 +25,11 @@ ISR(INT2_vect)
     adc_ch3 = *adc;
     Flag_ADC_ready = 1;
 }
+
+ISR(TIMER0_COMP_vect)
+{
+        Flag_screen = 1;
+}
+
+
+
