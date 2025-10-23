@@ -18,8 +18,8 @@ void debug_window(void)
     {
         Y_window_1 = -64;
         Y_window_2 = -64;
-        X_window_1 = 16;
-        X_window_2 = 64;
+        X_window_1 = 8;
+        X_window_2 = 72;
         initialized = 1;
     }
 
@@ -41,9 +41,10 @@ void debug_window(void)
         Y_window_2 += 2;
     }
     draw_window(X_window_2, Y_window_2, 6, 3);
-    draw_window(X_window_1, Y_window_1, 5, 4);
+    draw_window(X_window_1, Y_window_1, 7, 4);
 
-    draw_printf(X_window_1 + 8, Y_window_1 + 16, "X:%d\nY:%d", joystick_pos.X >> 8, joystick_pos.Y >> 8);
+    draw_printf(X_window_1 + 3, Y_window_1 + 16, "X:%d\nY:%d", joystick_pos.X >> 8, joystick_pos.Y >> 8);
+    draw_printf(X_window_1 + 27, Y_window_1 + 16,"X':%d\nY':%d\nS:%d", X,Y,touch_pad.size);
     draw_task_bar();
 
     joystick_indicator(X_window_2 + 8, Y_window_2 + 16, 0);

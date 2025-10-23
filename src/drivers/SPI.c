@@ -6,7 +6,7 @@
 void SPI_Init(void)
 {
     // Set MOSI, SCK, SS1 as Output
-    DDRB |= (1 << MOSI) | (1 << SCK) | (1 << SS1) | (1 << SS2);
+    DDRB |= (1 << MOSI) | (1 << SCK) | (1 << SS1) | (1 << SS2) | (1 << SS3);
     SPSR |= (1 << SPI2X);
     // Enable SPI, Set as Master
     SPCR = (1 << SPE) | (1 << MSTR);
@@ -14,9 +14,10 @@ void SPI_Init(void)
 
 void SPI_Select_Slave(unsigned char slave)
 {
-    PORTB |= (1 << SS1) | (1 << SS2); // deselect all
+    PORTB |= (1 << SS1) | (1 << SS2) | (1 << SS3); // deselect all
     if (slave == 1) PORTB &= ~(1 << SS1);
     if (slave == 2) PORTB &= ~(1 << SS2);
+    if (slave == 3) PORTB &= ~(1 << SS3);
 }
 
 
@@ -34,5 +35,3 @@ unsigned char SPI_Read_byte(void)
     // Wait until reception complete
     return SPDR;
 }
-
-

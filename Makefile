@@ -1,4 +1,8 @@
 
+# CC := avr-gcc
+# CFLAGS := -Os -std=c11 -mmcu=atmega162 -ggdb -Iinclude -ffunction-sections -fdata-sections
+# LDFLAGS := -Wl,--gc-sections -Wl,--relax
+
 CC := avr-gcc
 CFLAGS := -Os -mmcu=atmega162 -Iinclude -ffunction-sections -fdata-sections -flto
 LDFLAGS := -flto -Wl,--gc-sections -Wl,--relax

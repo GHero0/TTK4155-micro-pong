@@ -62,5 +62,7 @@ extern signed char Y_window_1;
 
 extern signed char X_window_2;
 extern signed char Y_window_2;
+// CAN interrupt
+extern char Flag_CAN;
 
 #endif
