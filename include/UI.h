@@ -6,5 +6,6 @@ void draw_task_bar(void);
 void joystick_indicator(char X, char Y, unsigned char hand);
 void button_indicator(char X, char Y, unsigned char hand, unsigned char number);
 void cursor();
+void draw_printf(char x, char y, const char* fmt, ...);
 
 #endif

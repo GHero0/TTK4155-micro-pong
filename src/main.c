@@ -11,26 +11,8 @@
 #include "images.h"
 #include "UI.h"
 
-#include <avr/io.h>
-#include <stdio.h>
-#include <util/delay.h>
-#include <stdlib.h>
-
-void draw_printf(char x, char y, const char* fmt, ...) {
-    char buf[32]; // adjust as needed (keep small on AVR)
-    va_list args;
-    va_start(args, fmt);
-    vsnprintf(buf, sizeof(buf), fmt, args);
-    va_end(args);
-
-    draw_string(buf, x, y);
-}
-
-
 int main(void)
 {
-    // CLKPR = (1 << CLKPCE);           // Enable prescaler change
-    // CLKPR = (1 << CLKPS0);           // Set prescaler to /2 (CLKPS = 0001)
     PWM_init();
     USART_Init();
     UART_stdio_init();
@@ -49,8 +31,6 @@ int main(void)
     int X = 32;
     int Y = -64;
     unsigned char step = 0;
-    char c = 0;
-    signed char y = -16;
     Y_window_1 = -64;
     Y_window_2 = -64;
     X_window_1 = 16;
@@ -77,9 +57,7 @@ int main(void)
             }
             draw_window(X_window_2,Y_window_2,6,3);
             draw_window(X_window_1,Y_window_1,5,4);
-            // button_indicator(X,Y,0,7);
             
-            // button_indicator(64,8,1,6);
             draw_printf(X_window_1+8, Y_window_1+16, "X:%d\nY:%d", joystick_pos.X >> 8, joystick_pos.Y >> 8);
             draw_task_bar();
             

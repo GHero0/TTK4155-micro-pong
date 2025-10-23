@@ -2,6 +2,7 @@
 #include "global.h"
 #include "sprites.h"
 #include "images.h"
+#include <stdio.h>
 
 void draw_window(int X, int Y, unsigned char width_in_tiles, unsigned char height_in_tiles)
 {
@@ -320,4 +321,14 @@ void cursor()
     fetch_tile_from_tilemap_2bpp(base_tile);
 
     draw_tile_2bpp((unsigned char)x, (unsigned char)y);
+}
+
+void draw_printf(char x, char y, const char* fmt, ...) {
+    char buf[32]; // adjust as needed (keep small on AVR)
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, args);
+    va_end(args);
+
+    draw_string(buf, x, y);
 }
