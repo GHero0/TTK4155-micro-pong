@@ -1,6 +1,6 @@
 
 CC := avr-gcc
-CFLAGS := -Os -std=gnu23 -mmcu=atmega162 -Iinclude -ffunction-sections -fdata-sections -flto
+CFLAGS := -Os -mmcu=atmega162 -Iinclude -ffunction-sections -fdata-sections -flto
 LDFLAGS := -flto -Wl,--gc-sections -Wl,--relax
 
 # CC := avr-gcc
