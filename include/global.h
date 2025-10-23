@@ -57,4 +57,10 @@ extern unsigned char tile_2bpp[16];
 
 extern unsigned char tile_1bpp[8];
 
+extern signed char X_window_1;
+extern signed char Y_window_1;
+
+extern signed char X_window_2;
+extern signed char Y_window_2;
+
 #endif
