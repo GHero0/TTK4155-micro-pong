@@ -5,133 +5,77 @@
 #include <stdint.h>
 #include <stdio.h>
 
-void CAN_Read(uint8_t address_byte, uint8_t* buffer, uint8_t n)
+void CAN_Read(unsigned char address_byte, unsigned char *buffer, unsigned char lentgh)
 {
-	// If either the buffer is empty or the length is null, we don't try to execute the reading command
-	if((!buffer) || (n == 0))
-	{
-		return;
-	}
-	
-	// Select the slave : CAN controller
-	SPI_Select_Slave(3);
-
-	/* Reading the CAN buses */
-	SPI_Write_byte(0x03);
-	_delay_us(3);
-	
-	SPI_Write_byte(address_byte);
-	for (uint8_t i = 0; i < n; i++)
-	{
-		buffer[i] = SPI_Read_byte();
-	}
-	
-	// Release the slave selected
-	SPI_Select_Slave(0);
+    SPI_Select_Slave(3);
+    SPI_Write_byte(READ); // Read instruction
+    // We then indicate the address at which we want to start reading
+    // Reading pointer is automatically incremented sequentially
+    SPI_Write_byte(address_byte);
+    for (unsigned char i = 0; i < lentgh; i++)
+    {
+        buffer[i] = SPI_Read_byte();
+    }
+    SPI_Select_Slave(0);
 }
 	
-void CAN_Write(uint8_t address_byte, uint8_t* buffer, uint8_t n)
+void CAN_Write(unsigned char address_byte, unsigned char *buffer, unsigned char length)
 {
-	// If either the buffer is empty or the length is null, we don't try to execute the writing command
-	if((!buffer) || (n == 0))
-	{
-		return;
-	}
-	
-	// Select the slave : CAN controller
-	SPI_Select_Slave(3);
-
-	/* Writing the CAN buses */
-	SPI_Write_byte(0x02);
-	_delay_us(3);
-	
-	SPI_Write_byte(address_byte);	
-	for (uint8_t i = 0; i < n; i++)
-	{
-		SPI_Write_byte(buffer[i]);
-	}
-	
-	// Release the slave selected
-	SPI_Select_Slave(0);
+    SPI_Select_Slave(3);
+    SPI_Write_byte(WRITE); // Write instruction
+    // We then indicate the address at which we want to start writing
+    // Writing pointer is automatically incremented sequentially
+    SPI_Write_byte(address_byte);
+    for (unsigned char i = 0; i < length; i++)
+    {
+        SPI_Write_byte(buffer[i]);
+    }
+    SPI_Select_Slave(0);
 }
 
-void CAN_Write_byte(uint8_t address_byte, uint8_t byte)
-{	
-	// Select the slave : CAN controller
-	SPI_Select_Slave(3);
-
-	/* Writing the CAN buses */
-	SPI_Write_byte(0x02);
-	_delay_us(3);
-	
-	SPI_Write_byte(address_byte);
-	_delay_us(3);
-	SPI_Write_byte(byte);
-	
-	// Release the slave selected
-	SPI_Select_Slave(0);
+void CAN_WriteByte(unsigned char address_byte, unsigned char data) {
+    CAN_Write(address_byte, &data, 1);
 }
 
-void CAN_Request_To_Send(uint8_t TX_mask)
+void CAN_Request2Send(unsigned char TX_bits)
 {
-	// & operation on both mask and 111 (which enables TXB0-2)
-	TX_mask &= 0x07;
-	if(TX_mask == 0x00)
-	{
-		return; // the command is ignored if equals to 0
-	}
-	
-	// Select the slave : CAN controller
-	SPI_Select_Slave(3);
-
-	/* Send the request (with the following operation code : 0x80 which is the request to send with TXB0-2 all to 0) */
-	SPI_Write_byte(0x80 | TX_mask);
-	
-	// Release the slave selected
-	SPI_Select_Slave(0);
+    SPI_Select_Slave(3);
+    // RTS for TXB0 === 0001
+    // RTS for TXB1 === 0010
+    // RTS for TXB2 === 0100
+    // To consider only thoose bits we mask out everything else:
+    TX_bits &= 0b00000111; // VERY OPTIONNAL
+    // Then we apply them to RTS Instruction
+    SPI_Write_byte(RTS | TX_bits);
+    SPI_Select_Slave(0);
 }
 
-uint8_t CAN_Read_Status()
+unsigned char CAN_ReadStatus(void)
 {
-	// Select the slave : CAN controller
-	SPI_Select_Slave(3);
-
-	/* Read the CAN status and store it into a variable */
-	SPI_Write_byte(0xA0);
-	uint8_t status = SPI_Read_byte();
-	
-	// Release the slave selected
-	SPI_Select_Slave(0);
-	
-	return status;
+    SPI_Select_Slave(3);
+    SPI_Write_byte(READ_STATUS);
+    unsigned char read_status = SPI_Read_byte();
+    SPI_Select_Slave(0);
+    return read_status;
 }
 
-void CAN_Bit_Modify(uint8_t address_byte, uint8_t mask_byte, uint8_t data_byte)
+void CAN_BitModify(unsigned char address_byte, unsigned char mask, unsigned char data)
 {
-	// Select the slave : CAN controller
-	SPI_Select_Slave(3);
-
-	/* Read the CAN status and store it into a variable*/
-	SPI_Write_byte(0x05);
-	SPI_Write_byte(address_byte);
-	SPI_Write_byte(mask_byte);
-	SPI_Write_byte(data_byte);
-	
-	// Release the slave selected
-	SPI_Select_Slave(0);
+    SPI_Select_Slave(3);
+    SPI_Write_byte(BIT_MODIFY);
+    SPI_Write_byte(address_byte);
+    SPI_Write_byte(mask);
+    SPI_Write_byte(data);
+    SPI_Select_Slave(0);
 }
 
-void CAN_Reset()
+void CAN_Reset(void)
 {
-	// Select the slave : CAN controller
-	SPI_Select_Slave(3);
-
-	/* Reset the CAN */
-	SPI_Write_byte(0xC0);
-	
-	// Release the slave selected
-	SPI_Select_Slave(0);
-	_delay_us(10);
+    SPI_Select_Slave(3);
+    SPI_Write_byte(RESET); // Reset instruction
+    // After sending reset instruction we are put in config mode automatically
+    SPI_Select_Slave(0);
+    _delay_us(10);
 }
 
 void CAN_Init()
@@ -141,7 +85,7 @@ void CAN_Init()
 	CAN_Write(0x0F, buffer, 1);
 	
 	// Enabling RX0 and RX1 interrupts
-	CAN_Bit_Modify(CANINTE, 0x03, 0xFF);
+	CAN_BitModify(CANINTE, 0x03, 0xFF);
 }
 
 void CAN_Send_Message(messageCAN_t message_to_send)
@@ -171,17 +115,17 @@ void CAN_Send_Message(messageCAN_t message_to_send)
 	}
 	
 	// Write the 2 bytes ID inside the corresponding register
-	CAN_Write_byte(0x31, (message_to_send.message_id >> 3));
-	CAN_Write_byte(0x32, (message_to_send.message_id << 5));
+	CAN_WriteByte(0x31, (message_to_send.message_id >> 3));
+	CAN_WriteByte(0x32, (message_to_send.message_id << 5));
 	
 	// Write the 1 byte data length inside the corresponding register
-	CAN_Write_byte(0x35, message_to_send.message_data_length);
+	CAN_WriteByte(0x35, message_to_send.message_data_length);
 
 	// Write at the TX0BCTRL register the message to send
 	CAN_Write(0x36, (uint8_t*) message_to_send.message_data, message_to_send.message_data_length);
 
 	// Request to send on TX0
-	CAN_Request_To_Send(0x01);
+	CAN_Request2Send(0x01);
 	
 	// Check if sending is finished
 	timeout = 60000;
@@ -225,7 +169,7 @@ messageCAN_t CAN_Receive_Message()
 	uint8_t CANintf = 0;
 	CAN_Read(CANINTF, &CANintf, 1);
 	if (CANintf & 0x01) {
-		CAN_Bit_Modify(CANINTF, 0x01, 0x00);   // clear TX0IF
+		CAN_BitModify(CANINTF, 0x01, 0x00);   // clear TX0IF
 	}
 	uint8_t buffer_read_ = 0;
 	CAN_Read(CANINTF, &buffer_read_, 1);
