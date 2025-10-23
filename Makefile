@@ -1,23 +1,15 @@
 
-# CC := avr-gcc
-# CFLAGS := -Os -std=c11 -mmcu=atmega162 -ggdb -Iinclude -ffunction-sections -fdata-sections
-# LDFLAGS := -Wl,--gc-sections -Wl,--relax
-
 CC := avr-gcc
-CFLAGS := -Os -mmcu=atmega162 -Iinclude -ffunction-sections -fdata-sections -flto
+CFLAGS := -Os -mmcu=atmega162 -Iatmel-162/include -flto
 LDFLAGS := -flto -Wl,--gc-sections -Wl,--relax
 
-# CC := avr-gcc
-# CFLAGS := -Os -std=c11 -mmcu=atmega162 -ggdb -Iinclude -ffunction-sections -fdata-sections -fno-split-wide-types -fno-inline-small-functions -fno-tree-loop-distribute-patterns -fno-tree-vectorize -fomit-frame-pointer -fno-builtin
-# LDFLAGS := -Wl,--gc-sections -Wl,--relax
 
-
-BUILD_DIR := build
+BUILD_DIR := atmel-162/build
 TARGET_DEVICE := m162
 PROGRAMMER := atmelice
 
-# Find all .c files in src/, tests/, and subdirectories
-SOURCES := $(shell find src tests -name '*.c')
+# Find all .c files in atmel-162/src/, atmel-162/tests/, and subdirectories
+SOURCES := $(shell find atmel-162/src atmel-162/tests -name '*.c')
 OBJECTS := $(patsubst %.c,$(BUILD_DIR)/%.o,$(SOURCES))
 
 .DEFAULT_GOAL := $(BUILD_DIR)/main.hex
@@ -43,7 +35,6 @@ flash: $(BUILD_DIR)/main.hex
 .PHONY: erase
 erase:
 	avrdude -p $(TARGET_DEVICE) -c $(PROGRAMMER) -e
-
 
 # Add size target to check memory usage
 .PHONY: size
