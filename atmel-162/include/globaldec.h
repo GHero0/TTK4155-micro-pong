@@ -85,6 +85,6 @@ signed char Y_window_1 = 0;
 signed char X_window_2 = 0;
 signed char Y_window_2 = 0;
 // CAN interrupts
-char Flag_CAN = 0; // Receive message
+volatile char Flag_CAN = 0; // Receive message
 
 #endif

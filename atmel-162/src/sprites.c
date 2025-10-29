@@ -502,7 +502,7 @@ void draw_sprite_1bpp(SPRITE Sp, signed char X, signed char Y){
 
                 case 2:
                     SYM_V_1bpp();
-                    draw_tile_1bpp(X + (col << 3), Y + row << 3);
+                    draw_tile_1bpp(X + (col << 3), Y + (row << 3));
                     break;
 
                 case 3: 

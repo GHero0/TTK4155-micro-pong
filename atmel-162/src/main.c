@@ -28,67 +28,59 @@ int main(void)
     SPI_Init();
     OLED_Init();
     FrameBufferInit();
-
-    _delay_ms(50);
-	CAN_Reset();
-	_delay_ms(50);
+    CAN_Reset();
+    _delay_ms(100);
 
     FrameBufferClear();
     FrameBufferSwap();
     FrameBufferClear();
     FrameBufferPush();
 
-    // test_CAN_static();
+    uint16_t msg_id = 2;
+    char msg_data_length = 4;
+    char msg_data[8] = {0x11, 0x22, 0x33, 0x44};
 
-    // --- LOOPBACK-MODE --- //
-	uint8_t buffer_loopback_mode[1] = {0b01000000};
-	CAN_Write(0x0F, buffer_loopback_mode, 1);
-	printf("\n--- Loopback-Mode ---\n");
-	CAN_Read_Print_All_Control_Registers();
-	
-	_delay_ms(1000);
-	
-	/* --- ERASE THIS (Since it's in CAN_Init() function --- */
-	// Enabling RX0 and RX1 interrupts
-	CAN_BitModify(CANINTE, 0x03, 0xFF);
+    messageCAN_t msgCAN;
+    msgCAN.message_id = msg_id;
+    msgCAN.message_data_length = msg_data_length;
+    msgCAN.message_data = msg_data;
 
-    Flag_CAN = 1;
+    // ===== CAN INIT =====
+    CAN_Init();
+    printf("\n");
+    CAN_Read_Print_All_Control_Registers();
 
-    uint16_t msg_id = 0x001;
-	char msg_data_length = 8;
-	char msg_data[8] = {0x7F,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-	messageCAN_t msgCAN;
-	msgCAN.message_id = msg_id;
-	msgCAN.message_data_length = msg_data_length;
-	msgCAN.message_data = msg_data;
-    
-
-    int X = 32;
-    int Y = -64;
-    
     while (1)
-    {        
+    {
         if (Flag_screen)
         {
             FrameBufferClear();
 
             debug_window();
-            
+
             FrameBufferPush();
             FrameBufferSwap();
 
             Flag_screen = 0;
         }
-        CAN_Send_Message(msgCAN);
-        _delay_ms(1);
 
-        if(Flag_CAN == 1)
-		{
-			printf("INTERRUPT HERE\n");// Remove for animation purposes
-			CAN_Receive_Message();
-			_delay_ms(1);
-			Flag_CAN = 0;	
-		}
+        if (Flag_CAN == 1)
+        {
+            printf("\n\nINTERRUPT HERE\n\n");
+            msgCAN = CAN_Receive_Message();
+            _delay_ms(1);
+            printf("====MSG====\n");
+            printf("id: 0x%X\n", msgCAN.message_id);
+            printf("data_length: 0x%X\n", msgCAN.message_data_length);
+
+            for (uint8_t i = 0; i < msgCAN.message_data_length; i++)
+            {
+                printf("data[%d]: 0x%2X\n", i, msgCAN.message_data[i]);
+            }
+            Flag_CAN = 0;
+        }
+
+        CAN_Send_Message(msgCAN);
 
         IO_board_update();
         Joystick_convert();

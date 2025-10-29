@@ -35,6 +35,17 @@
 #define RX_STATUS       0xB0
 #define BIT_MODIFY      0x05
 
+// ID Registers
+#define TXB0SIDH 		0x31
+#define TXB0SIDL 		0x32
+// Data Length
+#define TXB0DLC			0x35
+// Data first register
+#define TXB0D0			0x36
+
+// TX Buffer 
+#define TXB0 			0x01
+
 // CAN Message struct
 typedef struct {
 	uint16_t message_id;
@@ -51,7 +62,8 @@ void CAN_BitModify(unsigned char address_byte, unsigned char mask, unsigned char
 void CAN_Reset(void);
 void CAN_Init(void);
 void CAN_Send_Message(messageCAN_t);
-messageCAN_t CAN_Receive_Message(/*void*/);
+messageCAN_t CAN_Receive_Message(void);
+void CAN_Read_TX_Buffer(void);
 
 void CAN_Read_Print_All_Control_Registers(void);
 

@@ -1,6 +1,6 @@
 
 CC := avr-gcc
-CFLAGS := -Os -mmcu=atmega162 -Iatmel-162/include -flto
+CFLAGS := -Os -mmcu=atmega162 -Iatmel-162/include -flto -Wall
 LDFLAGS := -flto -Wl,--gc-sections -Wl,--relax
 
 

@@ -80,100 +80,107 @@ void CAN_Reset(void)
 
 void CAN_Init()
 {
-	// Set the normal mode
-	uint8_t buffer[1] = {0b00000111};
-	CAN_Write(0x0F, buffer, 1);
 	
 	// Enabling RX0 and RX1 interrupts
 	CAN_BitModify(CANINTE, 0x03, 0xFF);
+
+	// uint8_t buffer_CNF1 = {0x03};
+	// uint8_t buffer_CNF2 = {0xB2};
+	// uint8_t buffer_CNF3 = {0x05};
+
+	CAN_WriteByte(CNF1,0x03);
+	CAN_WriteByte(CNF2,0xB2);
+	CAN_WriteByte(CNF3,0x05);
+
+	// Set the normal mode
+	uint8_t buffer[1] = {0b00000000};
+	CAN_Write(CANCTRL, buffer, 1);
+	
 }
 
 void CAN_Send_Message(messageCAN_t message_to_send)
 {
-	// Check that data_length is not greater than 8
-	if(message_to_send.message_data_length > 8)
-	{
-		message_to_send.message_data_length = 8;
-	}
-	// Check if data_length is not equal to 0 (if 0 then we don't try to send antyhing)
-	if(message_to_send.message_data_length == 0)
-	{
-		return;
-	}
-	
+	// ==== WAITING UNTIL PREVIOUS TRANSMISSION IS DONE =====
 	// Wait until TXB0 is cleared
-	uint16_t timeout = 60000;
-	while (timeout > 0) {
-		uint8_t txb0 = 0;
+	uint8_t txb0 = 0;
+	while (1) {
 		CAN_Read(TXB0CTRL, &txb0, 1);
 		if ((txb0 & 0x08) == 0) 
 		{
 			break; // TXREQ cleared => buffer free
 		}
-		
-		timeout--;
 	}
+
+	// ==== SENDING MESSAGE =====
 	
 	// Write the 2 bytes ID inside the corresponding register
-	CAN_WriteByte(0x31, (message_to_send.message_id >> 3));
-	CAN_WriteByte(0x32, (message_to_send.message_id << 5));
+	CAN_WriteByte(TXB0SIDH, (message_to_send.message_id >> 3));
+	CAN_WriteByte(TXB0SIDL, (message_to_send.message_id << 5));
 	
 	// Write the 1 byte data length inside the corresponding register
-	CAN_WriteByte(0x35, message_to_send.message_data_length);
+	CAN_WriteByte(TXB0DLC, message_to_send.message_data_length);
 
 	// Write at the TX0BCTRL register the message to send
-	CAN_Write(0x36, (uint8_t*) message_to_send.message_data, message_to_send.message_data_length);
+	CAN_Write(TXB0D0, (uint8_t*) message_to_send.message_data, message_to_send.message_data_length);
 
 	// Request to send on TX0
-	CAN_Request2Send(0x01);
+	CAN_Request2Send(TXB0);
 	
+	// ==== PROBABLY NOT USEFULL SAFETY CHECKS ====
 	// Check if sending is finished
-	timeout = 60000;
-	while(timeout > 0)
-	{
-		uint8_t txb0 = 0;
-		CAN_Read(TXB0CTRL, &txb0, 1);
-		if ((txb0 & 0x08) == 0)
-		{
-			 break; // TXREQ==0
-		}
+	// while(1)
+	// {
+	// 	uint8_t txb0 = 0;
+	// 	CAN_Read(TXB0CTRL, &txb0, 1);
+	// 	if ((txb0 & 0x08) == 0)
+	// 	{
+	// 		 break; // TXREQ==0
+	// 	}
 		
-		uint8_t intf = 0;
-		CAN_Read(CANINTF, &intf, 1);
-		if (intf & 0x04) {
-			break; // TX0IF set
-		}
-		
-		timeout--;
-	}
+	// 	uint8_t intf = 0;
+	// 	CAN_Read(CANINTF, &intf, 1);
+	// 	if (intf & 0x04) {
+	// 		break; // TX0IF set
+	// 	}
+	// }
 }
 
 messageCAN_t CAN_Receive_Message()
 {
-	messageCAN_t received_message;
+	uint16_t msg_id = 0;
+	char msg_data_length = 0;
+	char msg_data[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
 	
 	uint8_t buffer_read[13] = {0};
-	CAN_Read(RXB0SIDH, buffer_read, 0X0D); // 0X0D = 13
+	CAN_Read(RXB0SIDH, buffer_read, 13); 
 	
-	// Loading received_message with ID/Data_length/Datas
+	// Receive ID by reconstructing the full ID
 	uint16_t shifted_id = buffer_read[0];
 	shifted_id = ((shifted_id << 3) | (buffer_read[1] >> 5));
-	received_message.message_id = shifted_id;
-	received_message.message_data_length = buffer_read[4];
+	msg_id = shifted_id;
+
+
+	msg_data_length = buffer_read[4];
 	for (uint8_t i = 5; i < 13; i++)
 	{
 		uint8_t j = i - 5;
-		received_message.message_data[j] = buffer_read[i];
+		msg_data[j] = buffer_read[i];
 	}
 	
 	uint8_t CANintf = 0;
 	CAN_Read(CANINTF, &CANintf, 1);
 	if (CANintf & 0x01) {
-		CAN_BitModify(CANINTF, 0x01, 0x00);   // clear TX0IF
+		CAN_BitModify(CANINTF, 0x01, 0x00);   // clear RX0IF
 	}
-	uint8_t buffer_read_ = 0;
-	CAN_Read(CANINTF, &buffer_read_, 1);
+	// // I have no idea !!
+	// uint8_t buffer_read_ = 0;
+	// CAN_Read(CANINTF, &buffer_read_, 1);
 	
+	messageCAN_t received_message;
+	received_message.message_id = msg_id;
+	received_message.message_data_length = msg_data_length;
+	received_message.message_data = msg_data;
+
 	return received_message;
 }
 
@@ -246,4 +253,65 @@ void CAN_Read_Print_All_Control_Registers()
 	buffer[0] = 0;
 	CAN_Read(RXB1CTRL, buffer, 1);
 	printf("RXB1CTRL :\t0x%02X\n", buffer[0]);
+	printf("\n");
+}
+
+void CAN_Read_TX_Buffer(void)
+{
+    printf("\n===== TX BUFFER 0 (TXB0) =====\n");
+    
+    // Read TXB0 Control Register
+    uint8_t txb0ctrl;
+    CAN_Read(TXB0CTRL, &txb0ctrl, 1);
+    printf("TXB0CTRL: 0x%02X\n", txb0ctrl);
+    printf("  TXREQ (bit 3): %d %s\n", 
+           (txb0ctrl >> 3) & 0x01,
+           (txb0ctrl & 0x08) ? "(Transmission pending)" : "(Buffer free)");
+    printf("  TXERR (bit 4): %d %s\n", 
+           (txb0ctrl >> 4) & 0x01,
+           (txb0ctrl & 0x10) ? "(Error detected)" : "");
+    printf("  MLOA  (bit 5): %d %s\n", 
+           (txb0ctrl >> 5) & 0x01,
+           (txb0ctrl & 0x20) ? "(Message lost arbitration)" : "");
+    printf("  ABTF  (bit 6): %d %s\n", 
+           (txb0ctrl >> 6) & 0x01,
+           (txb0ctrl & 0x40) ? "(Message aborted)" : "");
+    
+    // Read ID registers
+    uint8_t sidh, sidl;
+    CAN_Read(TXB0SIDH, &sidh, 1);
+    CAN_Read(TXB0SIDL, &sidl, 1);
+    
+    // Reconstruct 11-bit ID
+    uint16_t id = (sidh << 3) | (sidl >> 5);
+    
+    printf("\nTXB0SIDH: 0x%02X\n", sidh);
+    printf("TXB0SIDL: 0x%02X\n", sidl);
+    printf("Message ID: 0x%03X (%u)\n", id, id);
+    
+    // Read DLC
+    uint8_t dlc;
+    CAN_Read(TXB0DLC, &dlc, 1);
+    uint8_t data_length = dlc & 0x0F;
+    printf("\nTXB0DLC: 0x%02X\n", dlc);
+    printf("Data Length: %u bytes\n", data_length);
+    printf("RTR (bit 6): %d %s\n", 
+           (dlc >> 6) & 0x01,
+           (dlc & 0x40) ? "(Remote Transmission Request)" : "");
+    
+    // Read data bytes
+    uint8_t data[8];
+    CAN_Read(TXB0D0, data, 8);
+    
+    printf("\nData bytes:\n");
+    for(uint8_t i = 0; i < 8; i++) {
+        printf("  TXB0D%u: 0x%02X", i, data[i]);
+        if (i < data_length) {
+            printf(" (%u)", data[i]);
+        } else {
+            printf(" (not used)");
+        }
+        printf("\n");
+    }
+    printf("================================\n\n");
 }
