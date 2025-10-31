@@ -2,7 +2,6 @@
 .vscode
 atmega-162/build
 arduino-due/build
-arduino-due/sam
 #felix Atmel
 Debug/  
 GccApplication1.componentinfo.xml
