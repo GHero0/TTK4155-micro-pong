@@ -1,4 +1,4 @@
-name: Build AVR Project
+name: Build AVR and ARM Projects
 
 on:
   push:
@@ -7,16 +7,73 @@ on:
     branches: [ "**" ]
 
 jobs:
-  build:
+  build-atmega:
+    name: Build ATmega162
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+      
       - name: Install AVR toolchain
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-avr binutils-avr avr-libc avrdude
+      
+      - name: Build ATmega162 project
+        run: make atmega
+      
+      - name: Check ATmega162 build artifacts
+        run: |
+          ls -lh atmega-162/build/
+          if [ -f "atmega-162/build/main.hex" ]; then
+            echo "✓ ATmega162 build successful!"
+            avr-size --mcu=atmega162 atmega-162/build/main.elf || true
+          else
+            echo "✗ ATmega162 build failed - main.hex not found"
+            exit 1
+          fi
+      
+      - name: Upload ATmega162 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: atmega162-build
+          path: |
+            atmega-162/build/main.hex
+            atmega-162/build/main.elf
+          retention-days: 30
 
-      - name: Build with make
-        run: make
+  build-arduino-due:
+    name: Build Arduino Due
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install ARM toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi
+      
+      - name: Build Arduino Due project
+        run: make arduino
+      
+      - name: Check Arduino Due build artifacts
+        run: |
+          ls -lh arduino-due/build/
+          if [ -f "arduino-due/build/main.elf" ]; then
+            echo "✓ Arduino Due build successful!"
+            arm-none-eabi-size arduino-due/build/main.elf || true
+          else
+            echo "✗ Arduino Due build failed - main.elf not found"
+            exit 1
+          fi
+      
+      - name: Upload Arduino Due artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: arduino-due-build
+          path: |
+            arduino-due/build/main.elf
+          retention-days: 30

@@ -69,7 +69,7 @@ ARDUINO_LDFLAGS := -T$(ARDUINO_LDSCRIPT) -mthumb -mcpu=cortex-m3 -Wl,--gc-sectio
 ARDUINO_CFLAGS := -mcpu=cortex-m3 -mthumb -g -std=c11 -Wall
 ARDUINO_CFLAGS += -I arduino-due/sam -I arduino-due/sam/sam3x/include 
 ARDUINO_CFLAGS += -I arduino-due/sam/sam3x/source -I arduino-due/sam/cmsis
-ARDUINO_CFLAGS += -I arduino-due/include -I arduino-due/include/drivers
+ARDUINO_CFLAGS += -I arduino-due/include
 ARDUINO_CFLAGS += -D$(ARDUINO_MCUTYPE)
 
 # ===========================================================

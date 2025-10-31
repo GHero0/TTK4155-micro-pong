@@ -8,7 +8,7 @@
  *
  */ 
 
-#include "can_controller.h"
+#include "drivers/can_controller.h"
 
 #include "sam.h"
 

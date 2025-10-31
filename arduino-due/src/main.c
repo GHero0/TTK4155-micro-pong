@@ -1,9 +1,9 @@
 #include "sam.h"
 #include "stdio.h"
 #include "time.h"
-#include "uart.h"
-#include "can_controller.h"
-#include "can_interrupt.h"
+#include "drivers/uart.h"
+#include "drivers/can_controller.h"
+#include "drivers/can_interrupt.h"
 
 // CAN bit timing configuration parameters
 #define PHASE2 0x05  // Phase 2 segment (bits 2:0)
