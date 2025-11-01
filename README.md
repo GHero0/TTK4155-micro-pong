@@ -9,7 +9,7 @@ This project is developed as part of the **TTK4155** course: *Embedded and Indus
 
 ## 📥 Installation
 
-To get started, ensure you have a suitable development environment set up. You can use Microchip Studio on Windows or AVR Dudes on Linux.
+To get started, ensure you have a suitable development environment set up. You can use Microchip Studio on Windows or AVR Dudes for ATMEGA and OpenOCD along with ARM toolchain for Arduino on Linux.
 
 **To download the project:**
 ```
@@ -24,19 +24,30 @@ For Linux users please ensure that when you compile the project you do specify e
 
 ```
 .
-├── src/            # Every necessary *.c 
-│   ├── main.c
-│   ├── drivers/
-│   └── ...
+├── arduino-due/
+│   ├── src/
+│   │   ├── drivers/
+│   │   ├── main.c
+│   │   └── ...
+│   ├── include/
+│   │   ├── drivers/
+│   │   └── ...
+│   └── tests/ 
 │
-├── include/        # Every *.h
-│   ├── drivers/
-│   ├── global.h    
-│   ├── globaldec.h # Global variables declaration
-│   ├── constants.h # Constants declaration
-│   └── ...
-│
-├── tests/          # Every test *.c 
+├── atmega-162/
+│   ├── src/
+│   │   ├── drivers/
+│   │   ├── main.c
+│   │   └── ...
+│   │
+│   ├── include/    # Every *.h
+│   │   ├── tests/  # Every test_*.h
+│   │   ├── drivers/
+│   │   ├── global.h
+│   │   ├── globaldec.h # Global variables declaration
+│   │   ├── constants.h # Constants declaration
+│   │   └── ... 
+│   └── tests/      # Every test_*.c 
 │
 ├── docs/           # Documentation
 │   ├── datasheets/ # Datasheets
@@ -135,5 +146,5 @@ This ensures your local branch is up to date with the remote branch.
 ## Authors
 
 - **Felix** 
-- **Greg**
 - **George**
+- **Greg**
