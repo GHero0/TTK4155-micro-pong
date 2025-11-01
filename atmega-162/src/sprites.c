@@ -116,92 +116,6 @@ inline void SYM_V_2bpp(void)
     tmp0 = tile_2bpp[6]; tmp1 = tile_2bpp[7]; tile_2bpp[6] = tile_2bpp[8];  tile_2bpp[7] = tile_2bpp[9];  tile_2bpp[8]  = tmp0; tile_2bpp[9]  = tmp1;
 }
 
-inline void ROT_90CW_2bpp(void)
-{
-    unsigned char tmp[16];
-    
-    tmp[0]  = ((tile_2bpp[1] & 0x03) << 6) | ((tile_2bpp[3] & 0x03) << 4) | ((tile_2bpp[5] & 0x03) << 2) | (tile_2bpp[7] & 0x03);
-    tmp[2]  = ((tile_2bpp[1] & 0x0C) << 4) | ((tile_2bpp[3] & 0x0C) << 2) | (tile_2bpp[5] & 0x0C) | ((tile_2bpp[7] & 0x0C) >> 2);
-    tmp[4]  = ((tile_2bpp[1] & 0x30) << 2) | (tile_2bpp[3] & 0x30) | ((tile_2bpp[5] & 0x30) >> 2) | ((tile_2bpp[7] & 0x30) >> 4);
-    tmp[6]  = (tile_2bpp[1] & 0xC0) | ((tile_2bpp[3] & 0xC0) >> 2) | ((tile_2bpp[5] & 0xC0) >> 4) | ((tile_2bpp[7] & 0xC0) >> 6);
-    tmp[8]  = ((tile_2bpp[0] & 0x03) << 6) | ((tile_2bpp[2] & 0x03) << 4) | ((tile_2bpp[4] & 0x03) << 2) | (tile_2bpp[6] & 0x03);
-    tmp[10] = ((tile_2bpp[0] & 0x0C) << 4) | ((tile_2bpp[2] & 0x0C) << 2) | (tile_2bpp[4] & 0x0C) | ((tile_2bpp[6] & 0x0C) >> 2);
-    tmp[12] = ((tile_2bpp[0] & 0x30) << 2) | (tile_2bpp[2] & 0x30) | ((tile_2bpp[4] & 0x30) >> 2) | ((tile_2bpp[6] & 0x30) >> 4);
-    tmp[14] = (tile_2bpp[0] & 0xC0) | ((tile_2bpp[2] & 0xC0) >> 2) | ((tile_2bpp[4] & 0xC0) >> 4) | ((tile_2bpp[6] & 0xC0) >> 6);
-    
-    
-    tmp[1]  = ((tile_2bpp[9] & 0x03) << 6) | ((tile_2bpp[11] & 0x03) << 4) | ((tile_2bpp[13] & 0x03) << 2) | (tile_2bpp[15] & 0x03);
-    tmp[3]  = ((tile_2bpp[9] & 0x0C) << 4) | ((tile_2bpp[11] & 0x0C) << 2) | (tile_2bpp[13] & 0x0C) | ((tile_2bpp[15] & 0x0C) >> 2);
-    tmp[5]  = ((tile_2bpp[9] & 0x30) << 2) | (tile_2bpp[11] & 0x30) | ((tile_2bpp[13] & 0x30) >> 2) | ((tile_2bpp[15] & 0x30) >> 4);
-    tmp[7]  = (tile_2bpp[9] & 0xC0) | ((tile_2bpp[11] & 0xC0) >> 2) | ((tile_2bpp[13] & 0xC0) >> 4) | ((tile_2bpp[15] & 0xC0) >> 6);
-    tmp[9]  = ((tile_2bpp[8] & 0x03) << 6) | ((tile_2bpp[10] & 0x03) << 4) | ((tile_2bpp[12] & 0x03) << 2) | (tile_2bpp[14] & 0x03);
-    tmp[11] = ((tile_2bpp[8] & 0x0C) << 4) | ((tile_2bpp[10] & 0x0C) << 2) | (tile_2bpp[12] & 0x0C) | ((tile_2bpp[14] & 0x0C) >> 2);
-    tmp[13] = ((tile_2bpp[8] & 0x30) << 2) | (tile_2bpp[10] & 0x30) | ((tile_2bpp[12] & 0x30) >> 2) | ((tile_2bpp[14] & 0x30) >> 4);
-    tmp[15] = (tile_2bpp[8] & 0xC0) | ((tile_2bpp[10] & 0xC0) >> 2) | ((tile_2bpp[12] & 0xC0) >> 4) | ((tile_2bpp[14] & 0xC0) >> 6);
-
-    // Copy back 
-    tile_2bpp[0]  = tmp[0];
-    tile_2bpp[1]  = tmp[1];
-    tile_2bpp[2]  = tmp[2];
-    tile_2bpp[3]  = tmp[3];
-    tile_2bpp[4]  = tmp[4];
-    tile_2bpp[5]  = tmp[5];
-    tile_2bpp[6]  = tmp[6];
-    tile_2bpp[7]  = tmp[7];
-    tile_2bpp[8]  = tmp[8];
-    tile_2bpp[9]  = tmp[9];
-    tile_2bpp[10] = tmp[10];
-    tile_2bpp[11] = tmp[11];
-    tile_2bpp[12] = tmp[12];
-    tile_2bpp[13] = tmp[13];
-    tile_2bpp[14] = tmp[14];
-    tile_2bpp[15] = tmp[15];
-}
-
-
-inline void ROT_90CCW_2bpp(void)
-{
-    unsigned char tmp[16];
-
-    tmp[1]  = ((tile_2bpp[0] & 0xC0) >> 6) | ((tile_2bpp[2] & 0xC0) >> 4) | ((tile_2bpp[4] & 0xC0) >> 2) | (tile_2bpp[6] & 0xC0);
-    tmp[3]  = ((tile_2bpp[0] & 0x30) >> 4) | ((tile_2bpp[2] & 0x30) >> 2) | (tile_2bpp[4] & 0x30) | ((tile_2bpp[6] & 0x30) << 2);
-    tmp[5]  = ((tile_2bpp[0] & 0x0C) >> 2) | (tile_2bpp[2] & 0x0C) | ((tile_2bpp[4] & 0x0C) << 2) | ((tile_2bpp[6] & 0x0C) << 4);
-    tmp[7]  = (tile_2bpp[0] & 0x03) | ((tile_2bpp[2] & 0x03) << 2) | ((tile_2bpp[4] & 0x03) << 4) | ((tile_2bpp[6] & 0x03) << 6);
-    tmp[9]  = ((tile_2bpp[1] & 0xC0) >> 6) | ((tile_2bpp[3] & 0xC0) >> 4) | ((tile_2bpp[5] & 0xC0) >> 2) | (tile_2bpp[7] & 0xC0);
-    tmp[11] = ((tile_2bpp[1] & 0x30) >> 4) | ((tile_2bpp[3] & 0x30) >> 2) | (tile_2bpp[5] & 0x30) | ((tile_2bpp[7] & 0x30) << 2);
-    tmp[13] = ((tile_2bpp[1] & 0x0C) >> 2) | (tile_2bpp[3] & 0x0C) | ((tile_2bpp[5] & 0x0C) << 2) | ((tile_2bpp[7] & 0x0C) << 4);
-    tmp[15] = (tile_2bpp[1] & 0x03) | ((tile_2bpp[3] & 0x03) << 2) | ((tile_2bpp[5] & 0x03) << 4) | ((tile_2bpp[7] & 0x03) << 6);
-    
-    
-    tmp[0]  = ((tile_2bpp[8] & 0xC0) >> 6) | ((tile_2bpp[10] & 0xC0) >> 4) | ((tile_2bpp[12] & 0xC0) >> 2) | (tile_2bpp[14] & 0xC0);
-    tmp[2]  = ((tile_2bpp[8] & 0x30) >> 4) | ((tile_2bpp[10] & 0x30) >> 2) | (tile_2bpp[12] & 0x30) | ((tile_2bpp[14] & 0x30) << 2);
-    tmp[4]  = ((tile_2bpp[8] & 0x0C) >> 2) | (tile_2bpp[10] & 0x0C) | ((tile_2bpp[12] & 0x0C) << 2) | ((tile_2bpp[14] & 0x0C) << 4);
-    tmp[6]  = (tile_2bpp[8] & 0x03) | ((tile_2bpp[10] & 0x03) << 2) | ((tile_2bpp[12] & 0x03) << 4) | ((tile_2bpp[14] & 0x03) << 6);
-    tmp[8]  = ((tile_2bpp[9] & 0xC0) >> 6) | ((tile_2bpp[11] & 0xC0) >> 4) | ((tile_2bpp[13] & 0xC0) >> 2) | (tile_2bpp[15] & 0xC0);
-    tmp[10] = ((tile_2bpp[9] & 0x30) >> 4) | ((tile_2bpp[11] & 0x30) >> 2) | (tile_2bpp[13] & 0x30) | ((tile_2bpp[15] & 0x30) << 2);
-    tmp[12] = ((tile_2bpp[9] & 0x0C) >> 2) | (tile_2bpp[11] & 0x0C) | ((tile_2bpp[13] & 0x0C) << 2) | ((tile_2bpp[15] & 0x0C) << 4);
-    tmp[14] = (tile_2bpp[9] & 0x03) | ((tile_2bpp[11] & 0x03) << 2) | ((tile_2bpp[13] & 0x03) << 4) | ((tile_2bpp[15] & 0x03) << 6);
-
-    // Copy back
-    tile_2bpp[0]  = tmp[0];
-    tile_2bpp[1]  = tmp[1];
-    tile_2bpp[2]  = tmp[2];
-    tile_2bpp[3]  = tmp[3];
-    tile_2bpp[4]  = tmp[4];
-    tile_2bpp[5]  = tmp[5];
-    tile_2bpp[6]  = tmp[6];
-    tile_2bpp[7]  = tmp[7];
-    tile_2bpp[8]  = tmp[8];
-    tile_2bpp[9]  = tmp[9];
-    tile_2bpp[10] = tmp[10];
-    tile_2bpp[11] = tmp[11];
-    tile_2bpp[12] = tmp[12];
-    tile_2bpp[13] = tmp[13];
-    tile_2bpp[14] = tmp[14];
-    tile_2bpp[15] = tmp[15];
-}
-
-
 #define INV_BITS_1bpp(b) ( \
     ((b & 0x80) >> 7) | \
     ((b & 0x40) >> 5) | \
@@ -232,55 +146,6 @@ inline void SYM_V_1bpp(void)
     tmp = tile_1bpp[1]; tile_1bpp[1] = tile_1bpp[6]; tile_1bpp[6] = tmp;
     tmp = tile_1bpp[2]; tile_1bpp[2] = tile_1bpp[5]; tile_1bpp[5] = tmp;
     tmp = tile_1bpp[3]; tile_1bpp[3] = tile_1bpp[4]; tile_1bpp[4] = tmp;
-}
-
-inline void ROT_90CW_1bpp(void)
-{
-    unsigned char tmp[8];
-
-    tmp[0] = (tile_1bpp[7] & 0x01) << 7 | (tile_1bpp[6] & 0x01) << 6 | (tile_1bpp[5] & 0x01) << 5 | (tile_1bpp[4] & 0x01) << 4 | (tile_1bpp[3] & 0x01) << 3 | (tile_1bpp[2] & 0x01) << 2 | (tile_1bpp[1] & 0x01) << 1 | (tile_1bpp[0] & 0x01) << 0;
-    tmp[1] = (tile_1bpp[7] & 0x02) << 6 | (tile_1bpp[6] & 0x02) << 5 | (tile_1bpp[5] & 0x02) << 4 | (tile_1bpp[4] & 0x02) << 3 | (tile_1bpp[3] & 0x02) << 2 | (tile_1bpp[2] & 0x02) << 1 | (tile_1bpp[1] & 0x02) << 0 | (tile_1bpp[0] & 0x02) >> 1;
-    tmp[2] = (tile_1bpp[7] & 0x04) << 5 | (tile_1bpp[6] & 0x04) << 4 | (tile_1bpp[5] & 0x04) << 3 | (tile_1bpp[4] & 0x04) << 2 | (tile_1bpp[3] & 0x04) << 1 | (tile_1bpp[2] & 0x04) << 0 | (tile_1bpp[1] & 0x04) >> 1 | (tile_1bpp[0] & 0x04) >> 2;
-    tmp[3] = (tile_1bpp[7] & 0x08) << 4 | (tile_1bpp[6] & 0x08) << 3 | (tile_1bpp[5] & 0x08) << 2 | (tile_1bpp[4] & 0x08) << 1 | (tile_1bpp[3] & 0x08) << 0 | (tile_1bpp[2] & 0x08) >> 1 | (tile_1bpp[1] & 0x08) >> 2 | (tile_1bpp[0] & 0x08) >> 3;
-    tmp[4] = (tile_1bpp[7] & 0x10) << 3 | (tile_1bpp[6] & 0x10) << 2 | (tile_1bpp[5] & 0x10) << 1 | (tile_1bpp[4] & 0x10) << 0 | (tile_1bpp[3] & 0x10) >> 1 | (tile_1bpp[2] & 0x10) >> 2 | (tile_1bpp[1] & 0x10) >> 3 | (tile_1bpp[0] & 0x10) >> 4;
-    tmp[5] = (tile_1bpp[7] & 0x20) << 2 | (tile_1bpp[6] & 0x20) << 1 | (tile_1bpp[5] & 0x20) << 0 | (tile_1bpp[4] & 0x20) >> 1 | (tile_1bpp[3] & 0x20) >> 2 | (tile_1bpp[2] & 0x20) >> 3 | (tile_1bpp[1] & 0x20) >> 4 | (tile_1bpp[0] & 0x20) >> 5;
-    tmp[6] = (tile_1bpp[7] & 0x40) << 1 | (tile_1bpp[6] & 0x40) << 0 | (tile_1bpp[5] & 0x40) >> 1 | (tile_1bpp[4] & 0x40) >> 2 | (tile_1bpp[3] & 0x40) >> 3 | (tile_1bpp[2] & 0x40) >> 4 | (tile_1bpp[1] & 0x40) >> 5 | (tile_1bpp[0] & 0x40) >> 6;
-    tmp[7] = (tile_1bpp[7] & 0x80) << 0 | (tile_1bpp[6] & 0x80) >> 1 | (tile_1bpp[5] & 0x80) >> 2 | (tile_1bpp[4] & 0x80) >> 3 | (tile_1bpp[3] & 0x80) >> 4 | (tile_1bpp[2] & 0x80) >> 5 | (tile_1bpp[1] & 0x80) >> 6 | (tile_1bpp[0] & 0x80) >> 7;
-
-    // Copy back
-    tile_1bpp[0] = tmp[0];
-    tile_1bpp[1] = tmp[1];
-    tile_1bpp[2] = tmp[2];
-    tile_1bpp[3] = tmp[3];
-    tile_1bpp[4] = tmp[4];
-    tile_1bpp[5] = tmp[5];
-    tile_1bpp[6] = tmp[6];
-    tile_1bpp[7] = tmp[7];
-}
-
-
-inline void ROT_90CCW_1bpp(void)
-{
-    unsigned char tmp[8];
-    
-    tmp[0] = (tile_1bpp[0] & 0x01) << 7 | (tile_1bpp[1] & 0x01) << 6 | (tile_1bpp[2] & 0x01) << 5 | (tile_1bpp[3] & 0x01) << 4 | (tile_1bpp[4] & 0x01) << 3 | (tile_1bpp[5] & 0x01) << 2 | (tile_1bpp[6] & 0x01) << 1 | (tile_1bpp[7] & 0x01) << 0;
-    tmp[1] = (tile_1bpp[0] & 0x02) << 6 | (tile_1bpp[1] & 0x02) << 5 | (tile_1bpp[2] & 0x02) << 4 | (tile_1bpp[3] & 0x02) << 3 | (tile_1bpp[4] & 0x02) << 2 | (tile_1bpp[5] & 0x02) << 1 | (tile_1bpp[6] & 0x02) << 0 | (tile_1bpp[7] & 0x02) >> 1;
-    tmp[2] = (tile_1bpp[0] & 0x04) << 5 | (tile_1bpp[1] & 0x04) << 4 | (tile_1bpp[2] & 0x04) << 3 | (tile_1bpp[3] & 0x04) << 2 | (tile_1bpp[4] & 0x04) << 1 | (tile_1bpp[5] & 0x04) << 0 | (tile_1bpp[6] & 0x04) >> 1 | (tile_1bpp[7] & 0x04) >> 2;
-    tmp[3] = (tile_1bpp[0] & 0x08) << 4 | (tile_1bpp[1] & 0x08) << 3 | (tile_1bpp[2] & 0x08) << 2 | (tile_1bpp[3] & 0x08) << 1 | (tile_1bpp[4] & 0x08) << 0 | (tile_1bpp[5] & 0x08) >> 1 | (tile_1bpp[6] & 0x08) >> 2 | (tile_1bpp[7] & 0x08) >> 3;
-    tmp[4] = (tile_1bpp[0] & 0x10) << 3 | (tile_1bpp[1] & 0x10) << 2 | (tile_1bpp[2] & 0x10) << 1 | (tile_1bpp[3] & 0x10) << 0 | (tile_1bpp[4] & 0x10) >> 1 | (tile_1bpp[5] & 0x10) >> 2 | (tile_1bpp[6] & 0x10) >> 3 | (tile_1bpp[7] & 0x10) >> 4;
-    tmp[5] = (tile_1bpp[0] & 0x20) << 2 | (tile_1bpp[1] & 0x20) << 1 | (tile_1bpp[2] & 0x20) << 0 | (tile_1bpp[3] & 0x20) >> 1 | (tile_1bpp[4] & 0x20) >> 2 | (tile_1bpp[5] & 0x20) >> 3 | (tile_1bpp[6] & 0x20) >> 4 | (tile_1bpp[7] & 0x20) >> 5;
-    tmp[6] = (tile_1bpp[0] & 0x40) << 1 | (tile_1bpp[1] & 0x40) << 0 | (tile_1bpp[2] & 0x40) >> 1 | (tile_1bpp[3] & 0x40) >> 2 | (tile_1bpp[4] & 0x40) >> 3 | (tile_1bpp[5] & 0x40) >> 4 | (tile_1bpp[6] & 0x40) >> 5 | (tile_1bpp[7] & 0x40) >> 6;
-    tmp[7] = (tile_1bpp[0] & 0x80) << 0 | (tile_1bpp[1] & 0x80) >> 1 | (tile_1bpp[2] & 0x80) >> 2 | (tile_1bpp[3] & 0x80) >> 3 | (tile_1bpp[4] & 0x80) >> 4 | (tile_1bpp[5] & 0x80) >> 5 | (tile_1bpp[6] & 0x80) >> 6 | (tile_1bpp[7] & 0x80) >> 7;
-
-    // Copy back
-    tile_1bpp[0] = tmp[0];
-    tile_1bpp[1] = tmp[1];
-    tile_1bpp[2] = tmp[2];
-    tile_1bpp[3] = tmp[3];
-    tile_1bpp[4] = tmp[4];
-    tile_1bpp[5] = tmp[5];
-    tile_1bpp[6] = tmp[6];
-    tile_1bpp[7] = tmp[7];
 }
 
 void draw_tile_2bpp(signed char X, signed char Y) {
@@ -377,7 +242,7 @@ void draw_tile_2bpp(signed char X, signed char Y) {
 }
 
 
-inline void fetch_tile_from_tilemap_2bpp(unsigned short N) {
+void fetch_tile_from_tilemap_2bpp(unsigned short N) {
     unsigned char base_Y = N >> 4;
     unsigned char base_X = N & 0x0F;
     
@@ -419,7 +284,7 @@ void draw_sprite_2bpp(SPRITE Sp, signed char X, signed char Y){
     }
 }
 
-inline void fetch_tile_from_tilemap_1bpp(unsigned short N) {
+void fetch_tile_from_tilemap_1bpp(unsigned short N) {
     unsigned short base_addr = ((N >> 4) << 7) + (N & 0x0F);
     const unsigned char *src = &tilemap_1bpp[base_addr];
     

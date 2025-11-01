@@ -1,15 +1,6 @@
 #ifndef SPRITES_H
 #define SPRITES_H
 
-// #define ORI 0b00000000
-// #define HFL 0b00000001
-// #define VFL 0b00000010
-// #define REV 0b00000011
-// #define ROT 0b00000101
-// #define SPN 0b00000110
-// #define MDL 0b00001001
-// #define ADL 0b00001010
-
 #include "images.h"
 
 void draw_sprite_1bpp(SPRITE Sp, signed char X, signed char Y);
@@ -20,12 +11,8 @@ void draw_tile_1bpp(signed char X, signed char Y);
 void draw_tile_2bpp(signed char X, signed char Y);
 void SYM_H_1bpp(void);
 void SYM_V_1bpp(void);
-void ROT_90CW_1bpp(void);
-void ROT_90CCW_1bpp(void);
 void SYM_H_2bpp(void);
 void SYM_V_2bpp(void);
-void ROT_90CW_2bpp(void);
-void ROT_90CCW_2bpp(void);
 void draw_tilemap_1bpp(void);
 void draw_tilemap_2bpp(void);
 void draw_rectangle(int X, int Y, unsigned char width_in_tiles, unsigned char height_in_tiles);

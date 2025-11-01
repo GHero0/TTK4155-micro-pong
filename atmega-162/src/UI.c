@@ -94,15 +94,14 @@ void joystick_indicator(char X, char Y, unsigned char hand)
         case LEFT:
             fetch_tile_from_tilemap_2bpp(1);
             draw_tile_2bpp(X - 1, Y);
-            fetch_tile_from_tilemap_2bpp(2);
-            ROT_90CW_2bpp();
+            fetch_tile_from_tilemap_2bpp(3);
+            SYM_H_2bpp();
             draw_tile_2bpp(X - 8, Y);
             break;
         case RIGHT:
             fetch_tile_from_tilemap_2bpp(1);
             draw_tile_2bpp(X + 1, Y);
-            fetch_tile_from_tilemap_2bpp(2);
-            ROT_90CCW_2bpp();
+            fetch_tile_from_tilemap_2bpp(3);
             draw_tile_2bpp(X + 8, Y);
             break;
         default:
@@ -133,31 +132,30 @@ void joystick_indicator(char X, char Y, unsigned char hand)
         case 0x08: // LEFT
             fetch_tile_from_tilemap_2bpp(0);
             draw_tile_2bpp(X - 1, Y);
-            fetch_tile_from_tilemap_2bpp(2);
-            ROT_90CW_2bpp();
+            fetch_tile_from_tilemap_2bpp(3);
+            SYM_H_2bpp();
             draw_tile_2bpp(X - 8, Y);
             break;
 
         case 0x02: // RIGHT
             fetch_tile_from_tilemap_2bpp(0);
             draw_tile_2bpp(X + 1, Y);
-            fetch_tile_from_tilemap_2bpp(2);
-            ROT_90CCW_2bpp();
+            fetch_tile_from_tilemap_2bpp(3);
             draw_tile_2bpp(X + 8, Y);
             break;
 
         case 0x06: // DOWN + RIGHT
             fetch_tile_from_tilemap_2bpp(0);
             draw_tile_2bpp(X + 1, Y + 1);
-            fetch_tile_from_tilemap_2bpp(3);
-            ROT_90CCW_2bpp();
+            fetch_tile_from_tilemap_2bpp(4);
+            SYM_V_2bpp();
             draw_tile_2bpp(X + 7, Y + 7);
             break;
 
         case 0x0C: // DOWN + LEFT
             fetch_tile_from_tilemap_2bpp(0);
             draw_tile_2bpp(X - 1, Y + 1);
-            fetch_tile_from_tilemap_2bpp(3);
+            fetch_tile_from_tilemap_2bpp(4);
             SYM_V_2bpp();
             SYM_H_2bpp();
             draw_tile_2bpp(X - 7, Y + 7);
@@ -166,15 +164,15 @@ void joystick_indicator(char X, char Y, unsigned char hand)
         case 0x18: // Up + LEFT
             fetch_tile_from_tilemap_2bpp(0);
             draw_tile_2bpp(X - 1, Y - 1);
-            fetch_tile_from_tilemap_2bpp(3);
+            fetch_tile_from_tilemap_2bpp(4);
             SYM_H_2bpp();
             draw_tile_2bpp(X - 7, Y - 7);
             break;
 
-        case 0x12: // Up + LEFT
+        case 0x12: // Up + RIGHT
             fetch_tile_from_tilemap_2bpp(0);
             draw_tile_2bpp(X + 1, Y - 1);
-            fetch_tile_from_tilemap_2bpp(3);
+            fetch_tile_from_tilemap_2bpp(4);
             draw_tile_2bpp(X + 7, Y - 7);
             break;
 
@@ -185,7 +183,7 @@ void joystick_indicator(char X, char Y, unsigned char hand)
         }
     }
 }
-// * Woudl need to be changed at some point
+// * Would need to be changed at some point
 void button_indicator(char X, char Y, unsigned char hand, unsigned char number)
 {
     char x = X;
@@ -316,7 +314,7 @@ void cursor()
         tile_index = 0;
 
     // Choose base tile and draw without complicated offset logic
-    unsigned char base_tile = 4 + tile_index;
+    unsigned char base_tile = 6 + tile_index;
 
     fetch_tile_from_tilemap_2bpp(base_tile);
 
