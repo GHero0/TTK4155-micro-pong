@@ -46,18 +46,18 @@ uint8_t can_init(uint32_t can_br, uint8_t num_tx_mb, uint8_t num_rx_mb)
 {
 	
 	//Make sure num_rx_mb and num_tx_mb is valid
-	if(num_rx_mb > 8 | num_tx_mb > 8 | num_rx_mb + num_tx_mb > 8)
+	if((num_rx_mb > 8) | (num_tx_mb > 8) | (num_rx_mb + num_tx_mb > 8))
 	{
 		return 1; //Too many mailboxes is configured
 	}
 
 
-	uint32_t ul_status; 
+	// uint32_t ul_status; 
 	
 	//Disable can
 	CAN0->CAN_MR &= ~CAN_MR_CANEN; 
-	//Clear status register on read
-	ul_status = CAN0->CAN_SR; 
+	// //Clear status register on read
+	// ul_status = CAN0->CAN_SR; 
 	
 	
 	// Disable interrupts on CANH and CANL pins

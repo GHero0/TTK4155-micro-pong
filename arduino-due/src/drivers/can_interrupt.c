@@ -1,84 +1,37 @@
-/*
- * interrupt.c
- *
- * Author: Gustav O. Often and Eivind H. J�lsgard
- *
- * For use in TTK4155 Embedded and Industrial Computer Systems Design
- * NTNU - Norwegian University of Science and Technology
- *
- */ 
-
 #include "drivers/can_interrupt.h"
+#include "drivers/can_controller.h"
+#include "sam.h"
+#include "global.h"
 
 #include <stdio.h>
-#include "sam.h"
 
-// #include "../uart_and_printf/printf-stdarg.h"
 
-#include "drivers/can_controller.h"
-
-#define DEBUG_INTERRUPT 1
-
-/**
- * \brief CAN0 Interrupt handler for RX, TX and bus error interrupts
- *
- * \param void
- *
- * \retval 
- */
-void CAN0_Handler( void )
+void CAN0_Handler(void)
 {
-	if(DEBUG_INTERRUPT)printf("CAN0 interrupt\n\r");
-	char can_sr = CAN0->CAN_SR; 
-	
-	//RX interrupt
-	if(can_sr & (CAN_SR_MB1 | CAN_SR_MB2) )//Only mailbox 1 and 2 specified for receiving
-	{
-		CAN_MESSAGE message;
-		if(can_sr & CAN_SR_MB1)  //Mailbox 1 event
-		{
-			can_receive(&message, 1);
+    uint8_t status = CAN0->CAN_SR;
 
-		}
-		else if(can_sr & CAN_SR_MB2) //Mailbox 2 event
-		
-		{
-			can_receive(&message, 2);
-		}
-		else
-		{
-			printf("CAN0 message arrived in non-used mailbox\n\r");
-		}
+    // Check RX Mailbox 1
+    if (status & CAN_SR_MB1)
+    {
+        can_receive((CAN_MESSAGE *)&mb1_buffer, 1);
 
-		if(DEBUG_INTERRUPT)printf("message id: %d\n\r", message.id);
-		if(DEBUG_INTERRUPT)printf("message data length: %d\n\r", message.data_length);
-		for (int i = 0; i < message.data_length; i++)
-		{
-			if(DEBUG_INTERRUPT)printf("%02X ", message.data[i]);
-		}
-		if(DEBUG_INTERRUPT)printf("\n\r");
-	}
-	
-	if(can_sr & CAN_SR_MB0)
-	{
-		if(DEBUG_INTERRUPT) printf("CAN0 MB0 ready to send \n\r");
-		
-	//Disable interrupt
-		CAN0->CAN_IDR = CAN_IER_MB0;
+        Flag_CAN_MB1 = 1;
 
-	}
+        // Re-arm mailbox properly for next message 
+        CAN0->CAN_MB[1].CAN_MMR = CAN_MMR_MOT_MB_RX;
+        CAN0->CAN_MB[1].CAN_MCR |= CAN_MCR_MTCR;
+    }
 
-	if(can_sr & CAN_SR_ERRP)
-	{
-		if(DEBUG_INTERRUPT)printf("CAN0 ERRP error\n\r");
+    // Check RX Mailbox 2
+    if (status & CAN_SR_MB2)
+    {
+        can_receive((CAN_MESSAGE *)&mb2_buffer, 2);
+        
+		Flag_CAN_MB2 = 1;
 
-	}
-	if(can_sr & CAN_SR_TOVF)
-	{
-		if(DEBUG_INTERRUPT)printf("CAN0 timer overflow\n\r");
+        CAN0->CAN_MB[2].CAN_MMR = CAN_MMR_MOT_MB_RX;
+        CAN0->CAN_MB[2].CAN_MCR |= CAN_MCR_MTCR;
+    }
 
-	}
-	
-	NVIC_ClearPendingIRQ(ID_CAN0);
-	//sei();*/
+    NVIC_ClearPendingIRQ(ID_CAN0);
 }
