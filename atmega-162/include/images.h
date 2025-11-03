@@ -1,3 +1,8 @@
+/**
+ * @file images.h
+ * @brief Passing tilemaps and font_spacing to sprites
+ */
+
 #ifndef IMAGES_H
 #define IMAGES_H
 

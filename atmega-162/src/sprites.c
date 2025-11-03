@@ -1,6 +1,7 @@
 /**
  * @file sprites.c
- * @brief Sprites/tiles handling implementation and some usefull prints for the screen
+ * @brief Sprites/tiles handling implementation and 
+ * some usefull print functions for the screen
  */
 
 #include "sprites.h"
@@ -9,46 +10,46 @@
 
 #include <avr/pgmspace.h>
 
-// =============================================
-//           Sprites / Tile System
-// ---------------------------------------------
-// "Innovation with Limited Resources". Graphics
-// inspired by old Gameboy, tiling system.
-//
-// Hours have been spent optimizing this piece
-// of code. Carefully think before modifying ...
-// =============================================
+/*
+* ==============================================================================
+* Sprites / Tile System
+* ------------------------------------------------------------------------------
+* "Innovation with Limited Resources". 
+* Graphics inspired by old Gameboy, tiling system.
+*
+* Hours have been spent optimizing this piece of code. 
+* Carefully think before modifying ...
+* ==============================================================================
+*/
 
-// The tilemap is a representation of every tile.
-// It is stored in Flash memory.
+/*
+* ==============================================================================
+* Tilemap and Tile Transformations
+* ------------------------------------------------------------------------------
+* To save space we will use a tilemap for drawing onto the screen. The tilemap 
+* is an array of all the tiles and it is stored in Flash memory.
+*
+* To spare as much space of Flash as possible, we shall use basic 
+* transformations to multiply our avaiables tiles in memory.
+* We have Sym(): Horizontal & Vertical Flip and 180° rotation
+* ==============================================================================
+*/
 
-// What is a tile: It's 8px x 8px. Instead of
-// representing a pixel by 1 bit, we will
-// represent it on 2 bits. It's usefull for
-// sprites transparency & cool FX.
-//
-// ----------------------------------
-//   Format of pixel format in tile
-// ----------------------------------
-// 0b00 => Black
-// 0b01 => XOR
-// 0b10 => Transparent
-// 0b11 => White
-
-// =============================================
-//           Tile manipulation
-// ---------------------------------------------
-//
-// To spare as much space of Flash as possible,
-// we shall use basic transformations to
-// multiply our avaiables tiles in memory.
-//
-// We have Sym(): Horizontal & Vertical Flip
-// And also Rot(): For 90deg rotations
-// We combine those to get the other variatons.
-// So in total we have 8 variations per tile.
-//
-// --------------------------------------------
+/*
+* ==============================================================================
+* Tile Formats 1bpp and 2bpp 
+* ------------------------------------------------------------------------------
+* 2bpp: Allow for more flexibility but takes more space
+*   0b00 => Black
+*   0b01 => XOR
+*   0b10 => Transparent
+*   0b11 => White
+*
+* 1bpp: Takes less space but can only be using carefully or for background
+*   0b0 => Black
+*   0b1 => White
+* ==============================================================================
+*/
 
 static unsigned char tile_2bpp[16] = {
     0b11000000, 0b10000000,
@@ -71,7 +72,6 @@ static unsigned char tile_1bpp[8] = {
     0b00000011};
 
 #define INV_BITS_2bpp(b) (((b & 0x03) << 6) | ((b & 0x0C) << 2) | ((b & 0x30) >> 2) | ((b & 0xC0) >> 6))
-// #define SAFE_SHIFT(table, shift)  ((shift) >= 0 ? (table) << (shift) : (table) >> ((-(shift)) & 7))
 
 inline void SYM_H_2bpp(void)
 {
@@ -625,7 +625,6 @@ void draw_rectangle(int X, int Y, unsigned char width_in_tiles, unsigned char he
     }
 }
 
-// TODO: Change its parameters and propagate to the subsidiary functions
 void draw_line(signed char x0, signed char y0, signed char x1, signed char y1)
 {
     // Clipped if outside of the screen
@@ -705,9 +704,8 @@ void draw_line(signed char x0, signed char y0, signed char x1, signed char y1)
     }
 }
 
-void draw_char(char c, char X, char Y)
+static void draw_char(char c, char X, char Y)
 {
-
     if (c < 32 || c > 126)
         return; // Unsupported character
     if (c > 96 && c <= 122)

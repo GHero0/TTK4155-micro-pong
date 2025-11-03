@@ -1,3 +1,8 @@
+/**
+ * @file joystick.h
+ * @brief Joystick function and global variables for position and direction
+ */
+
 #ifndef JOYSTICK_H
 #define JOYSTICK_H
 

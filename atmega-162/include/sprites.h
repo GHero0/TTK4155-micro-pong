@@ -22,7 +22,6 @@ void draw_tilemap_1bpp(void);
 void draw_tilemap_2bpp(void);
 void draw_rectangle(int X, int Y, unsigned char width_in_tiles, unsigned char height_in_tiles);
 void draw_line(signed char x0, signed char y0, signed char x1, signed char y1);
-void draw_char(char c, char X, char Y);
 void draw_string(const char* str, char X, char Y);
 
 

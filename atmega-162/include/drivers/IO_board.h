@@ -1,3 +1,7 @@
+/**
+ * @file IO_board.h
+ * @brief IO_board_update() function and global variables
+ */
 #ifndef IO_BOARD_H
 #define IO_BOARD_H
 

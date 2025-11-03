@@ -1,3 +1,9 @@
+/**
+ * @file inter.c
+ * @brief Interrupts init and Interrupt handling code along with
+ * adc channels buffers and flag variables
+ */
+
 #include "inter.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>

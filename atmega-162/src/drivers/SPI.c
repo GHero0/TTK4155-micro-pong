@@ -1,7 +1,12 @@
+/**
+ * @file SPI.c
+ * @brief SPI Driver Implementation
+ */
+
 #include "drivers/SPI.h"
+#include "config.h"
 
 #include <stdio.h>
-
 
 void SPI_Init(void)
 {

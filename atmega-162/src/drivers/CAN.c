@@ -1,3 +1,8 @@
+/**
+ * @file CAN.c
+ * @brief CAN Driver Implementation
+ */
+
 #include "drivers/CAN.h"
 #include "config.h"
 #include "drivers/SPI.h"

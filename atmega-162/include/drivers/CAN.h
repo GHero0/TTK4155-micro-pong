@@ -1,3 +1,8 @@
+/**
+ * @file CAN.h
+ * @brief CAN Driver prototypes and Chip configuration
+ */
+
 #ifndef CAN_H
 #define CAN_H
 

@@ -1,8 +1,12 @@
+/**
+ * @file OLED.c
+ * @brief OLED Driver and Frame Buffer Implementation
+ */
+
 #include "drivers/SPI.h"
 #include "config.h"
 #include "drivers/OLED.h"
 
-#include <stdio.h>
 #include <util/delay.h>
 #include <string.h>
 

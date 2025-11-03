@@ -1,3 +1,8 @@
+/**
+ * @file PWM.c
+ * @brief PWM_init() function that enables timers
+ */
+
 #include "PWM.h"
 
 #include <avr/io.h>

@@ -1,16 +1,20 @@
+/**
+ * @file IO_board.c
+ * @brief IO_board Driver and global variables declaration
+ */
 #include "drivers/IO_board.h"
+#include "types.h"
 #include "config.h"
 #include "drivers/SPI.h"
 
 #include <util/delay.h>
-#include "types.h"
 
 Buttons buttons = {{0},{0},{0}};
 TouchPad touch_pad = {0,0,0};
 unsigned char slider = 0;  
 LedState leds[6] = {0};
 
-void IO_board_read_buttons(void)
+static void IO_board_read_buttons(void)
 {
     SPI_Select_Slave(1);
     SPI_Write_byte(0x04); // COMMAND Select Buttons Address
@@ -23,7 +27,7 @@ void IO_board_read_buttons(void)
     SPI_Select_Slave(0);
 }
 
-void IO_board_read_slider(void)
+static void IO_board_read_slider(void)
 {
     SPI_Select_Slave(1);
     SPI_Write_byte(0x02); // COMMAND Select SLIDER Address
@@ -32,7 +36,7 @@ void IO_board_read_slider(void)
     SPI_Select_Slave(0);
 }
 
-void IO_board_read_touchpad(void)
+static void IO_board_read_touchpad(void)
 {
     SPI_Select_Slave(1);
     SPI_Write_byte(0x01); // COMMAND Select TouchPAD Address
@@ -45,7 +49,7 @@ void IO_board_read_touchpad(void)
     SPI_Select_Slave(0);
 }
 
-void IO_board_write_leds(void)
+static void IO_board_write_leds(void)
 {
     for (unsigned char i = 0; i < LED_COUNT; i++)
     {
@@ -60,7 +64,7 @@ void IO_board_write_leds(void)
     }
 }
 
-void IO_board_write_pwm(void)
+static void IO_board_write_pwm(void)
 {
     for (unsigned char i = 0; i < LED_COUNT; i++)
     {

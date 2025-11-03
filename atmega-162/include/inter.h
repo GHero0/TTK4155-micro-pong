@@ -1,3 +1,8 @@
+/**
+ * @file inter.h
+ * @brief Interrupts Init prototype, flag and adc channels buffer
+ */
+
 #ifndef INTER_H
 #define INTER_H
 

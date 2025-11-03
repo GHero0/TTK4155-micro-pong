@@ -1,4 +1,12 @@
+/**
+ * @file images.c
+ * @author George PIRCA
+ * @brief Main tilemaps in both 1bpp, 2bpp format and font spacing
+ */
+
 #include "images.h"
+
+#include <avr/pgmspace.h>
 
 const unsigned char PROGMEM tilemap_1bpp[1024] = {
     0xFF, 0xBB, 0xDD, 0x55, 0x44, 0x22, 0x00, 0x00, 0x00, 0x78, 0xD8, 0x03, 0xF0, 0x0A, 0x80, 0x54,

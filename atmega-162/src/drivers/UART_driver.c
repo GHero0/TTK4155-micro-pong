@@ -1,6 +1,6 @@
 /**
  * @file UART_driver.c
- * @brief UART Implementaiton functions along with stdio coupling
+ * @brief UART Driver Implementaiton functions along with stdio coupling
  */
 
 #include "drivers/UART_driver.h"
@@ -35,7 +35,7 @@ void UART_Transmit_String (char*String){
 	}
 }
 
-int UART_Putchar(char c, FILE *stream)
+static int UART_Putchar(char c, FILE *stream)
 {
   if (c == '\n'){
     UART_Putchar('\r', stream);
@@ -44,7 +44,7 @@ int UART_Putchar(char c, FILE *stream)
   return 0;
 }
 
-int UART_Getchar(FILE *stream){
+static int UART_Getchar(FILE *stream){
     return UART_Receive();
 }
 
