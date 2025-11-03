@@ -5,10 +5,10 @@
 #include <util/delay.h>
 #include "types.h"
 
-BUTTONS buttons = {{0},{0},{0}};
-TOUCH_PAD touch_pad = {0,0,0};
+Buttons buttons = {{0},{0},{0}};
+TouchPad touch_pad = {0,0,0};
 unsigned char slider = 0;  
-LED_STATE leds[6] = {0};
+LedState leds[6] = {0};
 
 void IO_board_read_buttons(void)
 {

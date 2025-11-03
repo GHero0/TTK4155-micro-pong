@@ -3,12 +3,12 @@
 
 #include "types.h"
 
-void Joystick_convert(void);
-void Joystick_init(void);
+void Joystick_Convert(void);
+void Joystick_Init(void);
 
 // Joystick Controls
-extern JOY_DIR joystick_dir;
-extern JOY_POS joystick_pos;
+extern JoyDir joystick_dir;
+extern JoyPos joystick_pos;
 // Joystick Calibration
 extern unsigned char JOY_X_MIN;
 extern unsigned char JOY_X_MAX;

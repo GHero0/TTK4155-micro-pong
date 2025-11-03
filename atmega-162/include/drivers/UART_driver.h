@@ -3,13 +3,13 @@
 
 
 // UART only 
-void USART_Init(void);
-void USART_Transmit(unsigned char data);
-unsigned char USART_Receive(void);
-void USART_Transmit_String (char*String);
+void UART_Init(void);
+void UART_Transmit(unsigned char data);
+unsigned char UART_Receive(void);
+void UART_Transmit_String (char*String);
 
 // UART & stdio
-int UART_stdio_init(void);
+int UART_Stdio_Init(void);
 
 #define BAUD 9600  
 #define MYUBRR ((F_CPU/16/BAUD) - 1) 

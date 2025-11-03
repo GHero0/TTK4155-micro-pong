@@ -1,5 +1,7 @@
-#ifndef CAN_H_
-#define CAN_H_
+#ifndef CAN_H
+#define CAN_H
+
+#include "types.h"
 
 #include <stdint.h>
 
@@ -44,13 +46,6 @@
 // TX Buffer 
 #define TXB0 			0x01
 
-// CAN Message struct
-typedef struct {
-	uint16_t message_id;
-	char message_data_length;
-	char message_data[8];
-} messageCAN_t;
-
 void CAN_Read(unsigned char address_byte, unsigned char *buffer, unsigned char lentgh);
 void CAN_Write(unsigned char address_byte, unsigned char *buffer, unsigned char length);
 void CAN_WriteByte(unsigned char address_byte, unsigned char data);
@@ -59,8 +54,8 @@ unsigned char CAN_ReadStatus(void);
 void CAN_BitModify(unsigned char address_byte, unsigned char mask, unsigned char data);
 void CAN_Reset(void);
 void CAN_Init(void);
-void CAN_Send_Message(messageCAN_t);
-messageCAN_t CAN_Receive_Message(void);
+void CAN_Send_Message(CANMessage);
+CANMessage CAN_Receive_Message(void);
 void CAN_Read_TX_Buffer(void);
 
 void CAN_Read_Print_All_Control_Registers(void);

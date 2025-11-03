@@ -8,10 +8,10 @@
 void IO_board_update(void);
 
 // IO-Board Buttons
-extern BUTTONS buttons;
+extern Buttons buttons;
 // Maybe change later on ... ! 
-extern TOUCH_PAD touch_pad;
+extern TouchPad touch_pad;
 extern unsigned char slider;  
-extern LED_STATE leds[6];
+extern LedState leds[6];
 
 #endif

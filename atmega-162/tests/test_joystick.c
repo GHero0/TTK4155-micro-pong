@@ -5,7 +5,7 @@
 
 void test_joystick(void)
 {
-    Joystick_convert();
+    Joystick_Convert();
 
     printf("X: %4d.%03d, Y: %4d.%03d, CH02: %3d, CH03: %3d, Dir: %5s\n",
            joystick_pos.X >> 8, joystick_pos.X & 0xFF,

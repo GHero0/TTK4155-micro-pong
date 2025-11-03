@@ -2,7 +2,7 @@
 
 #include <avr/io.h>
 
-void PWM_init(void)
+void PWM_Init(void)
 {
     DDRD |= (1 << PD5);
     TCCR1A = 0;

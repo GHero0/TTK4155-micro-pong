@@ -1,10 +1,15 @@
+/**
+ * @file sprites.h
+ * @brief Sprites/tiles handling and some usefull prints for the screen
+ */
+
 #ifndef SPRITES_H
 #define SPRITES_H
 
-#include "images.h"
+#include "types.h"
 
-void draw_sprite_1bpp(SPRITE Sp, signed char X, signed char Y);
-void draw_sprite_2bpp(SPRITE Sp, signed char X, signed char Y);
+void draw_sprite_1bpp(Sprite Sp, signed char X, signed char Y);
+void draw_sprite_2bpp(Sprite Sp, signed char X, signed char Y);
 void fetch_tile_from_tilemap_1bpp(unsigned short N);
 void fetch_tile_from_tilemap_2bpp(unsigned short N);
 void draw_tile_1bpp(signed char X, signed char Y);

@@ -4,7 +4,7 @@
 #include <avr/io.h>
 #include <stdio.h>
 
-void USART_Init(){
+void UART_Init(){
     /* Set baud rate */
     UBRR0H = (unsigned char)(MYUBRR >> 8);
     UBRR0L = (unsigned char)(MYUBRR);
@@ -13,42 +13,42 @@ void USART_Init(){
     UCSR0C = (1 << URSEL0) | (1 << UCSZ01) | (1 << UCSZ00);
 }
 
-void USART_Transmit(unsigned char data){
+void UART_Transmit(unsigned char data){
     while ( !( UCSR0A & (1<<UDRE0)) );
     UDR0 = data;
 }
 
-unsigned char USART_Receive(void){
+unsigned char UART_Receive(void){
     while ( !(UCSR0A & (1<<RXC0)) );
     return UDR0;
 }
 
-void USART_Transmit_String (char*String){
+void UART_Transmit_String (char*String){
 	while(*String)
 	{
-		USART_Transmit(*String);
+		UART_Transmit(*String);
 		String++;
 	}
 }
 
-int uart_putchar(char c, FILE *stream)
+int UART_Putchar(char c, FILE *stream)
 {
   if (c == '\n'){
-    uart_putchar('\r', stream);
+    UART_Putchar('\r', stream);
   }
-  USART_Transmit(c);
+  UART_Transmit(c);
   return 0;
 }
 
-int uart_getchar(FILE *stream){
-    return USART_Receive();
+int UART_Getchar(FILE *stream){
+    return UART_Receive();
 }
 
-FILE uart_output = FDEV_SETUP_STREAM(uart_putchar, NULL,_FDEV_SETUP_WRITE);
+FILE uart_output = FDEV_SETUP_STREAM(UART_Putchar, NULL,_FDEV_SETUP_WRITE);
 
-FILE uart_input = FDEV_SETUP_STREAM(NULL, uart_getchar, _FDEV_SETUP_READ);
+FILE uart_input = FDEV_SETUP_STREAM(NULL, UART_Getchar, _FDEV_SETUP_READ);
 
-int UART_stdio_init(){
+int UART_Stdio_Init(){
     stdout = &uart_output;
     stdin = &uart_input;
     return 0;

@@ -10,15 +10,15 @@ void test_UART_Transmit(){
     
     for (i = 0; i < 10; i++)
     {
-        USART_Transmit('f');
-        USART_Transmit('\n');
-        USART_Transmit('\r');
+        UART_Transmit('f');
+        UART_Transmit('\n');
+        UART_Transmit('\r');
     }
     for (i = 0; i < 10; i++)
     {
-        USART_Transmit_String("Hello World !");
-        USART_Transmit('\n');
-        USART_Transmit('\r');
+        UART_Transmit_String("Hello World !");
+        UART_Transmit('\n');
+        UART_Transmit('\r');
     }
     for (i = 0; i < 10; i++)
     {
@@ -33,7 +33,7 @@ void test_UART_Receive(){
     bool part2_end = false;
 
     while (!(part1_end)){
-        received_char = USART_Receive();
+        received_char = UART_Receive();
         printf("Received character: %c\n", received_char);
         if (received_char == 'f') part1_end = true;
     }

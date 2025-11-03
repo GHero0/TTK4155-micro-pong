@@ -1,5 +1,5 @@
-#ifndef OLED_H_
-#define OLED_H_
+#ifndef OLED_H
+#define OLED_H
 
 #include <avr/io.h>
 
@@ -7,10 +7,10 @@
 #define DISP_RES PB1 // To reset the display device
 
 void OLED_Init(void);
-void FrameBufferInit(void);
-void FrameBufferClear(void);
-void FrameBufferPush(void);
-void FrameBufferSwap(void);
+void FrameBuffer_Init(void);
+void FrameBuffer_Clear(void);
+void FrameBuffer_Push(void);
+void FrameBuffer_Swap(void);
 
 // OLED frame buffer
 extern unsigned char * volatile framebuffer;

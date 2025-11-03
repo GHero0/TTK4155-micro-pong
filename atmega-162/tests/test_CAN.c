@@ -27,7 +27,7 @@ void test_CAN_static(void)
     
     printf("Hello there\n");
     
-    messageCAN_t msgCAN = {
+    CANMessage msgCAN = {
         .message_id = 0x01,
         .message_data_length = 8,
         .message_data = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08}
@@ -42,7 +42,7 @@ void test_CAN_static(void)
 
     
     // Receive message
-    messageCAN_t received_msg = CAN_Receive_Message();
+    CANMessage received_msg = CAN_Receive_Message();
     
     // Print received message with CORRECT format specifiers
     printf("====MSG1====\n");

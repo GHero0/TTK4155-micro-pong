@@ -1,3 +1,8 @@
+/**
+ * @file main.h
+ * @brief Includes header files that are needed and declares a main_init()
+ */
+
 #ifndef MAIN_H
 #define MAIN_H
 
@@ -16,17 +21,17 @@
 
 #include "tests/test_UI.h"
 
-void main_init(void)
+void Main_Init(void)
 {
-    PWM_init();
-    USART_Init();
-    UART_stdio_init();
+    PWM_Init();
+    UART_Init();
+    UART_Stdio_Init();
     SRAM_Init();
     Inter_Init();
-    Joystick_init();
+    Joystick_Init();
     SPI_Init();
     OLED_Init();
-    FrameBufferInit();
+    FrameBuffer_Init();
     CAN_Reset();
     CAN_Init();
 }

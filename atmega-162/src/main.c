@@ -1,7 +1,7 @@
 #include "main.h"
 
 
-messageCAN_t msgCAN = {
+CANMessage msgCAN = {
     .message_id = 2,
     .message_data_length = 4,
     .message_data = {0x11, 0x22, 0x33, 0x44}
@@ -9,18 +9,18 @@ messageCAN_t msgCAN = {
 
 int main(void)
 {
-    main_init();
+    Main_Init();
 
     while (1)
     {
         if (Flag_screen)
         {
-            FrameBufferClear();
+            FrameBuffer_Clear();
 
             debug_window();
 
-            FrameBufferPush();
-            FrameBufferSwap();
+            FrameBuffer_Push();
+            FrameBuffer_Swap();
 
             Flag_screen = 0;
         }
@@ -44,7 +44,7 @@ int main(void)
         CAN_Send_Message(msgCAN);
 
         IO_board_update();
-        Joystick_convert();
+        Joystick_Convert();
 
         map_touchpad();
     }

@@ -5,8 +5,8 @@
 #include <stdlib.h>
 
 // Joystick Controls
-JOY_DIR joystick_dir = NEUTRAL;
-JOY_POS joystick_pos = {0, 0};
+JoyDir joystick_dir = NEUTRAL;
+JoyPos joystick_pos = {0, 0};
 
 // Joystick Calibration
 unsigned char JOY_X_MIN = 68;
@@ -21,13 +21,13 @@ unsigned char DEADZONE_X = 20;
 unsigned char DEADZONE_Y = 20;
 
 // single SCALE used for both axes (if ranges differ, define SCALE_X and SCALE_Y)
-void Joystick_init(void)
+void Joystick_Init(void)
 {
     SCALE_X = (200UL * 256UL) / (JOY_X_MAX - JOY_X_MIN);
     SCALE_Y = (200UL * 256UL) / (JOY_Y_MAX - JOY_Y_MIN);
 }
 
-void Joystick_convert(void)
+void Joystick_Convert(void)
 {
     if (Flag_ADC_ready == 1) {
 

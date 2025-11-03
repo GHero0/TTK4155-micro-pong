@@ -99,7 +99,7 @@ void CAN_Init()
 	
 }
 
-void CAN_Send_Message(messageCAN_t message_to_send)
+void CAN_Send_Message(CANMessage message_to_send)
 {
 	// ==== WAITING UNTIL PREVIOUS TRANSMISSION IS DONE =====
 	// Wait until TXB0 is cleared
@@ -125,9 +125,9 @@ void CAN_Send_Message(messageCAN_t message_to_send)
 	CAN_Request2Send(TXB0);
 }
 
-messageCAN_t CAN_Receive_Message()
+CANMessage CAN_Receive_Message()
 {
-	messageCAN_t received_message;
+	CANMessage received_message;
 	
 	uint8_t buffer_read[13] = {0};
 	CAN_Read(RXB0SIDH, buffer_read, 13); 

@@ -71,20 +71,20 @@ void OLED_Init(void)
 // of code. Carefully think before modifying ... 
 // =============================================
 
-void FrameBufferInit()
+void FrameBuffer_Init()
 {
     current_buffer = doublebuffer;
     screen_buffer  = framebuffer;
 }
 
-void FrameBufferSwap() 
+void FrameBuffer_Swap() 
 {
     unsigned char * volatile tmp = screen_buffer;
     screen_buffer  = current_buffer;
     current_buffer = tmp;
 }
 
-void FrameBufferClear()
+void FrameBuffer_Clear()
 {
     memset((unsigned char *)current_buffer, 0, 1024);
 }
@@ -123,7 +123,7 @@ unsigned char pack_bits(
     return result;
 }
 
-void FrameBufferPush(void)
+void FrameBuffer_Push(void)
 {
     OLED_DISP_DC_Command();
     SPI_Select_Slave(2);
