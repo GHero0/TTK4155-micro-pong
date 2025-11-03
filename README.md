@@ -40,22 +40,21 @@ For Linux users please ensure that when you compile the project you do specify e
 │   │   ├── main.c
 │   │   └── ...
 │   │
-│   ├── include/    # Every *.h
-│   │   ├── tests/  # Every test_*.h
+│   ├── include/        # Every *.h
+│   │   ├── tests/      # Every test_*.h
 │   │   ├── drivers/
-│   │   ├── global.h
-│   │   ├── globaldec.h # Global variables declaration
-│   │   ├── constants.h # Constants declaration
+│   │   ├── main.h
+│   │   ├── config.h    # Configuration declaration
 │   │   └── ... 
-│   └── tests/      # Every test_*.c 
+│   └── tests/          # Every test_*.c 
 │
-├── docs/           # Documentation
-│   ├── datasheets/ # Datasheets
+├── docs/               # Documentation
+│   ├── datasheets/     # Datasheets
 │   └── ...
 │
-├── assets/         # Additional resources
+├── assets/             # Additional resources
 │
-├── .gitignore      # You shall not pass :)
+├── .gitignore          # You shall not pass :)
 └── README.md
 ```
 
