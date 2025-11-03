@@ -3,8 +3,6 @@
 
 #include "types.h"
 
-#define LED_COUNT 6
-
 void IO_board_update(void);
 
 // IO-Board Buttons

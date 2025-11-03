@@ -1,5 +1,5 @@
-#include "hardware.h"
 #include "drivers/SPI.h"
+#include "config.h"
 #include "drivers/OLED.h"
 
 #include <stdio.h>

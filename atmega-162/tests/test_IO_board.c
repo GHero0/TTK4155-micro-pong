@@ -1,5 +1,5 @@
-#include "hardware.h"
 #include "tests/test_IO_board.h"
+#include "config.h"
 #include "drivers/IO_board.h"
 
 #include <util/delay.h>

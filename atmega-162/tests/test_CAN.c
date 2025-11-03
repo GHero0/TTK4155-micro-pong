@@ -1,7 +1,8 @@
-#include "hardware.h"
 #include "tests/test_CAN.h"
+#include "config.h"
 #include "drivers/CAN.h"
 #include "drivers/SPI.h"
+
 #include <util/delay.h>
 #include <stdio.h>
 #include <stdint.h>

@@ -1,5 +1,5 @@
-#include "hardware.h"
 #include "tests/test_latch.h"
+#include "config.h"
 
 #include <util/delay.h>
 #include <avr/io.h>

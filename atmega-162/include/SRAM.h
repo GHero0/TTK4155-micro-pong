@@ -1,3 +1,8 @@
+/**
+ * @file SRAM.h
+ * @brief External SRAM Init and adc address space
+ */
+
 #ifndef SRAM_H
 #define SRAM_H
 

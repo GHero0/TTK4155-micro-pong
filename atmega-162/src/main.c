@@ -1,5 +1,9 @@
-#include "main.h"
+/**
+ * @file main.c
+ * @brief Main project loop logic implementation
+ */
 
+#include "main.h"
 
 CANMessage msgCAN = {
     .message_id = 2,

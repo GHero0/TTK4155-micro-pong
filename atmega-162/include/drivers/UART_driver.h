@@ -1,6 +1,12 @@
+/**
+ * @file UART_driver.h
+ * @brief UART Function prototypes and baud rate defines
+ */
+
 #ifndef UART_DRIVER_H
 #define UART_DRIVER_H
 
+#include "config.h"
 
 // UART only 
 void UART_Init(void);

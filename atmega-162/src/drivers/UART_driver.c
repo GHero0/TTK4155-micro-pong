@@ -1,5 +1,9 @@
+/**
+ * @file UART_driver.c
+ * @brief UART Implementaiton functions along with stdio coupling
+ */
+
 #include "drivers/UART_driver.h"
-#include "hardware.h"
 
 #include <avr/io.h>
 #include <stdio.h>

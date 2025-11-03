@@ -1,5 +1,5 @@
-#include "hardware.h"
 #include "drivers/CAN.h"
+#include "config.h"
 #include "drivers/SPI.h"
 
 #include <util/delay.h>
