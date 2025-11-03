@@ -1,6 +1,6 @@
+#include "hardware.h"
 #include "tests/test_IO_board.h"
 #include "drivers/IO_board.h"
-#include "global.h"
 
 #include <util/delay.h>
 #include <stdio.h>

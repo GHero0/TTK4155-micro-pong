@@ -1,8 +1,14 @@
+#include "hardware.h"
 #include "drivers/IO_board.h"
 #include "drivers/SPI.h"
-#include "global.h"
 
 #include <util/delay.h>
+#include "types.h"
+
+BUTTONS buttons = {{0},{0},{0}};
+TOUCH_PAD touch_pad = {0,0,0};
+unsigned char slider = 0;  
+LED_STATE leds[6] = {0};
 
 void IO_board_read_buttons(void)
 {

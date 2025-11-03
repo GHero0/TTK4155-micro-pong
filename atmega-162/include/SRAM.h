@@ -4,4 +4,7 @@
 // Initialize SRAM
 void SRAM_Init(void);
 
+// Start address for the ADC
+extern volatile char *adc;
+
 #endif

@@ -1,7 +1,8 @@
 #include "UI.h"
-#include "global.h"
 #include "sprites.h"
 #include "images.h"
+#include "drivers/IO_board.h"
+#include "joystick.h"
 #include <stdio.h>
 
 void draw_window(int X, int Y, unsigned char width_in_tiles, unsigned char height_in_tiles)

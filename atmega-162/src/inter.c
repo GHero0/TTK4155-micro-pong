@@ -1,9 +1,20 @@
 #include "inter.h"
-#include "global.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include "SRAM.h"
 
 #include <stdio.h>
+
+volatile char Flag_ADC_ready = 0;
+volatile char Flag_screen = 0;
+volatile char Flag_CAN = 0;
+
+// ADC channels
+unsigned char adc_ch0 = 0;
+unsigned char adc_ch1 = 0;
+unsigned char adc_ch2 = 0;
+unsigned char adc_ch3 = 0;
+
 
 void Inter_Init(void)
 {
@@ -32,16 +43,16 @@ void Inter_Init(void)
 
 ISR(INT2_vect)
 {
-    adc_ch0 = *adc;
-    adc_ch1 = *adc;
-    adc_ch2 = *adc;
-    adc_ch3 = *adc;
+    adc_ch0 = adc[0];
+    adc_ch1 = adc[1];
+    adc_ch2 = adc[2];
+    adc_ch3 = adc[3];
     Flag_ADC_ready = 1;
 }
 
 ISR(TIMER0_COMP_vect)
 {
-        Flag_screen = 1;
+    Flag_screen = 1;
 }
 
 ISR(INT0_vect)

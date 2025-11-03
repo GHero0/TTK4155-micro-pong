@@ -7,18 +7,16 @@
 #define DISP_RES PB1 // To reset the display device
 
 void OLED_Init(void);
-void OLED_Set_Window(unsigned char line, unsigned char col_start, unsigned char col_end);
-void OLED_FillLine(unsigned char line, unsigned char val);
-void OLED_Clear_Screen(void);
-void OLED_FillScreen(unsigned char val);
-void OLED_Home(void);
-void OLED_Go_To_Pos(unsigned char line_index, unsigned char column_index);
-void OLED_PutChar(unsigned char c);
-void OLED_Print(unsigned char *str);
-
 void FrameBufferInit(void);
 void FrameBufferClear(void);
 void FrameBufferPush(void);
 void FrameBufferSwap(void);
+
+// OLED frame buffer
+extern unsigned char * volatile framebuffer;
+extern unsigned char * volatile doublebuffer;
+// Pointer aliases for convenience
+extern unsigned char * volatile current_buffer;// draw here
+extern unsigned char * volatile screen_buffer;  // send to OLED
 
 #endif 

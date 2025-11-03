@@ -1,6 +1,6 @@
 #include "tests/test_joystick.h"
 #include "joystick.h"
-#include "global.h"
+#include "inter.h"
 #include <stdio.h>
 
 void test_joystick(void)

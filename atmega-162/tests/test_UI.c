@@ -1,7 +1,8 @@
 #include "tests/test_UI.h"
-#include "global.h"
 #include "sprites.h"
 #include "UI.h"
+#include "drivers/IO_board.h"
+#include "joystick.h"
 
 // ! Carefull about these values, as they are declared at global state
 // ! and might conflict with other variables 
@@ -10,6 +11,11 @@ int Y = -64;
 unsigned char step_anim = 0; 
 static unsigned char initialized = 0;
 
+signed char X_window_1 = 0;
+signed char Y_window_1 = 0;
+
+signed char X_window_2 = 0;
+signed char Y_window_2 = 0;
 
 void debug_window(void)
 {

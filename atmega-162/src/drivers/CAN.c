@@ -1,3 +1,4 @@
+#include "hardware.h"
 #include "drivers/CAN.h"
 #include "drivers/SPI.h"
 
@@ -110,8 +111,6 @@ void CAN_Send_Message(messageCAN_t message_to_send)
 			break; // TXREQ cleared => buffer free
 		}
 	}
-
-	// ==== SENDING MESSAGE =====
 	
 	// Write the 2 bytes ID inside the corresponding register
 	CAN_WriteByte(TXB0SIDH, (message_to_send.message_id >> 3));
@@ -123,33 +122,12 @@ void CAN_Send_Message(messageCAN_t message_to_send)
 	// Write at the TX0BCTRL register the message to send
 	CAN_Write(TXB0D0, (uint8_t*) message_to_send.message_data, message_to_send.message_data_length);
 
-	// Request to send on TX0
 	CAN_Request2Send(TXB0);
-	
-	// ==== PROBABLY NOT USEFULL SAFETY CHECKS ====
-	// Check if sending is finished
-	// while(1)
-	// {
-	// 	uint8_t txb0 = 0;
-	// 	CAN_Read(TXB0CTRL, &txb0, 1);
-	// 	if ((txb0 & 0x08) == 0)
-	// 	{
-	// 		 break; // TXREQ==0
-	// 	}
-		
-	// 	uint8_t intf = 0;
-	// 	CAN_Read(CANINTF, &intf, 1);
-	// 	if (intf & 0x04) {
-	// 		break; // TX0IF set
-	// 	}
-	// }
 }
 
 messageCAN_t CAN_Receive_Message()
 {
-	uint16_t msg_id = 0;
-	char msg_data_length = 0;
-	char msg_data[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+	messageCAN_t received_message;
 	
 	uint8_t buffer_read[13] = {0};
 	CAN_Read(RXB0SIDH, buffer_read, 13); 
@@ -157,14 +135,12 @@ messageCAN_t CAN_Receive_Message()
 	// Receive ID by reconstructing the full ID
 	uint16_t shifted_id = buffer_read[0];
 	shifted_id = ((shifted_id << 3) | (buffer_read[1] >> 5));
-	msg_id = shifted_id;
 
 
-	msg_data_length = buffer_read[4];
 	for (uint8_t i = 5; i < 13; i++)
 	{
 		uint8_t j = i - 5;
-		msg_data[j] = buffer_read[i];
+		received_message.message_data[j] = buffer_read[i];
 	}
 	
 	uint8_t CANintf = 0;
@@ -176,10 +152,8 @@ messageCAN_t CAN_Receive_Message()
 	// uint8_t buffer_read_ = 0;
 	// CAN_Read(CANINTF, &buffer_read_, 1);
 	
-	messageCAN_t received_message;
-	received_message.message_id = msg_id;
-	received_message.message_data_length = msg_data_length;
-	received_message.message_data = msg_data;
+	received_message.message_id = shifted_id;
+	received_message.message_data_length =  buffer_read[4];;
 
 	return received_message;
 }

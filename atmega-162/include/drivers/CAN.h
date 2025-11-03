@@ -1,8 +1,6 @@
 #ifndef CAN_H_
 #define CAN_H_
 
-#include "global.h"
-
 #include <stdint.h>
 
 #define BFPCTRL		0x0C
@@ -50,7 +48,7 @@
 typedef struct {
 	uint16_t message_id;
 	char message_data_length;
-	char * message_data;
+	char message_data[8];
 } messageCAN_t;
 
 void CAN_Read(unsigned char address_byte, unsigned char *buffer, unsigned char lentgh);

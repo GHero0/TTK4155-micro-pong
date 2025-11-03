@@ -1,6 +1,5 @@
 #include "sprites.h"
 #include "drivers/OLED.h"
-#include "global.h"
 #include "images.h"
 
 #include <avr/pgmspace.h>
@@ -87,6 +86,29 @@
 // So in total we have 8 variations per tile.
 // 
 // --------------------------------------------
+
+static unsigned char tile_2bpp[16] = {
+    0b11000000, 0b10000000,
+    0b11000000, 0b01000000,
+    0b01100000, 0b00100000,
+    0b00110000, 0b00010000,
+    0b00001100, 0b00001000,
+    0b00001100, 0b00000100,
+    0b00000011, 0b00000010,
+    0b00000011, 0b00000001
+};
+
+static unsigned char tile_1bpp[8] = {
+    0b11000000, 
+    0b11000000, 
+    0b01100000, 
+    0b00110000, 
+    0b00001100, 
+    0b00000110, 
+    0b00000011, 
+    0b00000011
+};
+
 
 #define INV_BITS_2bpp(b)  (((b & 0x03) << 6) | ((b & 0x0C) << 2) | ((b & 0x30) >> 2) | ((b & 0xC0) >> 6))
 // #define SAFE_SHIFT(table, shift)  ((shift) >= 0 ? (table) << (shift) : (table) >> ((-(shift)) & 7))

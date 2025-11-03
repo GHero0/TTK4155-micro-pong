@@ -1,5 +1,5 @@
 #include "drivers/SPI.h"
-#include "global.h"
+
 #include <stdio.h>
 
 

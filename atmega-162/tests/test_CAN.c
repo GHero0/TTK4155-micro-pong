@@ -1,3 +1,4 @@
+#include "hardware.h"
 #include "tests/test_CAN.h"
 #include "drivers/CAN.h"
 #include "drivers/SPI.h"
@@ -26,13 +27,11 @@ void test_CAN_static(void)
     
     printf("Hello there\n");
     
-	uint16_t msg_id = 0x01;
-	char msg_data_length = 8;
-	char msg_data[8] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08};
-	messageCAN_t msgCAN;
-	msgCAN.message_id = msg_id;
-	msgCAN.message_data_length = msg_data_length;
-	msgCAN.message_data = msg_data;
+    messageCAN_t msgCAN = {
+        .message_id = 0x01,
+        .message_data_length = 8,
+        .message_data = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08}
+    };
 
     // Send message
 	printf("Message about to be sent\n");

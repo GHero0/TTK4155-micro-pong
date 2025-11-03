@@ -1,8 +1,6 @@
 #include "PWM.h"
-#include "global.h"
 
 #include <avr/io.h>
-#include <stdio.h>
 
 void PWM_init(void)
 {

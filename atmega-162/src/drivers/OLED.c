@@ -1,12 +1,17 @@
+#include "hardware.h"
 #include "drivers/SPI.h"
 #include "drivers/OLED.h"
-#include "fonts.h"
-#include "global.h"
 
 #include <stdio.h>
 #include <util/delay.h>
 #include <string.h>
 
+// OLED frame buffer
+unsigned char * volatile framebuffer = (unsigned char *)0x1400;
+unsigned char * volatile doublebuffer = (unsigned char *)0x1800;
+// Pointer aliases for convenience
+unsigned char * volatile current_buffer;
+unsigned char * volatile screen_buffer;
 
 #define OLED_DISP_DC_Data()    (PORTB |= (1 << DISP_DC))     // DATA
 #define OLED_DISP_DC_Command() (PORTB &= ~(1 << DISP_DC))    // CMD

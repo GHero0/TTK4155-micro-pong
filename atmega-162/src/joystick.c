@@ -1,6 +1,24 @@
 #include "joystick.h"
-#include "global.h"
+#include "SRAM.h"
+#include "inter.h"
+#include "types.h"
 #include <stdlib.h>
+
+// Joystick Controls
+JOY_DIR joystick_dir = NEUTRAL;
+JOY_POS joystick_pos = {0, 0};
+
+// Joystick Calibration
+unsigned char JOY_X_MIN = 68;
+unsigned char JOY_X_MAX = 248;
+unsigned char JOY_Y_MIN = 68;
+unsigned char JOY_Y_MAX = 248;
+unsigned char JOY_X_CENTER = 164;
+unsigned char JOY_Y_CENTER = 164;
+unsigned int SCALE_X = 0;
+unsigned int SCALE_Y = 0;
+unsigned char DEADZONE_X = 20;
+unsigned char DEADZONE_Y = 20;
 
 // single SCALE used for both axes (if ranges differ, define SCALE_X and SCALE_Y)
 void Joystick_init(void)

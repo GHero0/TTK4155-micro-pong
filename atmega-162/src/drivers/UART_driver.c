@@ -1,13 +1,8 @@
 #include "drivers/UART_driver.h"
-#include "global.h"
+#include "hardware.h"
 
 #include <avr/io.h>
 #include <stdio.h>
-
-#define BAUD 9600  
-#define MYUBRR ((F_CPU/16/BAUD) - 1) 
-
-
 
 void USART_Init(){
     /* Set baud rate */

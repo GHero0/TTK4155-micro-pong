@@ -1,23 +1,20 @@
-#ifndef CONSTANTS_H
-#define CONSTANTS_H
+#ifndef TYPES_H
+#define TYPES_H
+
 /*
- * constants.h
- * This header file is included in global.h and globaldec.h.
- * It is meant for defining global constants, structs, enums, and constant values.
- */
+* types.h
+* Header file included when types are needed. 
+* This file declares the types and structs needed
+*/
 
 #include <stdint.h>
 #include <stdbool.h>
-
-#define LED_COUNT 6
-#define F_CPU 5000000UL
 
 typedef struct
 {
     int16_t X;  // Q8.8: –100.00 … +100.00
     int16_t Y;  // Q8.8: –100.00 … +100.00
 } JOY_POS;
-
 
 typedef enum
 {
@@ -84,6 +81,4 @@ typedef struct {
     unsigned char size;
 } TOUCH_PAD;
 
-
-
-#endif
+#endif 

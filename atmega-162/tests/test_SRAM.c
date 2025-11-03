@@ -1,5 +1,5 @@
+#include "hardware.h"
 #include "tests/test_SRAM.h"
-#include "global.h"
 
 #include <util/delay.h>
 #include <stdio.h>

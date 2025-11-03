@@ -1,5 +1,6 @@
 #include "tests/test_adc.h"
-#include "global.h"
+#include "SRAM.h"
+#include "inter.h"
 #include <stdio.h>
 
 
