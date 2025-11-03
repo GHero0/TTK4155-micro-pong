@@ -3,25 +3,42 @@
 #include "images.h"
 #include "drivers/IO_board.h"
 #include "joystick.h"
+#include "menu.h"
+
 #include <stdio.h>
+#include <avr/pgmspace.h>
+#include <string.h>
+
+
+ScreenState current_screen = SCREEN_MENU;
+CursorState cursor_state = {0, 0, 0};
+char X_window_1 = 0;
+char Y_window_1 = 0;
+char X_window_2 = 0;
+char Y_window_2 = 0;
 
 void draw_window(int X, int Y, unsigned char width_in_tiles, unsigned char height_in_tiles)
 {
-
-    // Similar to Windows Title Bar
-    fetch_tile_from_tilemap_1bpp(8);                   // X to close
-    draw_tile_1bpp(X + (width_in_tiles << 3) - 8, Y);  // Top-right corner
-    fetch_tile_from_tilemap_1bpp(7);                   // Y to maximize
-    draw_tile_1bpp(X + (width_in_tiles << 3) - 16, Y); // Top-right corner
-    fetch_tile_from_tilemap_1bpp(6);                   // - to minimize
-    draw_tile_1bpp(X + (width_in_tiles << 3) - 24, Y); // Top-right corner
-    // Other tiles, draw title bar as black tiles
+    unsigned char width_pixels = width_in_tiles << 3;
+    
+    // Draw window controls (X, Y, - buttons) in top-right
+    fetch_tile_from_tilemap_1bpp(8);                    // X to close
+    draw_tile_1bpp(X + width_pixels - 8, Y);
+    
+    fetch_tile_from_tilemap_1bpp(7);                    // Y to maximize
+    draw_tile_1bpp(X + width_pixels - 16, Y);
+    
+    fetch_tile_from_tilemap_1bpp(6);                    // - to minimize
+    draw_tile_1bpp(X + width_pixels - 24, Y);
+    
+    // Draw title bar background (black tiles)
     fetch_tile_from_tilemap_1bpp(59); // Black background
     for (unsigned char col = 0; col < width_in_tiles - 3; col++)
     {
         draw_tile_1bpp(X + (col << 3), Y);
     }
-
+    
+    // Draw window content area background (black tiles)
     for (unsigned char row = 0; row < height_in_tiles; row++)
     {
         fetch_tile_from_tilemap_1bpp(59); // Black background
@@ -30,48 +47,14 @@ void draw_window(int X, int Y, unsigned char width_in_tiles, unsigned char heigh
             draw_tile_1bpp(X + (col << 3), Y + 8 + (row << 3));
         }
     }
-
-    // Draw rectangle border
-    draw_line(X, Y + 8, X + (width_in_tiles << 3) - 1, Y + 8); // title header
-    // title buttons barrier
+    
+    // Draw title bar separator line (horizontal line below title bar)
+    draw_line(X, Y + 8, width_pixels, 0,0);
+    
+    // Draw window border rectangle
     draw_rectangle(X, Y, width_in_tiles, height_in_tiles + 1);
 }
 
-void draw_task_bar(void)
-{
-    unsigned char Y = 56;
-
-    fetch_tile_from_tilemap_1bpp(59); // Black background
-    for (unsigned char col = 0; col < 14; col++)
-    {
-        draw_tile_1bpp(col << 3, Y);
-    }
-
-    fetch_tile_from_tilemap_1bpp(10);
-    draw_tile_1bpp(2, Y + 1); // Start button
-    fetch_tile_from_tilemap_1bpp(9);
-    draw_tile_1bpp(8 + 2, Y + 1); // Search button
-
-    fetch_tile_from_tilemap_1bpp(6);
-    draw_tile_1bpp(15, Y); // Task view button
-
-    // Draw fancy dithering background
-    fetch_tile_from_tilemap_1bpp(4); // Dark gray tile
-    SYM_H_1bpp();
-    draw_tile_1bpp((15 << 3), Y);
-    fetch_tile_from_tilemap_1bpp(5); // Dark gray tile
-    SYM_H_1bpp();
-    draw_tile_1bpp((14 << 3), Y);
-
-    // Draw rectangle border
-    draw_line(0, Y - 1, 127, Y - 1); // Top border
-    draw_line(0, 63, 127, 63);       // Bottom border
-    draw_line(0, Y - 1, 0, 63);      // Left
-    draw_line(127, Y - 1, 127, 63);  // Right
-    //
-    draw_line(8, Y, 8, 63);
-    draw_line(24, Y, 24, 63);
-}
 
 void joystick_indicator(char X, char Y, unsigned char hand)
 {
@@ -184,7 +167,7 @@ void joystick_indicator(char X, char Y, unsigned char hand)
         }
     }
 }
-// * Would need to be changed at some point
+
 void button_indicator(char X, char Y, unsigned char hand, unsigned char number)
 {
     char x = X;
@@ -317,8 +300,11 @@ void cursor()
     // Choose base tile and draw without complicated offset logic
     unsigned char base_tile = 6 + tile_index;
 
-    fetch_tile_from_tilemap_2bpp(base_tile);
-
+    if (buttons.R6){
+        fetch_tile_from_tilemap_2bpp(10);
+    } else {
+        fetch_tile_from_tilemap_2bpp(base_tile);
+    }
     draw_tile_2bpp((unsigned char)x, (unsigned char)y);
 }
 
@@ -330,4 +316,99 @@ void draw_printf(char x, char y, const char* fmt, ...) {
     va_end(args);
 
     draw_string(buf, x, y);
+}
+
+// ! Careful about these values, as they are declared at global state
+// ! and might conflict with other variables 
+int X = 32;
+int Y = -64;
+unsigned char step_anim = 0; 
+static unsigned char initialized = 0;
+
+void debug_window(void)
+{
+    // Initialize on first call
+    if (!initialized)
+    {
+        Y_window_1 = -64;
+        Y_window_2 = -64;
+        X_window_1 = 8;
+        X_window_2 = 72;
+        initialized = 1;
+    }
+
+    if (Y > 0) {
+        draw_line(127, 0, Y, 1, 1);  // vertical from (127, 0) down Y pixels
+    }
+    if (X < 127) {
+        draw_line(X, Y, 127 - X, 0, 2);  // horizontal from (X, Y) to (127, Y)
+    }
+    if (step_anim < 10)
+    {
+        step_anim++;
+    }
+    else
+    {
+        step_anim = 0;
+    }
+    if (Y_window_1 < 8)
+    {
+        Y_window_1 += 2;
+    }
+    if (Y_window_2 < 16)
+    {
+        Y_window_2 += 2;
+    }
+    draw_window(X_window_2, Y_window_2, 6, 3);
+    draw_window(X_window_1, Y_window_1, 7, 4);
+
+    draw_printf(X_window_1 + 3, Y_window_1 + 16, "X:%d\nY:%d", joystick_pos.X >> 8, joystick_pos.Y >> 8);
+    draw_printf(X_window_1 + 27, Y_window_1 + 16, "X':%d\nY':%d\nS:%d", X, Y, touch_pad.size);
+
+    joystick_indicator(X_window_2 + 8, Y_window_2 + 16, 0);
+    joystick_indicator(X_window_2 + 32, Y_window_2 + 16, 1);
+    cursor();
+}
+
+void map_touchpad(void)
+{
+    // Map touchpad
+    X = touch_pad.x >> 1;
+    Y = 63 - (touch_pad.y >> 2);
+
+    if (X < 0)
+        X = 0;
+    if (X > 127)
+        X = 127;
+    if (Y < 0)
+        Y = 0;
+    if (Y > 63)
+        Y = 63;
+}
+
+void display_current_screen(void) {
+    // Initialize menus on first call
+    init_menus();
+    
+    switch (current_screen) {
+        case SCREEN_MENU:
+            if (current_menu == NULL) {
+                current_menu = &main_menu;
+            }
+            draw_menu();
+            break;
+            
+        case SCREEN_DEBUG:
+            debug_window();
+            static unsigned char prev_back_button = 0;
+            if (buttons.R5 && !prev_back_button) {
+                current_screen = SCREEN_MENU;
+            }
+            prev_back_button = buttons.R5;
+            break;
+            
+        default:
+            current_screen = SCREEN_MENU;
+            break;
+    }
 }

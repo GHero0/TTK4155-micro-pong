@@ -494,213 +494,119 @@ void draw_tilemap_2bpp(void)
     }
 }
 
-void draw_rectangle(int X, int Y, unsigned char width_in_tiles, unsigned char height_in_tiles)
-{
-    // Clip to visible screen area
-    if (X >= 128 || Y >= 64)
-        return;
-    int right_calc = X + (width_in_tiles << 3);
-    int bottom_calc = Y + (height_in_tiles << 3);
-    // If completely off-screen on left or top
-    if (right_calc <= 0 || bottom_calc <= 0)
-        return;
-    // Clip to screen bounds
-    unsigned char start_x = (X < 0) ? 0 : X;
-    unsigned char start_y = (Y < 0) ? 0 : Y;
-    unsigned char end_x = (right_calc > 128) ? 127 : right_calc - 1;
-    unsigned char end_y = (bottom_calc > 64) ? 63 : bottom_calc - 1;
-    unsigned char draw_top = (Y >= 0);
-    unsigned char draw_bottom = (bottom_calc <= 64);
-    unsigned char draw_left = (X >= 0);
-    unsigned char draw_right = (right_calc <= 128);
-    unsigned char x_byte = start_x >> 3;
-    unsigned char end_x_byte = end_x >> 3;
-    unsigned char x_bit = start_x & 7;
-    unsigned char end_x_bit = end_x & 7;
-    unsigned char width_bytes = end_x_byte - x_byte;
-    unsigned char left_mask = 0xFF >> x_bit;
-    unsigned char right_mask = 0xFF << (7 - end_x_bit);
-    unsigned char left_pix = 0x80 >> x_bit;
-    unsigned char right_pix = 0x80 >> end_x_bit;
 
-    // Top row
-    if (draw_top)
-    {
-        unsigned int idx = (start_y << 4) + x_byte;
-        if (width_bytes)
-        {
-            if (draw_left)
-                current_buffer[idx] |= left_mask;
-            else
-                current_buffer[idx] = 0xFF; // Fill if left is clipped
-            idx++;
-            unsigned char b = width_bytes - 1;
-            while (b--)
-                current_buffer[idx++] = 0xFF;
-            // Always draw the right edge if we have width_bytes > 0
-            if (draw_right)
-                current_buffer[idx] |= right_mask;
-            else
-                current_buffer[idx] = 0xFF; // Fill to edge if right is clipped
-        }
-        else
-        {
-            unsigned char mask = left_mask & right_mask;
-            if (draw_left && draw_right)
-                current_buffer[idx] |= mask;
-            else if (draw_left)
-                current_buffer[idx] |= left_mask;
-            else if (draw_right)
-                current_buffer[idx] |= right_mask;
-            else
-                current_buffer[idx] = 0xFF; // Both clipped
-        }
+void draw_rectangle(int X, int Y, unsigned char width_in_tiles, unsigned char height_in_tiles) {
+    // Calculate dimensions in pixels
+    unsigned char width = width_in_tiles << 3;
+    unsigned char height = height_in_tiles << 3;
+    
+    // Quick rejection if completely off-screen
+    if (X >= 128 || Y >= 64 || X + width <= 0 || Y + height <= 0) return;
+    
+    // Calculate actual drawing bounds
+    signed char x1 = X;
+    signed char y1 = Y;
+    signed char x2 = X + width - 1;
+    signed char y2 = Y + height - 1;
+    
+    // Determine which edges to draw (only if they're on screen)
+    char draw_top = (Y >= 0 && Y < 64);
+    char draw_bottom = (y2 >= 0 && y2 < 64 && y2 != y1);
+    char draw_left = (X >= 0 && X < 128);
+    char draw_right = (x2 >= 0 && x2 < 128 && x2 != x1);
+    
+    // Top edge
+    if (draw_top) {
+        draw_line(x1, y1, width, 0,0);  // horizontal
     }
-
-    // Middle rows - only borders
-    if (end_y > start_y + 1)
-    {
-        unsigned char rows = end_y - start_y - 1;
-        unsigned int idx = ((start_y + 1) << 4) + x_byte;
-        if (width_bytes)
-        {
-            do
-            {
-                if (draw_left)
-                    current_buffer[idx] |= left_pix;
-                if (draw_right)
-                    current_buffer[idx + width_bytes] |= right_pix;
-                idx += 16;
-            } while (--rows);
-        }
-        else
-        {
-            unsigned char border = 0;
-            if (draw_left)
-                border |= left_pix;
-            if (draw_right)
-                border |= right_pix;
-            if (border)
-            {
-                do
-                {
-                    current_buffer[idx] |= border;
-                    idx += 16;
-                } while (--rows);
-            }
-        }
+    
+    // Bottom edge
+    if (draw_bottom) {
+        draw_line(x1, y2, width, 0,0);  // horizontal
     }
-
-    // Bottom row
-    if (draw_bottom && end_y != start_y)
-    {
-        unsigned int idx = (end_y << 4) + x_byte;
-        if (width_bytes)
-        {
-            if (draw_left)
-                current_buffer[idx] |= left_mask;
-            else
-                current_buffer[idx] = 0xFF;
-            idx++;
-            unsigned char b = width_bytes - 1;
-            while (b--)
-                current_buffer[idx++] = 0xFF;
-            if (draw_right)
-                current_buffer[idx] |= right_mask;
-            else
-                current_buffer[idx] = 0xFF;
-        }
-        else
-        {
-            unsigned char mask = left_mask & right_mask;
-            if (draw_left && draw_right)
-                current_buffer[idx] |= mask;
-            else if (draw_left)
-                current_buffer[idx] |= left_mask;
-            else if (draw_right)
-                current_buffer[idx] |= right_mask;
-            else
-                current_buffer[idx] = 0xFF;
-        }
+    
+    // Left edge
+    if (draw_left && height > 1) {
+        draw_line(x1, y1, height, 1,0);  // vertical
+    }
+    
+    // Right edge
+    if (draw_right && height > 1) {
+        draw_line(x2, y1, height, 1,0);  // vertical
     }
 }
 
-void draw_line(signed char x0, signed char y0, signed char x1, signed char y1)
-{
-    // Clipped if outside of the screen
-    if ((x0 < 0 && x1 < 0) || (x0 >= 128 && x1 >= 128) ||
-        (y0 < 0 && y1 < 0) || (y0 >= 64 && y1 >= 64))
-        return;
-
-    // Horizontal line
-    if (y0 == y1)
-    {
-        if (x0 > x1)
-        {
-            signed char t = x0;
-            x0 = x1;
-            x1 = t;
+void draw_line(signed char x, signed char y, unsigned char length, char direction, char stride) {
+    // direction: 0 = horizontal, 1 = vertical
+    // stride: 0 = filled, 1 = draw every other pixel, 2 = every third pixel, etc.
+    
+    if (direction == 0) {
+        // Horizontal line
+        if (y < 0 || y >= 64 || x >= 128) return;
+        if (x < 0) {
+            length += x;  // reduce length
+            x = 0;
         }
-
-        if (x1 < 0 || x0 >= 128)
-            return; // outside of the screen
-
-        if (x0 < 0)
-            x0 = 0;
-        if (x1 >= 128)
-            x1 = 127;
-
-        unsigned char start_byte = x0 >> 3;
-        unsigned char end_byte = x1 >> 3;
-        unsigned char start_bit = x0 & 7;
-        unsigned char end_bit = x1 & 7;
-        unsigned short idx = ((unsigned char)y0 << 4) + start_byte;
-
-        if (start_byte == end_byte)
-        {
-            unsigned char mask = (0xFF >> start_bit) & (0xFF << (7 - end_bit));
-            current_buffer[idx] |= mask;
-        }
-        else
-        {
-            current_buffer[idx++] |= 0xFF >> start_bit;
-            while (++start_byte < end_byte)
-            {
-                current_buffer[idx++] = 0xFF;
+        if (x + length > 128) length = 128 - x;
+        if (length <= 0) return;
+        
+        if (stride == 0) {
+            // Filled line (original code)
+            signed char x_end = x + length - 1;
+            unsigned char start_byte = x >> 3;
+            unsigned char end_byte = x_end >> 3;
+            unsigned char start_bit = x & 7;
+            unsigned char end_bit = x_end & 7;
+            unsigned short idx = ((unsigned char)y << 4) + start_byte;
+            
+            if (start_byte == end_byte) {
+                unsigned char mask = (0xFF >> start_bit) & (0xFF << (7 - end_bit));
+                current_buffer[idx] |= mask;
+            } else {
+                current_buffer[idx++] |= 0xFF >> start_bit;
+                while (++start_byte < end_byte) {
+                    current_buffer[idx++] = 0xFF;
+                }
+                current_buffer[idx] |= 0xFF << (7 - end_bit);
             }
-            current_buffer[idx] |= 0xFF << (7 - end_bit);
+        } else {
+            // Strided line (draw individual pixels)
+            for (unsigned char i = 0; i < length; i += stride + 1) {
+                signed char px = x + i;
+                if (px >= 128) break;
+                unsigned char byte_pos = px >> 3;
+                unsigned char bit_mask = 0x80 >> (px & 7);
+                unsigned short idx = ((unsigned char)y << 4) + byte_pos;
+                current_buffer[idx] |= bit_mask;
+            }
         }
-        return;
-    }
-
-    // Vertical line
-    if (x0 == x1)
-    {
-        if (y0 > y1)
-        {
-            signed char t = y0;
-            y0 = y1;
-            y1 = t;
+    } else {
+        // Vertical line
+        if (x < 0 || x >= 128 || y >= 64) return;
+        if (y < 0) {
+            length += y;
+            y = 0;
         }
-
-        if (y1 < 0 || y0 >= 64)
-            return;
-
-        if (y0 < 0)
-            y0 = 0;
-        if (y1 >= 64)
-            y1 = 63;
-
-        unsigned char x_byte = x0 >> 3;
-        unsigned char x_mask = 0x80 >> (x0 & 7);
-        unsigned short idx = ((unsigned char)y0 << 4) + x_byte;
-
-        for (signed char y = y0; y <= y1; y++)
-        {
-            current_buffer[idx] |= x_mask;
-            idx += 16;
+        if (y + length > 64) length = 64 - y;
+        if (length <= 0) return;
+        
+        unsigned char byte_pos = x >> 3;
+        unsigned char bit_mask = 0x80 >> (x & 7);
+        unsigned short idx = ((unsigned char)y << 4) + byte_pos;
+        
+        if (stride == 0) {
+            // Filled line
+            for (unsigned char i = 0; i < length; i++) {
+                current_buffer[idx] |= bit_mask;
+                idx += 16;  // next row
+            }
+        } else {
+            // Strided line
+            for (unsigned char i = 0; i < length; i += stride + 1) {
+                current_buffer[idx] |= bit_mask;
+                idx += 16 * (stride + 1);  // skip rows
+            }
         }
-        return;
     }
 }
 

@@ -79,6 +79,10 @@ void FrameBuffer_Init()
 {
     current_buffer = doublebuffer;
     screen_buffer  = framebuffer;
+    FrameBuffer_Clear();
+    FrameBuffer_Swap();
+    FrameBuffer_Clear();
+    FrameBuffer_Push();
 }
 
 void FrameBuffer_Swap() 

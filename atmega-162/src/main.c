@@ -21,8 +21,8 @@ int main(void)
         {
             FrameBuffer_Clear();
 
-            debug_window();
-
+            display_current_screen();
+            
             FrameBuffer_Push();
             FrameBuffer_Swap();
 
