@@ -12,20 +12,34 @@
 // Menu system
 Menu* current_menu = NULL;
 
-// Sub-menu items
-MenuItem submenu_1_items[] = {
+// Store menu items in flash memory (single declaration)
+const MenuItem PROGMEM submenu_1_items[] = {
     {"..", go_back_to_parent, NULL},
     {"Submenu 1-1", NULL, NULL},
     {"Submenu 1-2", NULL, NULL},
     {"Submenu 1-3", NULL, NULL},
 };
 
-MenuItem submenu_2_items[] = {
+const MenuItem PROGMEM submenu_2_items[] = {
     {"..", go_back_to_parent, NULL},
     {"Submenu 2-1", NULL, NULL},
     {"Submenu 2-2", NULL, NULL},
 };
 
+const MenuItem PROGMEM main_menu_items[] = {
+    {"Debug Window", action_debug_window, NULL},
+    {"Settings", NULL, &submenu_1},
+    {"Options", NULL, &submenu_2},
+    {"Menu Item 4", action_placeholder_4, NULL},
+    {"Menu Item 5", NULL, NULL},
+    {"Menu Item 6", NULL, NULL},
+    {"Menu Item 7", NULL, NULL},
+    {"Menu Item 8", NULL, NULL},
+    {"Menu Item 9", NULL, NULL},
+    {"Menu Item 10", NULL, NULL}
+};
+
+// Menu structures (only state in RAM, items point to PROGMEM)
 Menu submenu_1 = {
     .selected_item = 0,
     .total_items = 4,
@@ -46,19 +60,6 @@ Menu submenu_2 = {
     .has_back_option = 1
 };
 
-MenuItem main_menu_items[] = {
-    {"Debug Window", action_debug_window, NULL},
-    {"Settings", NULL, &submenu_1},
-    {"Options", NULL, &submenu_2},
-    {"Menu Item 4", action_placeholder_4, NULL},
-    {"Menu Item 5", NULL, NULL},
-    {"Menu Item 6", NULL, NULL},
-    {"Menu Item 7", NULL, NULL},
-    {"Menu Item 8", NULL, NULL},
-    {"Menu Item 9", NULL, NULL},
-    {"Menu Item 10", NULL, NULL}
-};
-
 Menu main_menu = {
     .selected_item = 0,
     .total_items = 10,
@@ -68,45 +69,6 @@ Menu main_menu = {
     .parent_menu = NULL,
     .has_back_option = 0
 };
-
-// Store menu items in flash memory
-const MenuItem PROGMEM submenu_1_items_flash[4] = {
-    {"../", go_back_to_parent, NULL},
-    {"Submenu 1-1", NULL, NULL},
-    {"Submenu 1-2", NULL, NULL},
-    {"Submenu 1-3", NULL, NULL},
-};
-
-const MenuItem PROGMEM submenu_2_items_flash[3] = {
-    {"../", go_back_to_parent, NULL},
-    {"Submenu 2-1", NULL, NULL},
-    {"Submenu 2-2", NULL, NULL},
-};
-
-const MenuItem PROGMEM main_menu_items_flash[10] = {
-    {"Debug Window", action_debug_window, NULL},
-    {"Settings", NULL, &submenu_1},
-    {"Options", NULL, &submenu_2},
-    {"Menu Item 4", action_placeholder_4, NULL},
-    {"Menu Item 5", NULL, NULL},
-    {"Menu Item 6", NULL, NULL},
-    {"Menu Item 7", NULL, NULL},
-    {"Menu Item 8", NULL, NULL},
-    {"Menu Item 9", NULL, NULL},
-    {"Menu Item 10", NULL, NULL}
-};
-
-// Simple copy from flash to RAM
-void init_menus(void) {
-    static unsigned char initialized = 0;
-    if (initialized) return;
-    
-    memcpy_P(submenu_1_items, submenu_1_items_flash, sizeof(submenu_1_items_flash));
-    memcpy_P(submenu_2_items, submenu_2_items_flash, sizeof(submenu_2_items_flash));
-    memcpy_P(main_menu_items, main_menu_items_flash, sizeof(main_menu_items_flash));
-    
-    initialized = 1;
-}
 
 // Cursor interaction
 void update_cursor_position(void) {
@@ -231,6 +193,11 @@ void draw_menu_cursor(void) {
 
 char menu_control_mode = 0;
 
+// Helper function to read MenuItem from PROGMEM
+void read_menu_item(const MenuItem* flash_item, MenuItem* ram_item) {
+    memcpy_P(ram_item, flash_item, sizeof(MenuItem));
+}
+
 void draw_menu(void) {
     if (current_menu == NULL) return;
     
@@ -289,14 +256,17 @@ void draw_menu(void) {
     draw_line(120, base_y + 1, 11, 1, 0);
     draw_line(121, base_y + 1, 11, 1, 0);
     
-    // Draw visible menu items (4 on screen)
+    // Draw visible menu items (4 on screen) - read from PROGMEM
+    MenuItem temp_item;
     for (unsigned char i = 0; i < current_menu->visible_items; i++) {
         unsigned char item_index = current_menu->scroll_offset + i;
         if (item_index < current_menu->total_items) {
-            if (current_menu->items[item_index].submenu != NULL) {
-                draw_printf(12, 3 + (i * 16), "%s >", current_menu->items[item_index].label);
+            read_menu_item(&current_menu->items[item_index], &temp_item);
+            
+            if (temp_item.submenu != NULL) {
+                draw_printf(12, 3 + (i * 16), "%s >", temp_item.label);
             } else {
-                draw_printf(12, 3 + (i * 16), current_menu->items[item_index].label);
+                draw_printf(12, 3 + (i * 16), temp_item.label);
             }
         }
     }
@@ -359,12 +329,12 @@ void draw_menu(void) {
         if ((buttons.R6) && !prev_R6_state && cursor_hover_item == 0xFF) {
             unsigned char absolute_index = current_menu->scroll_offset + current_menu->selected_item;
             if (absolute_index < current_menu->total_items) {
-                MenuItem* selected = &current_menu->items[absolute_index];
+                read_menu_item(&current_menu->items[absolute_index], &temp_item);
                 
-                if (selected->submenu != NULL) {
-                    enter_submenu(selected->submenu);
-                } else if (selected->action != NULL) {
-                    selected->action();
+                if (temp_item.submenu != NULL) {
+                    enter_submenu(temp_item.submenu);
+                } else if (temp_item.action != NULL) {
+                    temp_item.action();
                 }
             }
         }
@@ -374,12 +344,12 @@ void draw_menu(void) {
         if ((buttons.NB) && !prev_NB_state && menu_control_mode == 1) {
             unsigned char absolute_index = current_menu->scroll_offset + current_menu->selected_item;
             if (absolute_index < current_menu->total_items) {
-                MenuItem* selected = &current_menu->items[absolute_index];
+                read_menu_item(&current_menu->items[absolute_index], &temp_item);
                 
-                if (selected->submenu != NULL) {
-                    enter_submenu(selected->submenu);
-                } else if (selected->action != NULL) {
-                    selected->action();
+                if (temp_item.submenu != NULL) {
+                    enter_submenu(temp_item.submenu);
+                } else if (temp_item.action != NULL) {
+                    temp_item.action();
                 }
             }
         }
@@ -389,12 +359,12 @@ void draw_menu(void) {
         if (menu_control_mode == 0 && cursor_hover_item != 0xFF && cursor_state.clicking && !prev_cursor_click) {
             unsigned char absolute_index = current_menu->scroll_offset + cursor_hover_item;
             if (absolute_index < current_menu->total_items) {
-                MenuItem* selected = &current_menu->items[absolute_index];
+                read_menu_item(&current_menu->items[absolute_index], &temp_item);
                 
-                if (selected->submenu != NULL) {
-                    enter_submenu(selected->submenu);
-                } else if (selected->action != NULL) {
-                    selected->action();
+                if (temp_item.submenu != NULL) {
+                    enter_submenu(temp_item.submenu);
+                } else if (temp_item.action != NULL) {
+                    temp_item.action();
                 }
             }
         }

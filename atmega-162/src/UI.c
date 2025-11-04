@@ -318,7 +318,6 @@ void map_touchpad(void)
 
 void display_current_screen(void) {
     // Initialize menus on first call
-    init_menus();
     
     switch (current_screen) {
         case SCREEN_MENU:

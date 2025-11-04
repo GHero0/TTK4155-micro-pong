@@ -17,12 +17,10 @@ void action_placeholder_2(void);
 void action_placeholder_3(void);
 void action_placeholder_4(void);
 
-extern Menu* current_menu;
-extern Menu main_menu;
 extern Menu submenu_1;
 extern Menu submenu_2;
-extern MenuItem main_menu_items[10];
-extern MenuItem submenu_1_items[4];
-extern MenuItem submenu_2_items[3];
+extern Menu main_menu;
+
+extern Menu * current_menu;
 
 #endif

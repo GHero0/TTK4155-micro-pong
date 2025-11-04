@@ -182,7 +182,7 @@ struct Menu {
     unsigned char total_items;
     unsigned char scroll_offset;
     unsigned char visible_items;
-    MenuItem* items;
+    const MenuItem* items;
     Menu* parent_menu;
     unsigned char has_back_option;
 };
