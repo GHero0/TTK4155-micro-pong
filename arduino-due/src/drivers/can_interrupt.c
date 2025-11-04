@@ -1,10 +1,14 @@
+#include "sam.h"
+#include "types.h"
 #include "drivers/can_interrupt.h"
 #include "drivers/can_controller.h"
-#include "sam.h"
-#include "global.h"
 
 #include <stdio.h>
 
+volatile char Flag_CAN_MB1 = 0;
+volatile char Flag_CAN_MB2 = 0;
+volatile CANMessage mb1_buffer;
+volatile CANMessage mb2_buffer;
 
 void CAN0_Handler(void)
 {
@@ -13,7 +17,7 @@ void CAN0_Handler(void)
     // Check RX Mailbox 1
     if (status & CAN_SR_MB1)
     {
-        can_receive((CAN_MESSAGE *)&mb1_buffer, 1);
+        can_receive((CANMessage *)&mb1_buffer, 1);
 
         Flag_CAN_MB1 = 1;
 
@@ -25,7 +29,7 @@ void CAN0_Handler(void)
     // Check RX Mailbox 2
     if (status & CAN_SR_MB2)
     {
-        can_receive((CAN_MESSAGE *)&mb2_buffer, 2);
+        can_receive((CANMessage *)&mb2_buffer, 2);
         
 		Flag_CAN_MB2 = 1;
 

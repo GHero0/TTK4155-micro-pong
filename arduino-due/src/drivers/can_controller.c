@@ -127,7 +127,7 @@ uint8_t can_init(uint32_t can_br, uint8_t num_tx_mb, uint8_t num_rx_mb)
  *
  * \retval Success(0) or failure(1)
  */
-uint8_t can_send(CAN_MESSAGE* can_msg, uint8_t tx_mb_id)
+uint8_t can_send(CANMessage* can_msg, uint8_t tx_mb_id)
 {
 	//Check that mailbox is ready
 	if(CAN0->CAN_MB[tx_mb_id].CAN_MSR & CAN_MSR_MRDY)
@@ -166,7 +166,7 @@ uint8_t can_send(CAN_MESSAGE* can_msg, uint8_t tx_mb_id)
  *
  * \retval Success(0) or failure(1)
  */
-uint8_t can_receive(CAN_MESSAGE* can_msg, uint8_t rx_mb_id)
+uint8_t can_receive(CANMessage* can_msg, uint8_t rx_mb_id)
 {
 	//Check that mailbox is ready
 	if(CAN0->CAN_MB[rx_mb_id].CAN_MSR & CAN_MSR_MRDY)

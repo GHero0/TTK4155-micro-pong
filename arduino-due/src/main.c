@@ -1,4 +1,4 @@
-#include "globaldec.h"
+#include "types.h"
 #include "sam.h"
 #include <stdio.h>
 #include "time.h"
