@@ -4,6 +4,7 @@
 #include "types.h"
 
 void update_cursor_position(void);
+void draw_menu_cursor(void);
 void enter_submenu(Menu* submenu);
 void go_back_to_parent(void);
 void menu_scroll_up(void);

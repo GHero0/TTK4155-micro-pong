@@ -260,54 +260,6 @@ void button_indicator(char X, char Y, unsigned char hand, unsigned char number)
     }
 }
 
-void cursor()
-{
-    static int x = 8; // Use int to avoid overflow issues
-    static int y = 8;
-
-    signed char dx = joystick_pos.X >> 8; // [-100, 100]
-    signed char dy = joystick_pos.Y >> 8;
-
-    // Deadzone threshold
-    const int deadzone = 3;
-
-    // Move cursor if joystick input exceeds deadzone
-    if (dx > deadzone || dx < -deadzone)
-        x += dx / 32;  // Adjust sensitivity by divisor
-    if (dy > deadzone || dy < -deadzone)
-        y -= dy / 32;  // Invert Y axis
-
-    // Clamp cursor position to screen bounds
-    if (x < -4) x = -4;
-    if (x > 124) x = 124; // 128 - 8 tile width
-    if (y < -4) y = -4;
-    if (y > 60) y = 60;   // 64 - 8 tile height
-
-    unsigned char abs_dx = dx < 0 ? -dx : dx;
-    unsigned char abs_dy = dy < 0 ? -dy : dy;
-    unsigned char speed = abs_dx + abs_dy;
-
-    unsigned char tile_index;
-    if (speed > 150)
-        tile_index = 3;
-    else if (speed > 100)
-        tile_index = 2;
-    else if (speed > 70)
-        tile_index = 1;
-    else
-        tile_index = 0;
-
-    // Choose base tile and draw without complicated offset logic
-    unsigned char base_tile = 6 + tile_index;
-
-    if (buttons.R6){
-        fetch_tile_from_tilemap_2bpp(10);
-    } else {
-        fetch_tile_from_tilemap_2bpp(base_tile);
-    }
-    draw_tile_2bpp((unsigned char)x, (unsigned char)y);
-}
-
 void draw_printf(char x, char y, const char* fmt, ...) {
     char buf[32]; // adjust as needed (keep small on AVR)
     va_list args;
@@ -318,24 +270,15 @@ void draw_printf(char x, char y, const char* fmt, ...) {
     draw_string(buf, x, y);
 }
 
-// ! Careful about these values, as they are declared at global state
-// ! and might conflict with other variables 
-int X = 32;
-int Y = -64;
-unsigned char step_anim = 0; 
-static unsigned char initialized = 0;
+char X = 30;
+char Y = 30;
 
 void debug_window(void)
 {
-    // Initialize on first call
-    if (!initialized)
-    {
-        Y_window_1 = -64;
-        Y_window_2 = -64;
-        X_window_1 = 8;
-        X_window_2 = 72;
-        initialized = 1;
-    }
+    unsigned char Y_window_1 = 8;
+    unsigned char Y_window_2 = 16;
+    unsigned char X_window_1 = 8;
+    unsigned char X_window_2 = 72;
 
     if (Y > 0) {
         draw_line(127, 0, Y, 1, 1);  // vertical from (127, 0) down Y pixels
@@ -343,22 +286,7 @@ void debug_window(void)
     if (X < 127) {
         draw_line(X, Y, 127 - X, 0, 2);  // horizontal from (X, Y) to (127, Y)
     }
-    if (step_anim < 10)
-    {
-        step_anim++;
-    }
-    else
-    {
-        step_anim = 0;
-    }
-    if (Y_window_1 < 8)
-    {
-        Y_window_1 += 2;
-    }
-    if (Y_window_2 < 16)
-    {
-        Y_window_2 += 2;
-    }
+
     draw_window(X_window_2, Y_window_2, 6, 3);
     draw_window(X_window_1, Y_window_1, 7, 4);
 
@@ -367,7 +295,9 @@ void debug_window(void)
 
     joystick_indicator(X_window_2 + 8, Y_window_2 + 16, 0);
     joystick_indicator(X_window_2 + 32, Y_window_2 + 16, 1);
-    cursor();
+
+    update_cursor_position();
+    draw_menu_cursor();
 }
 
 void map_touchpad(void)

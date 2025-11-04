@@ -14,14 +14,14 @@ Menu* current_menu = NULL;
 
 // Sub-menu items
 MenuItem submenu_1_items[] = {
-    {"../", go_back_to_parent, NULL},
+    {"..", go_back_to_parent, NULL},
     {"Submenu 1-1", NULL, NULL},
     {"Submenu 1-2", NULL, NULL},
     {"Submenu 1-3", NULL, NULL},
 };
 
 MenuItem submenu_2_items[] = {
-    {"../", go_back_to_parent, NULL},
+    {"..", go_back_to_parent, NULL},
     {"Submenu 2-1", NULL, NULL},
     {"Submenu 2-2", NULL, NULL},
 };
