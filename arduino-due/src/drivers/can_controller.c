@@ -191,7 +191,7 @@ uint8_t can_receive(CANMessage* can_msg, uint8_t rx_mb_id)
 			}
 			else
 			{
-				can_msg->data[i] = (uint8_t)(data_high & 0xff);
+				can_msg->data[i] = (char)(data_high & 0xff);
 				data_high = data_high >> 8;
 			}
 		}

@@ -6,7 +6,7 @@
 #include "main.h"
 
 CANMessage msgCAN = {
-    .message_id = 2,
+    .message_id = 0,
     .message_data_length = 4,
     .message_data = {0x11, 0x22, 0x33, 0x44}
 };
@@ -17,6 +17,11 @@ int main(void)
 
     while (1)
     {
+        msgCAN.message_data[0] = joystick_pos.X>>8;
+        msgCAN.message_data[1] = joystick_pos.X;
+        msgCAN.message_data[2] = joystick_pos.Y>>8;
+        msgCAN.message_data[3] = joystick_pos.Y;
+         
         if (Flag_screen)
         {
             FrameBuffer_Clear();

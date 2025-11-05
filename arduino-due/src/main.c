@@ -18,7 +18,6 @@ int main(void)
 
     while (1)
     {
-        PWM_Update(50);
         // For now no filter on MB1/MB2 so both receive the same message
         if (Flag_CAN_MB1)
         {
@@ -27,11 +26,16 @@ int main(void)
             // printf("  Length: \t%d\n", mb1_buffer.data_length);
             // printf("  Data: \t");
             // for (uint8_t i = 0; i < mb1_buffer.data_length; i++)
-            // printf("0x%02X ", mb1_buffer.data[i]);
+            // printf("%d ", (signed char)mb1_buffer.data[i]);
             // printf("\n");
+            
+
+            if (mb1_buffer.id == 0){
+                PWM_Update(100 - (((signed char)mb1_buffer.data[0]+100)/2));               
+            }
             Flag_CAN_MB1 = 0;
         }
         // printf("Something, Arduino is allow to do whatever ! \n\n");
-        // time_spinFor(msecs(20));
+        // time_spinFor(msecs(1000));
     }
 }
