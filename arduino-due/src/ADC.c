@@ -1,11 +1,12 @@
 #include "ADC.h"
 #include "types.h"
+#include "config.h"
+#include "timer.h"
 
 #include <sam.h>
 
 volatile uint16_t adc11_result = 0;
 volatile uint8_t Flag_ADC;
-
 
 void ADC_Init(void)
 {
@@ -53,4 +54,57 @@ void ADC_Handler(void)
         Flag_ADC = 1;
     }
 
+}
+
+
+// =============================================================================
+// SCORING SYSTEM 
+// =============================================================================
+uint8_t score = 0;
+bool timer_started = false;
+bool point_was_scored = false;
+
+void handle_scoring_system(void)
+{
+    // Handle ADC readings for ball detection
+    if (Flag_ADC)
+    {               
+        if (adc11_result < BALL_DETECT_THRESHOLD)  
+        {
+            if (!timer_started && !point_was_scored)
+            {   
+                Counter_Lose_Score_Start();  
+                timer_started = true;
+            }                
+        }
+        else if (adc11_result > BALL_CLEAR_THRESHOLD)  
+        {
+            if (timer_started)
+            {   
+                Counter_Lose_Score_Stop();  
+                timer_started = false;
+            }
+            
+            if (point_was_scored)
+            {
+                point_was_scored = false;
+            }
+        }
+        
+        Flag_ADC = 0;
+    }
+    
+    // Handle point scoring
+    if (Flag_Point_Lose)
+    {
+        if (!point_was_scored)
+        {
+            score++;
+            printf("POINT SCORED! Total: %d\n", score);
+            point_was_scored = true;
+        }
+        
+        timer_started = false;  
+        Flag_Point_Lose = 0;
+    }
 }

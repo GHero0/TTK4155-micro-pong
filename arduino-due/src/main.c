@@ -1,6 +1,5 @@
 #include "types.h"
 #include "sam.h"
-#include <stdio.h>
 #include "time.h"
 #include "drivers/uart.h"
 #include "drivers/can_controller.h"
@@ -8,13 +7,9 @@
 #include "PWM.h"
 #include "ADC.h"
 #include "timer.h"
+#include "config.h"
 
-#define BALL_DETECT_THRESHOLD 1000    
-#define BALL_CLEAR_THRESHOLD  3700    
-
-uint8_t score = 0;
-bool timer_started = false;
-bool point_was_scored = false;
+#include <stdio.h>
 
 int main(void)
 {
@@ -32,49 +27,14 @@ int main(void)
         if (Flag_CAN_MB1)
         {
             if (mb1_buffer.id == 0){
-                PWM_Update(100 - (((signed char)mb1_buffer.data[0]+100)/2));               
+                // Filter the joystick input before sending to servo
+                int8_t joystick_value = (signed char)mb1_buffer.data[0];
+                uint8_t filtered_pwm = get_filtered_servo_value(joystick_value);
+                PWM_Update(filtered_pwm);  
             }
             Flag_CAN_MB1 = 0;
         }
-        
-        if (Flag_ADC)
-        {               
-            if (adc11_result < BALL_DETECT_THRESHOLD)  
-            {
-                if (!timer_started && !point_was_scored)
-                {   
-                    Counter_Lose_Score_Start();  
-                    timer_started = true;
-                }                
-            }
-            else if (adc11_result > BALL_CLEAR_THRESHOLD)  
-            {
-                if (timer_started)
-                {   
-                    Counter_Lose_Score_Stop();  
-                    timer_started = false;
-                }
-                
-                if (point_was_scored)
-                {
-                    point_was_scored = false;
-                }
-            }
-            
-            Flag_ADC = 0;
-        }
-        
-        if (Flag_Point_Lose)
-        {
-            if (!point_was_scored)
-            {
-                score++;
-                printf("POINT SCORED! Total: %d\n", score);
-                point_was_scored = true;
-            }
-            
-            timer_started = false;  
-            Flag_Point_Lose = 0;
-        }
+
+        handle_scoring_system();
     }
 }
