@@ -6,11 +6,15 @@
 #include "drivers/can_controller.h"
 #include "drivers/can_interrupt.h"
 #include "PWM.h"
+#include "ADC.h"
+#include "timer.h"
 
 int main(void)
 {
     SystemInit();
     PWM_Init();
+    Timer_Init();
+    ADC_Init();
     WDT->WDT_MR = WDT_MR_WDDIS; // Disable Watchdog Timer
 
     uart_init(84000000L, 9600);
@@ -18,7 +22,7 @@ int main(void)
 
     while (1)
     {
-        // For now no filter on MB1/MB2 so both receive the same message
+        // // For now no filter on MB1/MB2 so both receive the same message
         if (Flag_CAN_MB1)
         {
             // printf("CAN Message received:\n");
@@ -34,6 +38,13 @@ int main(void)
                 PWM_Update(100 - (((signed char)mb1_buffer.data[0]+100)/2));               
             }
             Flag_CAN_MB1 = 0;
+        }
+        if (Flag_ADC)
+        {   
+            // Convert to voltage for debugging
+            float voltage = (adc11_result * 3.3f) / 4095.0f;
+            printf("ADC: 0x%03X (%4d) = %.3fV\n", adc11_result, adc11_result, voltage);
+            Flag_ADC = 0;
         }
         // printf("Something, Arduino is allow to do whatever ! \n\n");
         // time_spinFor(msecs(1000));
