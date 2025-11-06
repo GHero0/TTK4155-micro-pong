@@ -437,6 +437,7 @@ void display_current_screen(void) {
             
         case SCREEN_DEBUG_BLUE_BOX:
             draw_printf(10, 28, "Blue Box Debug");
+            
             if (!Transition_Is_Active()) {  // Only handle input when not transitioning
                 prev_back_button = 0;
                 if (buttons.R5 && !prev_back_button) {

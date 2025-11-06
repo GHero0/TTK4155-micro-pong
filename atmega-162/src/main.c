@@ -17,11 +17,6 @@ int main(void)
 
     while (1)
     {
-        msgCAN.message_data[0] = joystick_pos.X>>8;
-        msgCAN.message_data[1] = joystick_pos.X;
-        msgCAN.message_data[2] = joystick_pos.Y>>8;
-        msgCAN.message_data[3] = joystick_pos.Y;
-         
         if (Flag_screen)
         {
             FrameBuffer_Clear();
@@ -50,7 +45,15 @@ int main(void)
             Flag_CAN = 0;
         }
 
-        CAN_Send_Message(msgCAN);
+        if (current_screen == SCREEN_DEBUG_BLUE_BOX){
+
+            msgCAN.message_data[0] = joystick_pos.X>>8;
+            msgCAN.message_data[1] = joystick_pos.X;
+            msgCAN.message_data[2] = joystick_pos.Y>>8;
+            msgCAN.message_data[3] = joystick_pos.Y;    
+
+            CAN_Send_Message(msgCAN);
+        }
 
         IO_board_update();
         Joystick_Convert();
