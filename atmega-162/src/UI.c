@@ -2,6 +2,7 @@
 #include "sprites.h"
 #include "images.h"
 #include "drivers/IO_board.h"
+#include "drivers/OLED.h"
 #include "joystick.h"
 #include "menu.h"
 
@@ -16,6 +17,97 @@ char X_window_1 = 0;
 char Y_window_1 = 0;
 char X_window_2 = 0;
 char Y_window_2 = 0;
+
+// Transition system
+ScreenTransition screen_transition = {
+    .state = TRANSITION_NONE,
+    .frame = 0,
+    .total_frames = 4,  // Reduced to 4 frames for better performance
+    .target_screen = SCREEN_MENU
+};
+
+// Bayer matrix 8x8 dithering pattern (stored in PROGMEM to save RAM)
+const uint8_t PROGMEM dither_pattern[64] = {
+     0, 32,  8, 40,  2, 34, 10, 42,
+    48, 16, 56, 24, 50, 18, 58, 26,
+    12, 44,  4, 36, 14, 46,  6, 38,
+    60, 28, 52, 20, 62, 30, 54, 22,
+     3, 35, 11, 43,  1, 33,  9, 41,
+    51, 19, 59, 27, 49, 17, 57, 25,
+    15, 47,  7, 39, 13, 45,  5, 37,
+    63, 31, 55, 23, 61, 29, 53, 21
+};
+
+// Initialize transition system
+void Transition_Init(void) {
+    screen_transition.state = TRANSITION_NONE;
+    screen_transition.frame = 0;
+    screen_transition.total_frames = 4;  // Faster animation
+    screen_transition.target_screen = current_screen;
+}
+
+// Start a transition to a new screen
+void Transition_Start(ScreenState new_screen) {
+    if (new_screen != current_screen) {
+        screen_transition.state = TRANSITION_OUT;
+        screen_transition.frame = 0;
+        screen_transition.target_screen = new_screen;
+    }
+}
+
+// Check if transition is active
+uint8_t Transition_Is_Active(void) {
+    return (screen_transition.state != TRANSITION_NONE);
+}
+
+// Update transition state (call each frame)
+void Transition_Update(void) {
+    if (screen_transition.state == TRANSITION_NONE) {
+        return;
+    }
+    
+    if (screen_transition.state == TRANSITION_OUT) {
+        // Fading out current screen
+        screen_transition.frame++;
+        if (screen_transition.frame >= screen_transition.total_frames) {
+            // Switch to new screen and start fade in
+            current_screen = screen_transition.target_screen;
+            screen_transition.state = TRANSITION_IN;
+            screen_transition.frame = 0;
+        }
+    } else if (screen_transition.state == TRANSITION_IN) {
+        // Fading in new screen
+        screen_transition.frame++;
+        if (screen_transition.frame >= screen_transition.total_frames) {
+            // Transition complete
+            screen_transition.state = TRANSITION_NONE;
+            screen_transition.frame = 0;
+        }
+    }
+}
+
+void Transition_Apply_Dither(uint8_t intensity) {
+    if (intensity == 0) return;
+    
+    if (intensity >= 32) {
+        // More than half way - just clear everything
+        memset(current_buffer, 0, 1024);
+        return;
+    }
+    
+    // For low intensities, randomly clear some pixels
+    uint8_t keep_threshold = 32 - intensity;
+    
+    for (uint16_t i = 0; i < 1024; i++) {
+        uint8_t byte_val = current_buffer[i];
+        if (byte_val != 0) {
+            // Keep pixels based on simple position hash
+            if ((i & 0x1F) >= keep_threshold) {
+                current_buffer[i] = 0;
+            }
+        }
+    }
+}
 
 void draw_window(int X, int Y, unsigned char width_in_tiles, unsigned char height_in_tiles)
 {
@@ -296,7 +388,10 @@ void debug_window(void)
     joystick_indicator(X_window_2 + 8, Y_window_2 + 16, 0);
     joystick_indicator(X_window_2 + 32, Y_window_2 + 16, 1);
 
-    update_cursor_position();
+    // Only update cursor if not transitioning
+    if (!Transition_Is_Active()) {
+        update_cursor_position();
+    }
     draw_menu_cursor();
 }
 
@@ -318,7 +413,9 @@ void map_touchpad(void)
 
 void display_current_screen(void) {
     // Initialize menus on first call
+    static unsigned char prev_back_button = 0;
     
+    // Always draw the current screen content first
     switch (current_screen) {
         case SCREEN_MENU:
             if (current_menu == NULL) {
@@ -327,17 +424,53 @@ void display_current_screen(void) {
             draw_menu();
             break;
             
-        case SCREEN_DEBUG:
+        case SCREEN_DEBUG_IO_BOARD:
             debug_window();
-            static unsigned char prev_back_button = 0;
-            if (buttons.R5 && !prev_back_button) {
-                current_screen = SCREEN_MENU;
+            if (!Transition_Is_Active()) {  // Only handle input when not transitioning
+                prev_back_button = 0;
+                if (buttons.R5 && !prev_back_button) {
+                    Transition_Start(SCREEN_MENU);
+                }
+                prev_back_button = buttons.R5;
             }
-            prev_back_button = buttons.R5;
+            break;
+            
+        case SCREEN_DEBUG_BLUE_BOX:
+            draw_printf(10, 28, "Blue Box Debug");
+            if (!Transition_Is_Active()) {  // Only handle input when not transitioning
+                prev_back_button = 0;
+                if (buttons.R5 && !prev_back_button) {
+                    Transition_Start(SCREEN_MENU);
+                }
+                prev_back_button = buttons.R5;
+            }
             break;
             
         default:
             current_screen = SCREEN_MENU;
             break;
+    }
+    
+    // Apply transition effect AFTER drawing (if active)
+    if (Transition_Is_Active()) {
+        uint8_t dither_intensity;
+        
+        if (screen_transition.state == TRANSITION_OUT) {
+            // Fade out: intensity increases from 0 to 64
+            // frame 0: 0, frame 1: 10, ... frame 5: 64
+            dither_intensity = ((screen_transition.frame + 1) * 64) / screen_transition.total_frames;
+        } else { // TRANSITION_IN
+            // Fade in: intensity decreases from 64 to 0
+            // frame 0: 64, frame 1: 53, ... frame 5: 0
+            dither_intensity = (64 * (screen_transition.total_frames - screen_transition.frame)) / screen_transition.total_frames;
+        }
+        
+        // Only apply dithering if intensity > 0
+        if (dither_intensity > 0) {
+            Transition_Apply_Dither(dither_intensity);
+        }
+        
+        // Update transition state for next frame
+        Transition_Update();
     }
 }

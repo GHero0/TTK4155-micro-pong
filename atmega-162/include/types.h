@@ -150,7 +150,8 @@ typedef struct {
  */
 typedef enum {
     SCREEN_MENU,
-    SCREEN_DEBUG
+    SCREEN_DEBUG_IO_BOARD,
+    SCREEN_DEBUG_BLUE_BOX
 } ScreenState;
 
 /**
@@ -172,6 +173,7 @@ typedef struct MenuItem {
     const char* label;
     MenuAction action;
     Menu* submenu;
+    unsigned char icon_tile;
 } MenuItem;
 
 /**
@@ -181,10 +183,8 @@ struct Menu {
     unsigned char selected_item;
     unsigned char total_items;
     unsigned char scroll_offset;
-    unsigned char visible_items;
     const MenuItem* items;
     Menu* parent_menu;
-    unsigned char has_back_option;
 };
 
 #endif 

@@ -17,4 +17,27 @@ void display_current_screen(void);
 extern ScreenState current_screen;
 extern CursorState cursor_state;
 
+
+// Transition state
+typedef enum {
+    TRANSITION_NONE,
+    TRANSITION_OUT,     // Fading out current screen
+    TRANSITION_IN       // Fading in new screen
+} TransitionState;
+
+// Transition configuration
+typedef struct {
+    TransitionState state;
+    uint8_t frame;              // Current frame of animation
+    uint8_t total_frames;       // Total frames for transition (8 = smooth, 4 = fast)
+    ScreenState target_screen;  // Screen to transition to
+} ScreenTransition;
+
+// Screen transition functions
+void Transition_Init(void);
+void Transition_Start(ScreenState new_screen);
+void Transition_Update(void);
+void Transition_Apply_Dither(uint8_t intensity);
+uint8_t Transition_Is_Active(void);
+
 #endif

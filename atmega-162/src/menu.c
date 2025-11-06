@@ -14,29 +14,29 @@ Menu* current_menu = NULL;
 
 // Store menu items in flash memory (single declaration)
 const MenuItem PROGMEM submenu_1_items[] = {
-    {"..", go_back_to_parent, NULL},
-    {"Submenu 1-1", NULL, NULL},
-    {"Submenu 1-2", NULL, NULL},
-    {"Submenu 1-3", NULL, NULL},
+    {"..", go_back_to_parent, NULL, 31},
+    {"Submenu 1-1", NULL, NULL, 30},
+    {"Submenu 1-2", NULL, NULL, 30},
+    {"Submenu 1-3", NULL, NULL, 30},
 };
 
 const MenuItem PROGMEM submenu_2_items[] = {
-    {"..", go_back_to_parent, NULL},
-    {"Submenu 2-1", NULL, NULL},
-    {"Submenu 2-2", NULL, NULL},
+    {"..", go_back_to_parent, NULL, 31},
+    {"Submenu 2-1", NULL, NULL, 30},
+    {"Submenu 2-2", NULL, NULL, 30},
 };
 
 const MenuItem PROGMEM main_menu_items[] = {
-    {"Debug Window", action_debug_window, NULL},
-    {"Settings", NULL, &submenu_1},
-    {"Options", NULL, &submenu_2},
-    {"Menu Item 4", action_placeholder_4, NULL},
-    {"Menu Item 5", NULL, NULL},
-    {"Menu Item 6", NULL, NULL},
-    {"Menu Item 7", NULL, NULL},
-    {"Menu Item 8", NULL, NULL},
-    {"Menu Item 9", NULL, NULL},
-    {"Menu Item 10", NULL, NULL}
+    {"Debug IO-board", action_debug_window, NULL, 15},
+    {"Settings", NULL, &submenu_1, 30},
+    {"Options", NULL, &submenu_2, 30},
+    {"Debug Blue Box", action_placeholder_4, NULL, 46},
+    {"Menu Item 5", NULL, NULL, 255},
+    {"Menu Item 6", NULL, NULL, 255},
+    {"Menu Item 7", NULL, NULL, 255},
+    {"Menu Item 8", NULL, NULL, 255},
+    {"Menu Item 9", NULL, NULL, 255},
+    {"Menu Item 10", NULL, NULL, 255}
 };
 
 // Menu structures (only state in RAM, items point to PROGMEM)
@@ -44,30 +44,24 @@ Menu submenu_1 = {
     .selected_item = 0,
     .total_items = 4,
     .scroll_offset = 0,
-    .visible_items = 4,
     .items = submenu_1_items,
     .parent_menu = NULL,
-    .has_back_option = 1
 };
 
 Menu submenu_2 = {
     .selected_item = 0,
     .total_items = 3,
     .scroll_offset = 0,
-    .visible_items = 4,
     .items = submenu_2_items,
     .parent_menu = NULL,
-    .has_back_option = 1
 };
 
 Menu main_menu = {
     .selected_item = 0,
     .total_items = 10,
     .scroll_offset = 0,
-    .visible_items = 4,
     .items = main_menu_items,
     .parent_menu = NULL,
-    .has_back_option = 0
 };
 
 // Cursor interaction
@@ -90,17 +84,17 @@ void update_cursor_position(void) {
     cursor_state.clicking = buttons.R6;
 }
 
-// Helper function to check if cursor is hovering over a menu item
 unsigned char is_cursor_over_item(unsigned char item_visual_index) {
-    signed char item_x = 8;
-    signed char item_y = 1 + (item_visual_index * 16);
-    signed char item_width = 112;
-    signed char item_height = 14;
+    const signed char item_x = 8;
+    const signed char item_y = 0 + (item_visual_index * 17);
+    const signed char item_width = 114;
+    const signed char item_height = 17;
+
+    const signed char cx = cursor_state.x + 4; // Center of the drawn cursor
+    const signed char cy = cursor_state.y + 4; // Center of the drawn cusror
     
-    return (cursor_state.x + 8 > item_x && 
-            cursor_state.x < item_x + item_width &&
-            cursor_state.y + 8 > item_y && 
-            cursor_state.y < item_y + item_height);
+    return (cx >= item_x && cx < item_x + item_width &&
+            cy >= item_y && cy < item_y + item_height);
 }
 
 // Helper function to go back to parent menu
@@ -110,9 +104,9 @@ void go_back_to_parent(void) {
     }
 }
 
-// Menu action functions
+// Menu action functions - NOW WITH TRANSITIONS!
 void action_debug_window(void) {
-    current_screen = SCREEN_DEBUG;
+    Transition_Start(SCREEN_DEBUG_IO_BOARD);
 }
 
 void action_placeholder_2(void) {
@@ -124,7 +118,7 @@ void action_placeholder_3(void) {
 }
 
 void action_placeholder_4(void) {
-    // Action for menu item 4
+    Transition_Start(SCREEN_DEBUG_BLUE_BOX);
 }
 
 // Helper function to enter a submenu
@@ -155,7 +149,7 @@ void menu_scroll_down(void) {
     unsigned char absolute_selected = current_menu->scroll_offset + current_menu->selected_item;
     
     if (absolute_selected < current_menu->total_items - 1) {
-        if (current_menu->selected_item < current_menu->visible_items - 1) {
+        if (current_menu->selected_item < 4 - 1) {
             current_menu->selected_item++;
         } else {
             current_menu->scroll_offset++;
@@ -227,59 +221,80 @@ void draw_menu(void) {
     }
     prev_nav_for_mode = nav_pressed;
     
-    // Check if cursor is hovering over any visible item (only in cursor mode)
-    unsigned char cursor_hover_item = 0xFF; // 0xFF means no hover
+    // --- HOVER DETECTION FIXED ---
+    unsigned char cursor_hover_item = 0xFF; // no hover by default
+
     if (menu_control_mode == 0) {
-        for (unsigned char i = 0; i < current_menu->visible_items; i++) {
+        for (unsigned char i = 0; i < 4; i++) {
             unsigned char item_index = current_menu->scroll_offset + i;
             if (item_index < current_menu->total_items) {
                 if (is_cursor_over_item(i)) {
                     cursor_hover_item = i;
-                    current_menu->selected_item = i;
-                    break;
+                    break; // stop after first match
                 }
             }
         }
+
+        // Only update selected_item when actually hovering something
+        if (cursor_hover_item != 0xFF) {
+            current_menu->selected_item = cursor_hover_item;
+        }
     }
-    
-    // Calculate Y position for selection highlight
-    signed char base_y = 1 + (current_menu->selected_item * 16);
-    
-    // TOP border of menu item selected
-    draw_line(8, base_y, 112, 0, 0);
-    // BOTTOM border (double line)
-    draw_line(8, base_y + 11, 112, 0, 0);
-    draw_line(8, base_y + 12, 112, 0, 0);
-    // LEFT Border
-    draw_line(7, base_y + 1, 11, 1, 0);
-    // RIGHT Border (double line)
-    draw_line(120, base_y + 1, 11, 1, 0);
-    draw_line(121, base_y + 1, 11, 1, 0);
-    
-    // Draw visible menu items (4 on screen) - read from PROGMEM
+
+    // --- DRAW HIGHLIGHT (only if needed) ---
+    if (menu_control_mode == 1 || cursor_hover_item != 0xFF) {
+        signed char base_y = 1 + (current_menu->selected_item * 16);
+
+        // TOP border of menu item selected
+        draw_line(8, base_y, 112, 0, 0);
+        // BOTTOM border (double line)
+        draw_line(8, base_y + 11, 112, 0, 0);
+        draw_line(8, base_y + 12, 112, 0, 0);
+        // LEFT Border
+        draw_line(7, base_y + 1, 11, 1, 0);
+        // RIGHT Border (double line)
+        draw_line(120, base_y + 1, 11, 1, 0);
+        draw_line(121, base_y + 1, 11, 1, 0);
+    }
+
+    // --- DRAW MENU TEXT AND ICONS ---
     MenuItem temp_item;
-    for (unsigned char i = 0; i < current_menu->visible_items; i++) {
+    for (unsigned char i = 0; i < 4; i++) {
         unsigned char item_index = current_menu->scroll_offset + i;
         if (item_index < current_menu->total_items) {
             read_menu_item(&current_menu->items[item_index], &temp_item);
             
-            if (temp_item.submenu != NULL) {
-                draw_printf(12, 3 + (i * 16), "%s >", temp_item.label);
+            // Check if icon exists (255 = no icon)
+            if (temp_item.icon_tile != 255) {
+                // Draw icon (8x8 tile at left side of menu item)
+                fetch_tile_from_tilemap_1bpp(temp_item.icon_tile);
+                draw_tile_1bpp(12, 3 + (i * 16));
+                
+                // Draw text (shifted right to make room for icon)
+                if (temp_item.submenu != NULL) {
+                    draw_printf(22, 3 + (i * 16), "%s >", temp_item.label);
+                } else {
+                    draw_printf(22, 3 + (i * 16), temp_item.label);
+                }
             } else {
-                draw_printf(12, 3 + (i * 16), temp_item.label);
+                // No icon - draw text at original position
+                if (temp_item.submenu != NULL) {
+                    draw_printf(12, 3 + (i * 16), "%s >", temp_item.label);
+                } else {
+                    draw_printf(12, 3 + (i * 16), temp_item.label);
+                }
             }
         }
     }
+
+    // --- SCROLLBAR ---
+    draw_line(126, 0, 64, 1, 1); // scrollbar track (dotted line)
     
-    // Scrollbar background (dotted line)
-    draw_line(126, 0, 64, 1, 1);
-    
-    // Calculate scrollbar position
     unsigned char scrollbar_height = 5;
     unsigned char track_height = 64 - scrollbar_height;
     
-    if (current_menu->total_items > current_menu->visible_items) {
-        unsigned char max_scroll = current_menu->total_items - current_menu->visible_items;
+    if (current_menu->total_items > 4) {
+        unsigned char max_scroll = current_menu->total_items - 4;
         unsigned char scroll_y = (current_menu->scroll_offset * track_height) / max_scroll;
         
         draw_line(125, scroll_y, scrollbar_height, 1, 0);
@@ -289,6 +304,15 @@ void draw_menu(void) {
         draw_line(125, 0, scrollbar_height, 1, 0);
         draw_line(126, 0, scrollbar_height, 1, 0);
         draw_line(127, 0, scrollbar_height, 1, 0);
+    }
+
+    // --- INPUT HANDLING (Skip during transitions) ---
+    if (Transition_Is_Active()) {
+        // Don't process input during transitions
+        if (menu_control_mode == 0) {
+            draw_menu_cursor();
+        }
+        return;
     }
     
     static unsigned char scroll_counter = 0;
@@ -304,53 +328,38 @@ void draw_menu(void) {
         
         // Nav button mode navigation
         if (menu_control_mode == 1) {
-            if ((buttons.NU) && !prev_NU_state) {
-                menu_scroll_up();
-            }
-            if ((buttons.ND) && !prev_ND_state) {
-                menu_scroll_down();
-            }
+            if ((buttons.NU) && !prev_NU_state) menu_scroll_up();
+            if ((buttons.ND) && !prev_ND_state) menu_scroll_down();
             prev_NU_state = buttons.NU;
             prev_ND_state = buttons.ND;
         }
-        // Cursor mode navigation (slower, every 5 frames)
+        // Cursor mode navigation (slow scroll)
         else {
             if (scroll_counter >= 5) {
-                if (joystick_dir == DOWN) {
-                    menu_scroll_down();
-                } else if (joystick_dir == UP) {
-                    menu_scroll_up();
-                }
+                if (joystick_dir == DOWN) menu_scroll_down();
+                else if (joystick_dir == UP) menu_scroll_up();
                 scroll_counter = 0;
             }
         }
         
-        // Check for R6 button press (works in both modes)
+        // R6 button press (click)
         if ((buttons.R6) && !prev_R6_state && cursor_hover_item == 0xFF) {
             unsigned char absolute_index = current_menu->scroll_offset + current_menu->selected_item;
             if (absolute_index < current_menu->total_items) {
                 read_menu_item(&current_menu->items[absolute_index], &temp_item);
-                
-                if (temp_item.submenu != NULL) {
-                    enter_submenu(temp_item.submenu);
-                } else if (temp_item.action != NULL) {
-                    temp_item.action();
-                }
+                if (temp_item.submenu != NULL) enter_submenu(temp_item.submenu);
+                else if (temp_item.action != NULL) temp_item.action();
             }
         }
         prev_R6_state = buttons.R6;
         
-        // Check for NB button press (SELECT in nav mode)
+        // NB button press (select in nav mode)
         if ((buttons.NB) && !prev_NB_state && menu_control_mode == 1) {
             unsigned char absolute_index = current_menu->scroll_offset + current_menu->selected_item;
             if (absolute_index < current_menu->total_items) {
                 read_menu_item(&current_menu->items[absolute_index], &temp_item);
-                
-                if (temp_item.submenu != NULL) {
-                    enter_submenu(temp_item.submenu);
-                } else if (temp_item.action != NULL) {
-                    temp_item.action();
-                }
+                if (temp_item.submenu != NULL) enter_submenu(temp_item.submenu);
+                else if (temp_item.action != NULL) temp_item.action();
             }
         }
         prev_NB_state = buttons.NB;
@@ -360,17 +369,13 @@ void draw_menu(void) {
             unsigned char absolute_index = current_menu->scroll_offset + cursor_hover_item;
             if (absolute_index < current_menu->total_items) {
                 read_menu_item(&current_menu->items[absolute_index], &temp_item);
-                
-                if (temp_item.submenu != NULL) {
-                    enter_submenu(temp_item.submenu);
-                } else if (temp_item.action != NULL) {
-                    temp_item.action();
-                }
+                if (temp_item.submenu != NULL) enter_submenu(temp_item.submenu);
+                else if (temp_item.action != NULL) temp_item.action();
             }
         }
         prev_cursor_click = cursor_state.clicking;
         
-        // Check for R5 button press (BACK)
+        // R5 button press (back)
         if ((buttons.R5) && !prev_R5_state) {
             if (current_menu->parent_menu != NULL) {
                 go_back_to_parent();
@@ -378,8 +383,8 @@ void draw_menu(void) {
         }
         prev_R5_state = buttons.R5;
     }
-    
-    // Draw cursor only in cursor mode
+
+    // --- DRAW CURSOR ---
     if (menu_control_mode == 0) {
         draw_menu_cursor();
     }
