@@ -3,6 +3,8 @@
 
 void debug_window(void);
 void map_touchpad(void);
+void draw_menu(void);
+void display_current_screen(void);
 
 
 extern signed char X_window_1;

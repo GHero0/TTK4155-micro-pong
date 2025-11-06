@@ -141,4 +141,50 @@ typedef struct {
 	char message_data[8];
 } CANMessage;
 
+// =============================================================================
+// UI/MENU TYPES
+// =============================================================================
+
+/**
+ * @brief Screen state 
+ */
+typedef enum {
+    SCREEN_MENU,
+    SCREEN_DEBUG_IO_BOARD,
+    SCREEN_DEBUG_BLUE_BOX
+} ScreenState;
+
+/**
+ * @brief Cursor position and state
+ */
+typedef struct {
+    signed char x;
+    signed char y;
+    unsigned char clicking;
+} CursorState;
+
+typedef struct Menu Menu;
+typedef void (*MenuAction)(void);
+
+/**
+ * @brief Menu item struct with action handler
+ */
+typedef struct MenuItem {
+    const char* label;
+    MenuAction action;
+    Menu* submenu;
+    unsigned char icon_tile;
+} MenuItem;
+
+/**
+ * @brief Menu structure
+ */
+struct Menu {
+    unsigned char selected_item;
+    unsigned char total_items;
+    unsigned char scroll_offset;
+    const MenuItem* items;
+    Menu* parent_menu;
+};
+
 #endif 

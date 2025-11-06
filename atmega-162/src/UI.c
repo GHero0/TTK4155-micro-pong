@@ -2,26 +2,135 @@
 #include "sprites.h"
 #include "images.h"
 #include "drivers/IO_board.h"
+#include "drivers/OLED.h"
 #include "joystick.h"
+#include "menu.h"
+
 #include <stdio.h>
+#include <avr/pgmspace.h>
+#include <string.h>
+
+
+ScreenState current_screen = SCREEN_MENU;
+CursorState cursor_state = {0, 0, 0};
+char X_window_1 = 0;
+char Y_window_1 = 0;
+char X_window_2 = 0;
+char Y_window_2 = 0;
+
+// Transition system
+ScreenTransition screen_transition = {
+    .state = TRANSITION_NONE,
+    .frame = 0,
+    .total_frames = 4,  // Reduced to 4 frames for better performance
+    .target_screen = SCREEN_MENU
+};
+
+// Bayer matrix 8x8 dithering pattern (stored in PROGMEM to save RAM)
+const uint8_t PROGMEM dither_pattern[64] = {
+     0, 32,  8, 40,  2, 34, 10, 42,
+    48, 16, 56, 24, 50, 18, 58, 26,
+    12, 44,  4, 36, 14, 46,  6, 38,
+    60, 28, 52, 20, 62, 30, 54, 22,
+     3, 35, 11, 43,  1, 33,  9, 41,
+    51, 19, 59, 27, 49, 17, 57, 25,
+    15, 47,  7, 39, 13, 45,  5, 37,
+    63, 31, 55, 23, 61, 29, 53, 21
+};
+
+// Initialize transition system
+void Transition_Init(void) {
+    screen_transition.state = TRANSITION_NONE;
+    screen_transition.frame = 0;
+    screen_transition.total_frames = 4;  // Faster animation
+    screen_transition.target_screen = current_screen;
+}
+
+// Start a transition to a new screen
+void Transition_Start(ScreenState new_screen) {
+    if (new_screen != current_screen) {
+        screen_transition.state = TRANSITION_OUT;
+        screen_transition.frame = 0;
+        screen_transition.target_screen = new_screen;
+    }
+}
+
+// Check if transition is active
+uint8_t Transition_Is_Active(void) {
+    return (screen_transition.state != TRANSITION_NONE);
+}
+
+// Update transition state (call each frame)
+void Transition_Update(void) {
+    if (screen_transition.state == TRANSITION_NONE) {
+        return;
+    }
+    
+    if (screen_transition.state == TRANSITION_OUT) {
+        // Fading out current screen
+        screen_transition.frame++;
+        if (screen_transition.frame >= screen_transition.total_frames) {
+            // Switch to new screen and start fade in
+            current_screen = screen_transition.target_screen;
+            screen_transition.state = TRANSITION_IN;
+            screen_transition.frame = 0;
+        }
+    } else if (screen_transition.state == TRANSITION_IN) {
+        // Fading in new screen
+        screen_transition.frame++;
+        if (screen_transition.frame >= screen_transition.total_frames) {
+            // Transition complete
+            screen_transition.state = TRANSITION_NONE;
+            screen_transition.frame = 0;
+        }
+    }
+}
+
+void Transition_Apply_Dither(uint8_t intensity) {
+    if (intensity == 0) return;
+    
+    if (intensity >= 32) {
+        // More than half way - just clear everything
+        memset(current_buffer, 0, 1024);
+        return;
+    }
+    
+    // For low intensities, randomly clear some pixels
+    uint8_t keep_threshold = 32 - intensity;
+    
+    for (uint16_t i = 0; i < 1024; i++) {
+        uint8_t byte_val = current_buffer[i];
+        if (byte_val != 0) {
+            // Keep pixels based on simple position hash
+            if ((i & 0x1F) >= keep_threshold) {
+                current_buffer[i] = 0;
+            }
+        }
+    }
+}
 
 void draw_window(int X, int Y, unsigned char width_in_tiles, unsigned char height_in_tiles)
 {
-
-    // Similar to Windows Title Bar
-    fetch_tile_from_tilemap_1bpp(8);                   // X to close
-    draw_tile_1bpp(X + (width_in_tiles << 3) - 8, Y);  // Top-right corner
-    fetch_tile_from_tilemap_1bpp(7);                   // Y to maximize
-    draw_tile_1bpp(X + (width_in_tiles << 3) - 16, Y); // Top-right corner
-    fetch_tile_from_tilemap_1bpp(6);                   // - to minimize
-    draw_tile_1bpp(X + (width_in_tiles << 3) - 24, Y); // Top-right corner
-    // Other tiles, draw title bar as black tiles
+    unsigned char width_pixels = width_in_tiles << 3;
+    
+    // Draw window controls (X, Y, - buttons) in top-right
+    fetch_tile_from_tilemap_1bpp(8);                    // X to close
+    draw_tile_1bpp(X + width_pixels - 8, Y);
+    
+    fetch_tile_from_tilemap_1bpp(7);                    // Y to maximize
+    draw_tile_1bpp(X + width_pixels - 16, Y);
+    
+    fetch_tile_from_tilemap_1bpp(6);                    // - to minimize
+    draw_tile_1bpp(X + width_pixels - 24, Y);
+    
+    // Draw title bar background (black tiles)
     fetch_tile_from_tilemap_1bpp(59); // Black background
     for (unsigned char col = 0; col < width_in_tiles - 3; col++)
     {
         draw_tile_1bpp(X + (col << 3), Y);
     }
-
+    
+    // Draw window content area background (black tiles)
     for (unsigned char row = 0; row < height_in_tiles; row++)
     {
         fetch_tile_from_tilemap_1bpp(59); // Black background
@@ -30,48 +139,14 @@ void draw_window(int X, int Y, unsigned char width_in_tiles, unsigned char heigh
             draw_tile_1bpp(X + (col << 3), Y + 8 + (row << 3));
         }
     }
-
-    // Draw rectangle border
-    draw_line(X, Y + 8, X + (width_in_tiles << 3) - 1, Y + 8); // title header
-    // title buttons barrier
+    
+    // Draw title bar separator line (horizontal line below title bar)
+    draw_line(X, Y + 8, width_pixels, 0,0);
+    
+    // Draw window border rectangle
     draw_rectangle(X, Y, width_in_tiles, height_in_tiles + 1);
 }
 
-void draw_task_bar(void)
-{
-    unsigned char Y = 56;
-
-    fetch_tile_from_tilemap_1bpp(59); // Black background
-    for (unsigned char col = 0; col < 14; col++)
-    {
-        draw_tile_1bpp(col << 3, Y);
-    }
-
-    fetch_tile_from_tilemap_1bpp(10);
-    draw_tile_1bpp(2, Y + 1); // Start button
-    fetch_tile_from_tilemap_1bpp(9);
-    draw_tile_1bpp(8 + 2, Y + 1); // Search button
-
-    fetch_tile_from_tilemap_1bpp(6);
-    draw_tile_1bpp(15, Y); // Task view button
-
-    // Draw fancy dithering background
-    fetch_tile_from_tilemap_1bpp(4); // Dark gray tile
-    SYM_H_1bpp();
-    draw_tile_1bpp((15 << 3), Y);
-    fetch_tile_from_tilemap_1bpp(5); // Dark gray tile
-    SYM_H_1bpp();
-    draw_tile_1bpp((14 << 3), Y);
-
-    // Draw rectangle border
-    draw_line(0, Y - 1, 127, Y - 1); // Top border
-    draw_line(0, 63, 127, 63);       // Bottom border
-    draw_line(0, Y - 1, 0, 63);      // Left
-    draw_line(127, Y - 1, 127, 63);  // Right
-    //
-    draw_line(8, Y, 8, 63);
-    draw_line(24, Y, 24, 63);
-}
 
 void joystick_indicator(char X, char Y, unsigned char hand)
 {
@@ -184,7 +259,7 @@ void joystick_indicator(char X, char Y, unsigned char hand)
         }
     }
 }
-// * Would need to be changed at some point
+
 void button_indicator(char X, char Y, unsigned char hand, unsigned char number)
 {
     char x = X;
@@ -277,51 +352,6 @@ void button_indicator(char X, char Y, unsigned char hand, unsigned char number)
     }
 }
 
-void cursor()
-{
-    static int x = 8; // Use int to avoid overflow issues
-    static int y = 8;
-
-    signed char dx = joystick_pos.X >> 8; // [-100, 100]
-    signed char dy = joystick_pos.Y >> 8;
-
-    // Deadzone threshold
-    const int deadzone = 3;
-
-    // Move cursor if joystick input exceeds deadzone
-    if (dx > deadzone || dx < -deadzone)
-        x += dx / 32;  // Adjust sensitivity by divisor
-    if (dy > deadzone || dy < -deadzone)
-        y -= dy / 32;  // Invert Y axis
-
-    // Clamp cursor position to screen bounds
-    if (x < -4) x = -4;
-    if (x > 124) x = 124; // 128 - 8 tile width
-    if (y < -4) y = -4;
-    if (y > 60) y = 60;   // 64 - 8 tile height
-
-    unsigned char abs_dx = dx < 0 ? -dx : dx;
-    unsigned char abs_dy = dy < 0 ? -dy : dy;
-    unsigned char speed = abs_dx + abs_dy;
-
-    unsigned char tile_index;
-    if (speed > 150)
-        tile_index = 3;
-    else if (speed > 100)
-        tile_index = 2;
-    else if (speed > 70)
-        tile_index = 1;
-    else
-        tile_index = 0;
-
-    // Choose base tile and draw without complicated offset logic
-    unsigned char base_tile = 6 + tile_index;
-
-    fetch_tile_from_tilemap_2bpp(base_tile);
-
-    draw_tile_2bpp((unsigned char)x, (unsigned char)y);
-}
-
 void draw_printf(char x, char y, const char* fmt, ...) {
     char buf[32]; // adjust as needed (keep small on AVR)
     va_list args;
@@ -330,4 +360,117 @@ void draw_printf(char x, char y, const char* fmt, ...) {
     va_end(args);
 
     draw_string(buf, x, y);
+}
+
+char X = 30;
+char Y = 30;
+
+void debug_window(void)
+{
+    unsigned char Y_window_1 = 8;
+    unsigned char Y_window_2 = 16;
+    unsigned char X_window_1 = 8;
+    unsigned char X_window_2 = 72;
+
+    if (Y > 0) {
+        draw_line(127, 0, Y, 1, 1);  // vertical from (127, 0) down Y pixels
+    }
+    if (X < 127) {
+        draw_line(X, Y, 127 - X, 0, 2);  // horizontal from (X, Y) to (127, Y)
+    }
+
+    draw_window(X_window_2, Y_window_2, 6, 3);
+    draw_window(X_window_1, Y_window_1, 7, 4);
+
+    draw_printf(X_window_1 + 3, Y_window_1 + 16, "X:%d\nY:%d", joystick_pos.X >> 8, joystick_pos.Y >> 8);
+    draw_printf(X_window_1 + 27, Y_window_1 + 16, "X':%d\nY':%d\nS:%d", X, Y, touch_pad.size);
+
+    joystick_indicator(X_window_2 + 8, Y_window_2 + 16, 0);
+    joystick_indicator(X_window_2 + 32, Y_window_2 + 16, 1);
+
+    // Only update cursor if not transitioning
+    if (!Transition_Is_Active()) {
+        update_cursor_position();
+    }
+    draw_menu_cursor();
+}
+
+void map_touchpad(void)
+{
+    // Map touchpad
+    X = touch_pad.x >> 1;
+    Y = 63 - (touch_pad.y >> 2);
+
+    if (X < 0)
+        X = 0;
+    if (X > 127)
+        X = 127;
+    if (Y < 0)
+        Y = 0;
+    if (Y > 63)
+        Y = 63;
+}
+
+void display_current_screen(void) {
+    // Initialize menus on first call
+    static unsigned char prev_back_button = 0;
+    
+    // Always draw the current screen content first
+    switch (current_screen) {
+        case SCREEN_MENU:
+            if (current_menu == NULL) {
+                current_menu = &main_menu;
+            }
+            draw_menu();
+            break;
+            
+        case SCREEN_DEBUG_IO_BOARD:
+            debug_window();
+            if (!Transition_Is_Active()) {  // Only handle input when not transitioning
+                prev_back_button = 0;
+                if (buttons.R5 && !prev_back_button) {
+                    Transition_Start(SCREEN_MENU);
+                }
+                prev_back_button = buttons.R5;
+            }
+            break;
+            
+        case SCREEN_DEBUG_BLUE_BOX:
+            draw_printf(10, 28, "Blue Box Debug");
+            if (!Transition_Is_Active()) {  // Only handle input when not transitioning
+                prev_back_button = 0;
+                if (buttons.R5 && !prev_back_button) {
+                    Transition_Start(SCREEN_MENU);
+                }
+                prev_back_button = buttons.R5;
+            }
+            break;
+            
+        default:
+            current_screen = SCREEN_MENU;
+            break;
+    }
+    
+    // Apply transition effect AFTER drawing (if active)
+    if (Transition_Is_Active()) {
+        uint8_t dither_intensity;
+        
+        if (screen_transition.state == TRANSITION_OUT) {
+            // Fade out: intensity increases from 0 to 64
+            // frame 0: 0, frame 1: 10, ... frame 5: 64
+            dither_intensity = ((screen_transition.frame + 1) * 64) / screen_transition.total_frames;
+        } else { // TRANSITION_IN
+            // Fade in: intensity decreases from 64 to 0
+            // frame 0: 64, frame 1: 53, ... frame 5: 0
+            dither_intensity = (64 * (screen_transition.total_frames - screen_transition.frame)) / screen_transition.total_frames;
+        }
+        
+        // Only apply dithering if intensity > 0
+        if (dither_intensity > 0) {
+            Transition_Apply_Dither(dither_intensity);
+        }
+        
+        // Update transition state for next frame
+        Transition_Update();
+    }
 }
