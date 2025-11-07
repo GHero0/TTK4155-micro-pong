@@ -222,8 +222,8 @@ const unsigned char PROGMEM font_spacing[70] = {
     0x05, // T
     0x05, // U
     0x05, // V
-    0x04, // W
-    0x04, // X
+    0x05, // W
+    0x05, // X
     0x04, // Y
     0x04, // Z
     0x04, // [

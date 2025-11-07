@@ -5,6 +5,8 @@
 #include "drivers/OLED.h"
 #include "joystick.h"
 #include "menu.h"
+#include "inter.h"
+#include "drivers/CAN.h"
 
 #include <stdio.h>
 #include <avr/pgmspace.h>
@@ -13,10 +15,6 @@
 
 ScreenState current_screen = SCREEN_MENU;
 CursorState cursor_state = {0, 0, 0};
-char X_window_1 = 0;
-char Y_window_1 = 0;
-char X_window_2 = 0;
-char Y_window_2 = 0;
 
 // Transition system
 ScreenTransition screen_transition = {
@@ -25,6 +23,9 @@ ScreenTransition screen_transition = {
     .total_frames = 4,  // Reduced to 4 frames for better performance
     .target_screen = SCREEN_MENU
 };
+
+// Scoring
+unsigned char score = 0;
 
 // Bayer matrix 8x8 dithering pattern (stored in PROGMEM to save RAM)
 const uint8_t PROGMEM dither_pattern[64] = {
@@ -111,40 +112,18 @@ void Transition_Apply_Dither(uint8_t intensity) {
 
 void draw_window(int X, int Y, unsigned char width_in_tiles, unsigned char height_in_tiles)
 {
-    unsigned char width_pixels = width_in_tiles << 3;
-    
-    // Draw window controls (X, Y, - buttons) in top-right
-    fetch_tile_from_tilemap_1bpp(8);                    // X to close
-    draw_tile_1bpp(X + width_pixels - 8, Y);
-    
-    fetch_tile_from_tilemap_1bpp(7);                    // Y to maximize
-    draw_tile_1bpp(X + width_pixels - 16, Y);
-    
-    fetch_tile_from_tilemap_1bpp(6);                    // - to minimize
-    draw_tile_1bpp(X + width_pixels - 24, Y);
-    
-    // Draw title bar background (black tiles)
-    fetch_tile_from_tilemap_1bpp(59); // Black background
-    for (unsigned char col = 0; col < width_in_tiles - 3; col++)
-    {
-        draw_tile_1bpp(X + (col << 3), Y);
-    }
-    
     // Draw window content area background (black tiles)
     for (unsigned char row = 0; row < height_in_tiles; row++)
     {
         fetch_tile_from_tilemap_1bpp(59); // Black background
         for (unsigned char col = 0; col < width_in_tiles; col++)
         {
-            draw_tile_1bpp(X + (col << 3), Y + 8 + (row << 3));
+            draw_tile_1bpp(X + (col << 3), Y + (row << 3));
         }
     }
     
-    // Draw title bar separator line (horizontal line below title bar)
-    draw_line(X, Y + 8, width_pixels, 0,0);
-    
     // Draw window border rectangle
-    draw_rectangle(X, Y, width_in_tiles, height_in_tiles + 1);
+    draw_rectangle(X, Y, width_in_tiles, height_in_tiles);
 }
 
 
@@ -260,98 +239,6 @@ void joystick_indicator(char X, char Y, unsigned char hand)
     }
 }
 
-void button_indicator(char X, char Y, unsigned char hand, unsigned char number)
-{
-    char x = X;
-    char y = Y;
-    unsigned char tile_base;
-    uint8_t pressed = 0;
-
-    // --- Determine which hand and button pressed ---
-    if (hand == 0)
-    {
-        // Left hand: 7 buttons (bits 0–6)
-        tile_base = 16;
-        if (number >= 1 && number <= 7)
-        {
-            pressed = (buttons.left >> (number - 1)) & 0x01;
-        }
-    }
-    else
-    {
-        // Right hand: 6 buttons (bits 0–5)
-        tile_base = 32;
-        if (number >= 1 && number <= 6)
-        {
-            pressed = (buttons.right >> (number - 1)) & 0x01;
-        }
-    }
-
-    // --- Shift all tiles by +1 pixel if the corresponding button is pressed ---
-    if (pressed)
-    {
-        y++;
-        x++;
-    }
-    else
-    {
-        draw_rectangle(x + 1, y + 1, 3, 1);
-    }
-
-    // --- Draw background frame ---
-
-    fetch_tile_from_tilemap_1bpp(59);
-    draw_tile_1bpp(x, y);
-    draw_tile_1bpp(x + 8, y);
-    draw_tile_1bpp(x + 16, y);
-    draw_rectangle(x, y, 3, 1);
-
-    // --- Draw 'B' for button ---
-    fetch_tile_from_tilemap_2bpp(16);
-    draw_tile_2bpp(x + 6, y);
-
-    // --- Draw hand indicator (L or R) ---
-    fetch_tile_from_tilemap_2bpp(tile_base);
-    draw_tile_2bpp(x, y);
-
-    // --- Select number tile ---
-    unsigned char tile_id = 0xFF;
-
-    switch (number)
-    {
-    case 1:
-        tile_id = 17;
-        break;
-    case 2:
-        tile_id = 17 + 16;
-        break;
-    case 3:
-        tile_id = 17 + 32;
-        break;
-    case 4:
-        tile_id = 18;
-        break;
-    case 5:
-        tile_id = 18 + 16;
-        break;
-    case 6:
-        tile_id = 18 + 32;
-        break;
-    case 7:
-        tile_id = 19;
-        break; // Left hand only
-    default:
-        break;
-    }
-
-    // --- Draw number tile if valid ---
-    if (tile_id != 0xFF)
-    {
-        fetch_tile_from_tilemap_2bpp(tile_id);
-        draw_tile_2bpp(x + 16, y);
-    }
-}
-
 void draw_printf(char x, char y, const char* fmt, ...) {
     char buf[32]; // adjust as needed (keep small on AVR)
     va_list args;
@@ -364,36 +251,6 @@ void draw_printf(char x, char y, const char* fmt, ...) {
 
 char X = 30;
 char Y = 30;
-
-void debug_window(void)
-{
-    unsigned char Y_window_1 = 8;
-    unsigned char Y_window_2 = 16;
-    unsigned char X_window_1 = 8;
-    unsigned char X_window_2 = 72;
-
-    if (Y > 0) {
-        draw_line(127, 0, Y, 1, 1);  // vertical from (127, 0) down Y pixels
-    }
-    if (X < 127) {
-        draw_line(X, Y, 127 - X, 0, 2);  // horizontal from (X, Y) to (127, Y)
-    }
-
-    draw_window(X_window_2, Y_window_2, 6, 3);
-    draw_window(X_window_1, Y_window_1, 7, 4);
-
-    draw_printf(X_window_1 + 3, Y_window_1 + 16, "X:%d\nY:%d", joystick_pos.X >> 8, joystick_pos.Y >> 8);
-    draw_printf(X_window_1 + 27, Y_window_1 + 16, "X':%d\nY':%d\nS:%d", X, Y, touch_pad.size);
-
-    joystick_indicator(X_window_2 + 8, Y_window_2 + 16, 0);
-    joystick_indicator(X_window_2 + 32, Y_window_2 + 16, 1);
-
-    // Only update cursor if not transitioning
-    if (!Transition_Is_Active()) {
-        update_cursor_position();
-    }
-    draw_menu_cursor();
-}
 
 void map_touchpad(void)
 {
@@ -411,6 +268,67 @@ void map_touchpad(void)
         Y = 63;
 }
 
+void debug_io_board(void)
+{
+    unsigned char Y_window_1 = 0;
+    unsigned char Y_window_2 = 40;
+    unsigned char X_window_1 = 8;
+    unsigned char X_window_2 = 8;
+
+    if (Y > 0) {
+        draw_line(127, 0, Y, 1, 1);  // vertical from (127, 0) down Y pixels
+    }
+    if (X < 127) {
+        draw_line(X, Y, 127 - X, 0, 2);  // horizontal from (X, Y) to (127, Y)
+    }
+
+    draw_window(X_window_2, Y_window_2, 6, 3);
+    draw_window(X_window_1, Y_window_1, 8, 4);
+
+    draw_printf(X_window_1 + 3, Y_window_1 + 8, "X:%d\nY:%d", joystick_pos.X >> 8, joystick_pos.Y >> 8);
+    draw_printf(X_window_1 + 30, Y_window_1 + 8, "X':%d\nY':%d\nS:%d", X, Y, touch_pad.size);
+
+    joystick_indicator(X_window_2 + 8, Y_window_2 + 8, 0);
+    joystick_indicator(X_window_2 + 32, Y_window_2 + 8, 1);
+
+    draw_printf(60,54,"Debug IO-BOARD");
+    // Only update cursor if not transitioning
+    if (!Transition_Is_Active()) {
+        update_cursor_position();
+    }
+    draw_menu_cursor();
+}
+
+void debug_blue_box(void)
+{
+    unsigned char Y_window_1 = 0;
+    unsigned char Y_window_2 = 24;
+    unsigned char Y_window_3 = 0;
+    unsigned char Y_window_4 = 48;
+    unsigned char X_window_1 = 8;
+    unsigned char X_window_2 = 8;
+    unsigned char X_window_3 = 72;
+    unsigned char X_window_4 = 8;
+
+    
+
+    draw_window(X_window_1, Y_window_1, 7, 3);
+    draw_window(X_window_2, Y_window_2, 7, 3);
+    draw_window(X_window_3, Y_window_3, 5, 6);
+    draw_window(X_window_4, Y_window_4, 6, 2);
+    
+    draw_printf(X_window_1 + 3, Y_window_1 + 4, "X:%d\nY:%d", joystick_pos.X >> 8, joystick_pos.Y >> 8);
+    draw_printf(X_window_2 + 3, Y_window_2 + 4, "ID: 0X%02X\nLEN:0X%02X", msgCAN_RX.message_id, msgCAN_RX.message_data_length);
+    for (uint8_t i = 0; i < msgCAN_RX.message_data_length; i++) {
+        draw_printf(X_window_3 + 3, Y_window_3 + 4 + (i * 7), "0X%02X", msgCAN_RX.message_data[i]);
+    }
+    draw_printf(X_window_4 + 3, Y_window_4 + 4, "SCORE:%d", score);
+
+
+    joystick_indicator(X_window_1 + 36, Y_window_1 + 8, 0);
+    draw_printf(60, 56, "Blue Box Debug");
+}
+
 void display_current_screen(void) {
     // Initialize menus on first call
     static unsigned char prev_back_button = 0;
@@ -425,7 +343,7 @@ void display_current_screen(void) {
             break;
             
         case SCREEN_DEBUG_IO_BOARD:
-            debug_window();
+            debug_io_board();
             if (!Transition_Is_Active()) {  // Only handle input when not transitioning
                 prev_back_button = 0;
                 if (buttons.R5 && !prev_back_button) {
@@ -436,8 +354,26 @@ void display_current_screen(void) {
             break;
             
         case SCREEN_DEBUG_BLUE_BOX:
-            draw_printf(10, 28, "Blue Box Debug");
+            debug_blue_box();
             
+            if (Flag_CAN == 1)
+            {
+                msgCAN_RX = CAN_Receive_Message();
+                printf("====MSG====\n");
+                printf("id: 0x%X\n", msgCAN_RX.message_id);
+                printf("data_length: 0x%X\n", msgCAN_RX.message_data_length);
+
+                for (uint8_t i = 0; i < msgCAN_RX.message_data_length; i++)
+                {
+                    printf("data[%d]: 0x%2X\n", i, msgCAN_RX.message_data[i]);
+                }
+
+                if (msgCAN_RX.message_id == 1){
+                    score = msgCAN_RX.message_data[0];
+                }
+                Flag_CAN = 0;
+            }
+        
             if (!Transition_Is_Active()) {  // Only handle input when not transitioning
                 prev_back_button = 0;
                 if (buttons.R5 && !prev_back_button) {

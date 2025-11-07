@@ -11,6 +11,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
+CANMessage msgCAN_TX = {0};
+CANMessage msgCAN_RX = {0};
+
 void CAN_Read(unsigned char address_byte, unsigned char *buffer, unsigned char lentgh)
 {
     SPI_Select_Slave(3);

@@ -65,4 +65,7 @@ void CAN_Read_TX_Buffer(void);
 
 void CAN_Read_Print_All_Control_Registers(void);
 
+extern CANMessage msgCAN_TX;
+extern CANMessage msgCAN_RX;
+
 #endif /* CAN_H_ */
