@@ -176,6 +176,7 @@ inline void SYM_V_1bpp(void)
 void draw_tile_2bpp(signed char X, signed char Y)
 {
     unsigned char *fb = current_buffer;
+    
     for (unsigned char r = 0; r < 8; r++)
     {
         signed char py = Y + r;
@@ -183,120 +184,25 @@ void draw_tile_2bpp(signed char X, signed char Y)
             continue;
 
         unsigned short row_offset = (unsigned char)py << 4;
-        unsigned char tr = tile_2bpp[r << 1];
-        unsigned char tr2 = tile_2bpp[(r << 1) + 1];
+        unsigned char tr_bytes[2] = {tile_2bpp[r << 1], tile_2bpp[(r << 1) + 1]};
 
-        unsigned char pix0 = (tr >> 6) & 3;
-        unsigned char pix1 = (tr >> 4) & 3;
-        unsigned char pix2 = (tr >> 2) & 3;
-        unsigned char pix3 = tr & 3;
-        unsigned char pix4 = (tr2 >> 6) & 3;
-        unsigned char pix5 = (tr2 >> 4) & 3;
-        unsigned char pix6 = (tr2 >> 2) & 3;
-        unsigned char pix7 = tr2 & 3;
-
-        signed char px0 = X + 0;
-        if ((unsigned char)px0 < 128 && pix0 != 2)
+        for (unsigned char i = 0; i < 8; i++)
         {
-            unsigned short idx = row_offset + ((unsigned char)px0 >> 3);
-            unsigned char mask = 1 << (7 - (px0 & 7));
-            if (pix0 == 3)
-                fb[idx] |= mask;
-            else if (pix0 == 0)
-                fb[idx] &= ~mask;
-            else
-                fb[idx] ^= mask;
-        }
-
-        signed char px1 = X + 1;
-        if ((unsigned char)px1 < 128 && pix1 != 2)
-        {
-            unsigned short idx = row_offset + ((unsigned char)px1 >> 3);
-            unsigned char mask = 1 << (7 - (px1 & 7));
-            if (pix1 == 3)
-                fb[idx] |= mask;
-            else if (pix1 == 0)
-                fb[idx] &= ~mask;
-            else
-                fb[idx] ^= mask;
-        }
-
-        signed char px2 = X + 2;
-        if ((unsigned char)px2 < 128 && pix2 != 2)
-        {
-            unsigned short idx = row_offset + ((unsigned char)px2 >> 3);
-            unsigned char mask = 1 << (7 - (px2 & 7));
-            if (pix2 == 3)
-                fb[idx] |= mask;
-            else if (pix2 == 0)
-                fb[idx] &= ~mask;
-            else
-                fb[idx] ^= mask;
-        }
-
-        signed char px3 = X + 3;
-        if ((unsigned char)px3 < 128 && pix3 != 2)
-        {
-            unsigned short idx = row_offset + ((unsigned char)px3 >> 3);
-            unsigned char mask = 1 << (7 - (px3 & 7));
-            if (pix3 == 3)
-                fb[idx] |= mask;
-            else if (pix3 == 0)
-                fb[idx] &= ~mask;
-            else
-                fb[idx] ^= mask;
-        }
-
-        signed char px4 = X + 4;
-        if ((unsigned char)px4 < 128 && pix4 != 2)
-        {
-            unsigned short idx = row_offset + ((unsigned char)px4 >> 3);
-            unsigned char mask = 1 << (7 - (px4 & 7));
-            if (pix4 == 3)
-                fb[idx] |= mask;
-            else if (pix4 == 0)
-                fb[idx] &= ~mask;
-            else
-                fb[idx] ^= mask;
-        }
-
-        signed char px5 = X + 5;
-        if ((unsigned char)px5 < 128 && pix5 != 2)
-        {
-            unsigned short idx = row_offset + ((unsigned char)px5 >> 3);
-            unsigned char mask = 1 << (7 - (px5 & 7));
-            if (pix5 == 3)
-                fb[idx] |= mask;
-            else if (pix5 == 0)
-                fb[idx] &= ~mask;
-            else
-                fb[idx] ^= mask;
-        }
-
-        signed char px6 = X + 6;
-        if ((unsigned char)px6 < 128 && pix6 != 2)
-        {
-            unsigned short idx = row_offset + ((unsigned char)px6 >> 3);
-            unsigned char mask = 1 << (7 - (px6 & 7));
-            if (pix6 == 3)
-                fb[idx] |= mask;
-            else if (pix6 == 0)
-                fb[idx] &= ~mask;
-            else
-                fb[idx] ^= mask;
-        }
-
-        signed char px7 = X + 7;
-        if ((unsigned char)px7 < 128 && pix7 != 2)
-        {
-            unsigned short idx = row_offset + ((unsigned char)px7 >> 3);
-            unsigned char mask = 1 << (7 - (px7 & 7));
-            if (pix7 == 3)
-                fb[idx] |= mask;
-            else if (pix7 == 0)
-                fb[idx] &= ~mask;
-            else
-                fb[idx] ^= mask;
+            unsigned char pix = (tr_bytes[i >> 2] >> ((3 - (i & 3)) << 1)) & 3;
+            
+            if (pix == 2)  // Transparent
+                continue;
+            
+            signed char px = X + i;
+            if ((unsigned char)px >= 128)
+                continue;
+            
+            unsigned short idx = row_offset + ((unsigned char)px >> 3);
+            unsigned char mask = 1 << (7 - (px & 7));
+            
+            fb[idx] = (pix == 3) ? (fb[idx] | mask) :
+                     (pix == 0) ? (fb[idx] & ~mask) :
+                                  (fb[idx] ^ mask);
         }
     }
 }

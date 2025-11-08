@@ -5,7 +5,6 @@
 
 void draw_window(int X, int Y, unsigned char width_in_tiles, unsigned char height_in_tiles);
 void joystick_indicator(char X, char Y, unsigned char hand);
-void button_indicator(char X, char Y, unsigned char hand, unsigned char number);
 void draw_printf(char x, char y, const char* fmt, ...);
 
 // Menu system functions
@@ -39,5 +38,6 @@ void Transition_Start(ScreenState new_screen);
 void Transition_Update(void);
 void Transition_Apply_Dither(uint8_t intensity);
 uint8_t Transition_Is_Active(void);
+
 
 #endif

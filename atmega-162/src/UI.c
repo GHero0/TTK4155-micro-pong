@@ -27,18 +27,6 @@ ScreenTransition screen_transition = {
 // Scoring
 unsigned char score = 0;
 
-// Bayer matrix 8x8 dithering pattern (stored in PROGMEM to save RAM)
-const uint8_t PROGMEM dither_pattern[64] = {
-     0, 32,  8, 40,  2, 34, 10, 42,
-    48, 16, 56, 24, 50, 18, 58, 26,
-    12, 44,  4, 36, 14, 46,  6, 38,
-    60, 28, 52, 20, 62, 30, 54, 22,
-     3, 35, 11, 43,  1, 33,  9, 41,
-    51, 19, 59, 27, 49, 17, 57, 25,
-    15, 47,  7, 39, 13, 45,  5, 37,
-    63, 31, 55, 23, 61, 29, 53, 21
-};
-
 // Initialize transition system
 void Transition_Init(void) {
     screen_transition.state = TRANSITION_NONE;
@@ -91,21 +79,13 @@ void Transition_Apply_Dither(uint8_t intensity) {
     if (intensity == 0) return;
     
     if (intensity >= 32) {
-        // More than half way - just clear everything
         memset(current_buffer, 0, 1024);
         return;
     }
     
-    // For low intensities, randomly clear some pixels
-    uint8_t keep_threshold = 32 - intensity;
-    
     for (uint16_t i = 0; i < 1024; i++) {
-        uint8_t byte_val = current_buffer[i];
-        if (byte_val != 0) {
-            // Keep pixels based on simple position hash
-            if ((i & 0x1F) >= keep_threshold) {
-                current_buffer[i] = 0;
-            }
+        if ((i & 0x1F) >= (32 - intensity)) {
+            current_buffer[i] = 0;
         }
     }
 }
@@ -344,13 +324,11 @@ void display_current_screen(void) {
             
         case SCREEN_DEBUG_IO_BOARD:
             debug_io_board();
-            if (!Transition_Is_Active()) {  // Only handle input when not transitioning
-                prev_back_button = 0;
-                if (buttons.R5 && !prev_back_button) {
-                    Transition_Start(SCREEN_MENU);
-                }
-                prev_back_button = buttons.R5;
+            prev_back_button = 0;
+            if (buttons.R5 && !prev_back_button) {
+                Transition_Start(SCREEN_MENU);
             }
+            prev_back_button = buttons.R5;
             break;
             
         case SCREEN_DEBUG_BLUE_BOX:
@@ -359,28 +337,16 @@ void display_current_screen(void) {
             if (Flag_CAN == 1)
             {
                 msgCAN_RX = CAN_Receive_Message();
-                printf("====MSG====\n");
-                printf("id: 0x%X\n", msgCAN_RX.message_id);
-                printf("data_length: 0x%X\n", msgCAN_RX.message_data_length);
-
-                for (uint8_t i = 0; i < msgCAN_RX.message_data_length; i++)
-                {
-                    printf("data[%d]: 0x%2X\n", i, msgCAN_RX.message_data[i]);
-                }
-
                 if (msgCAN_RX.message_id == 1){
                     score = msgCAN_RX.message_data[0];
                 }
                 Flag_CAN = 0;
             }
-        
-            if (!Transition_Is_Active()) {  // Only handle input when not transitioning
-                prev_back_button = 0;
-                if (buttons.R5 && !prev_back_button) {
-                    Transition_Start(SCREEN_MENU);
-                }
-                prev_back_button = buttons.R5;
+            prev_back_button = 0;
+            if (buttons.R5 && !prev_back_button) {
+                Transition_Start(SCREEN_MENU);
             }
+            prev_back_button = buttons.R5;
             break;
             
         default:
