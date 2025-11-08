@@ -50,7 +50,7 @@ void motor_move_right(int speed){
 // dir 0: left, dir 1 right
 // onTime in milli sec
 void motor_move_for_time(int speed, int dir, int onTime){
-	void motor_move(speed,dir);
+	motor_move(speed,dir);
 	time_spinFor(msecs(onTime));
 	PWM_Motor(0);
 }
