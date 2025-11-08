@@ -8,6 +8,7 @@
 #include "ADC.h"
 #include "timer.h"
 #include "config.h"
+#include "encoder.h"
 
 #include <stdio.h>
 
@@ -36,5 +37,7 @@ int main(void)
         }
 
         handle_scoring_system();
+        Update_Hand_Position();
+        printf("Encoder Position: %lu\n", hand_position);
     }
 }
