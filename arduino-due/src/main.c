@@ -6,6 +6,8 @@
 #include "drivers/can_controller.h"
 #include "drivers/can_interrupt.h"
 #include "PWM.h"
+#include "drivers/motor_driver.h"
+
 
 int main(void)
 {
@@ -15,27 +17,50 @@ int main(void)
 
     uart_init(84000000L, 9600);
     can_init_def_tx_rx_mb(CAN_BR_VALUE);
+	
+	motor_init();
 
+
+   
+	int speed = 35;	
+	int onTime = 200;
+		
     while (1)
     {
-        // For now no filter on MB1/MB2 so both receive the same message
-        if (Flag_CAN_MB1)
-        {
-            // printf("CAN Message received:\n");
-            // printf("  ID: \t\t0x%03X\n", mb1_buffer.id);
-            // printf("  Length: \t%d\n", mb1_buffer.data_length);
-            // printf("  Data: \t");
-            // for (uint8_t i = 0; i < mb1_buffer.data_length; i++)
-            // printf("%d ", (signed char)mb1_buffer.data[i]);
-            // printf("\n");
-            
+		
+		motor_move_left(speed);		
+		time_spinFor(msecs(onTime));
+		motor_stop();				
+		time_spinFor(msecs(500));
+		
+		motor_move_right(speed);
+		time_spinFor(msecs(onTime));
+		motor_stop();
+		time_spinFor(msecs(500));
+		
+		
+		
+		
+			// CAN Joystick message
+//         // For now no filter on MB1/MB2 so both receive the same message
+//         if (Flag_CAN_MB1)
+//         {
+//             // printf("CAN Message received:\n");
+//             // printf("  ID: \t\t0x%03X\n", mb1_buffer.id);
+//             // printf("  Length: \t%d\n", mb1_buffer.data_length);
+//             // printf("  Data: \t");
+//             // for (uint8_t i = 0; i < mb1_buffer.data_length; i++)
+//             // printf("%d ", (signed char)mb1_buffer.data[i]);
+//             // printf("\n");
+//             
+// 
+//             if (mb1_buffer.id == 0){
+//                 PWM_Update(100 - (((signed char)mb1_buffer.data[0]+100)/2));               
+//             }
+//             Flag_CAN_MB1 = 0;
+//         }
+//         // printf("Something, Arduino is allow to do whatever ! \n\n");
+//         // time_spinFor(msecs(1000));
 
-            if (mb1_buffer.id == 0){
-                PWM_Update(100 - (((signed char)mb1_buffer.data[0]+100)/2));               
-            }
-            Flag_CAN_MB1 = 0;
-        }
-        // printf("Something, Arduino is allow to do whatever ! \n\n");
-        // time_spinFor(msecs(1000));
     }
 }
