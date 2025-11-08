@@ -11,6 +11,8 @@
 #include "encoder.h"
 
 #include <stdio.h>
+#include "drivers/motor_driver.h"
+
 
 int main(void)
 {
@@ -18,13 +20,29 @@ int main(void)
     PWM_Init();
     Timer_Init();  
     ADC_Init();
+    motor_init();
+    
     WDT->WDT_MR = WDT_MR_WDDIS;
     uart_init(84000000L, 9600);
     can_init_def_tx_rx_mb(CAN_BR_VALUE);
     
+    int speed = 35;	
+    int onTime = 200;
+
     printf("===== SYSTEM INITIALIZED =====\n");
     while (1)
     {
+
+        motor_move_left(speed);		
+		time_spinFor(msecs(onTime));
+		motor_stop();				
+		time_spinFor(msecs(500));
+		
+		motor_move_right(speed);
+		time_spinFor(msecs(onTime));
+		motor_stop();
+		time_spinFor(msecs(500));
+        
         if (Flag_CAN_MB1)
         {
             if (mb1_buffer.id == 0){
