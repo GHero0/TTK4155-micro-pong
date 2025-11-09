@@ -32,13 +32,13 @@ void Joystick_Convert(void)
     {
 
         // --- X axis ---
-        int16_t dx = adc_ch2 - JOY_X_MIN;
+        int16_t dx = adc_ch3 - JOY_X_MIN;
 
-        if (adc_ch2 <= JOY_X_MIN)
+        if (adc_ch3 <= JOY_X_MIN)
         {
             joystick_pos.X = -100 * 256;
         }
-        else if (adc_ch2 >= JOY_X_MAX)
+        else if (adc_ch3 >= JOY_X_MAX)
         {
             joystick_pos.X = 100 * 256;
         }
@@ -48,13 +48,13 @@ void Joystick_Convert(void)
         }
 
         // --- Y axis ---
-        int16_t dy = adc_ch3 - JOY_Y_MIN;
+        int16_t dy = adc_ch2 - JOY_Y_MIN;
 
-        if (adc_ch3 <= JOY_Y_MIN)
+        if (adc_ch2 <= JOY_Y_MIN)
         {
             joystick_pos.Y = -100 * 256;
         }
-        else if (adc_ch3 >= JOY_Y_MAX)
+        else if (adc_ch2 >= JOY_Y_MAX)
         {
             joystick_pos.Y = 100 * 256;
         }
