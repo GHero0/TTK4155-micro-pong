@@ -76,61 +76,30 @@ static unsigned char tile_1bpp[8] = {
 inline void SYM_H_2bpp(void)
 {
     register unsigned char tmp;
-
-    tmp = tile_2bpp[0];
-    tile_2bpp[0] = INV_BITS_2bpp(tile_2bpp[1]);
-    tile_2bpp[1] = INV_BITS_2bpp(tmp);
-    tmp = tile_2bpp[2];
-    tile_2bpp[2] = INV_BITS_2bpp(tile_2bpp[3]);
-    tile_2bpp[3] = INV_BITS_2bpp(tmp);
-    tmp = tile_2bpp[4];
-    tile_2bpp[4] = INV_BITS_2bpp(tile_2bpp[5]);
-    tile_2bpp[5] = INV_BITS_2bpp(tmp);
-    tmp = tile_2bpp[6];
-    tile_2bpp[6] = INV_BITS_2bpp(tile_2bpp[7]);
-    tile_2bpp[7] = INV_BITS_2bpp(tmp);
-    tmp = tile_2bpp[8];
-    tile_2bpp[8] = INV_BITS_2bpp(tile_2bpp[9]);
-    tile_2bpp[9] = INV_BITS_2bpp(tmp);
-    tmp = tile_2bpp[10];
-    tile_2bpp[10] = INV_BITS_2bpp(tile_2bpp[11]);
-    tile_2bpp[11] = INV_BITS_2bpp(tmp);
-    tmp = tile_2bpp[12];
-    tile_2bpp[12] = INV_BITS_2bpp(tile_2bpp[13]);
-    tile_2bpp[13] = INV_BITS_2bpp(tmp);
-    tmp = tile_2bpp[14];
-    tile_2bpp[14] = INV_BITS_2bpp(tile_2bpp[15]);
-    tile_2bpp[15] = INV_BITS_2bpp(tmp);
+    
+    for (unsigned char i = 0; i < 16; i += 2)
+    {
+        tmp = tile_2bpp[i];
+        tile_2bpp[i] = INV_BITS_2bpp(tile_2bpp[i + 1]);
+        tile_2bpp[i + 1] = INV_BITS_2bpp(tmp);
+    }
 }
 
 inline void SYM_V_2bpp(void)
 {
     register unsigned char tmp0, tmp1;
-
-    tmp0 = tile_2bpp[0];
-    tmp1 = tile_2bpp[1];
-    tile_2bpp[0] = tile_2bpp[14];
-    tile_2bpp[1] = tile_2bpp[15];
-    tile_2bpp[14] = tmp0;
-    tile_2bpp[15] = tmp1;
-    tmp0 = tile_2bpp[2];
-    tmp1 = tile_2bpp[3];
-    tile_2bpp[2] = tile_2bpp[12];
-    tile_2bpp[3] = tile_2bpp[13];
-    tile_2bpp[12] = tmp0;
-    tile_2bpp[13] = tmp1;
-    tmp0 = tile_2bpp[4];
-    tmp1 = tile_2bpp[5];
-    tile_2bpp[4] = tile_2bpp[10];
-    tile_2bpp[5] = tile_2bpp[11];
-    tile_2bpp[10] = tmp0;
-    tile_2bpp[11] = tmp1;
-    tmp0 = tile_2bpp[6];
-    tmp1 = tile_2bpp[7];
-    tile_2bpp[6] = tile_2bpp[8];
-    tile_2bpp[7] = tile_2bpp[9];
-    tile_2bpp[8] = tmp0;
-    tile_2bpp[9] = tmp1;
+    
+    // Loop through from outside to inside
+    for (unsigned char i = 0; i < 8; i += 2)
+    {
+        unsigned char mirror_i = 14 - i;
+        tmp0 = tile_2bpp[i];
+        tmp1 = tile_2bpp[i + 1];
+        tile_2bpp[i] = tile_2bpp[mirror_i];
+        tile_2bpp[i + 1] = tile_2bpp[mirror_i + 1];
+        tile_2bpp[mirror_i] = tmp0;
+        tile_2bpp[mirror_i + 1] = tmp1;
+    }
 }
 
 #define INV_BITS_1bpp(b) ( \
@@ -212,7 +181,7 @@ void fetch_tile_from_tilemap_2bpp(unsigned short N)
     unsigned char base_Y = N >> 4;
     unsigned char base_X = N & 0x0F;
 
-    unsigned char base_addr = (base_Y << 8) + (base_X << 1);
+    unsigned short base_addr = (base_Y << 8) + (base_X << 1);
     const unsigned char *ptr = &tilemap_2bpp[base_addr];
 
     for (unsigned char i = 0; i < 8; i++)
@@ -401,89 +370,74 @@ void draw_tilemap_2bpp(void)
 }
 
 
-void draw_rectangle(int X, int Y, unsigned char width_in_tiles, unsigned char height_in_tiles) {
-    // Calculate dimensions in pixels
-    unsigned char width = width_in_tiles << 3;
-    unsigned char height = height_in_tiles << 3;
-    
-    // Quick rejection if completely off-screen
+void draw_rectangle(int X, int Y, unsigned char width, unsigned char height) {
     if (X >= 128 || Y >= 64 || X + width <= 0 || Y + height <= 0) return;
     
-    // Calculate actual drawing bounds
     signed char x1 = X;
     signed char y1 = Y;
     signed char x2 = X + width - 1;
     signed char y2 = Y + height - 1;
     
-    // Determine which edges to draw (only if they're on screen)
     char draw_top = (Y >= 0 && Y < 64);
     char draw_bottom = (y2 >= 0 && y2 < 64 && y2 != y1);
     char draw_left = (X >= 0 && X < 128);
     char draw_right = (x2 >= 0 && x2 < 128 && x2 != x1);
     
-    // Top edge
-    if (draw_top) {
-        draw_line(x1, y1, width, 0,0);  // horizontal
+    if (draw_top && width > 2) {
+        draw_line(x1 + 1, y1, width - 2, 0, 0);
     }
     
-    // Bottom edge
-    if (draw_bottom) {
-        draw_line(x1, y2, width, 0,0);  // horizontal
+    if (draw_bottom && width > 2) {
+        draw_line(x1 + 1, y2, width - 2, 0, 0);
     }
     
-    // Left edge
-    if (draw_left && height > 1) {
-        draw_line(x1, y1, height, 1,0);  // vertical
+    if (draw_left && height > 2) {
+        draw_line(x1, y1 + 1, height - 2, 1, 0);
     }
     
-    // Right edge
-    if (draw_right && height > 1) {
-        draw_line(x2, y1, height, 1,0);  // vertical
+    if (draw_right && height > 2) {
+        draw_line(x2, y1 + 1, height - 2, 1, 0);
     }
 }
 
 void draw_line(signed char x, signed char y, unsigned char length, char direction, char stride) {
-    // direction: 0 = horizontal, 1 = vertical
-    // stride: 0 = filled, 1 = draw every other pixel, 2 = every third pixel, etc.
-    
     if (direction == 0) {
         // Horizontal line
         if (y < 0 || y >= 64 || x >= 128) return;
         if (x < 0) {
-            length += x;  // reduce length
+            length += x;
             x = 0;
         }
         if (x + length > 128) length = 128 - x;
         if (length <= 0) return;
         
+        unsigned char byte_pos = x >> 3;
+        unsigned char bit_pos = x & 7;
+        unsigned short base_idx = ((unsigned char)y << 4) + byte_pos;
+        
         if (stride == 0) {
-            // Filled line (original code)
+            // Optimized filled horizontal line
             signed char x_end = x + length - 1;
-            unsigned char start_byte = x >> 3;
             unsigned char end_byte = x_end >> 3;
-            unsigned char start_bit = x & 7;
             unsigned char end_bit = x_end & 7;
-            unsigned short idx = ((unsigned char)y << 4) + start_byte;
             
-            if (start_byte == end_byte) {
-                unsigned char mask = (0xFF >> start_bit) & (0xFF << (7 - end_bit));
-                current_buffer[idx] |= mask;
+            if (byte_pos == end_byte) {
+                // Single byte
+                current_buffer[base_idx] |= (0xFF >> bit_pos) & (0xFF << (7 - end_bit));
             } else {
-                current_buffer[idx++] |= 0xFF >> start_bit;
-                while (++start_byte < end_byte) {
-                    current_buffer[idx++] = 0xFF;
+                // Multiple bytes
+                current_buffer[base_idx++] |= 0xFF >> bit_pos;
+                while (++byte_pos < end_byte) {
+                    current_buffer[base_idx++] = 0xFF;
                 }
-                current_buffer[idx] |= 0xFF << (7 - end_bit);
+                current_buffer[base_idx] |= 0xFF << (7 - end_bit);
             }
         } else {
-            // Strided line (draw individual pixels)
+            // Strided horizontal
             for (unsigned char i = 0; i < length; i += stride + 1) {
-                signed char px = x + i;
-                if (px >= 128) break;
-                unsigned char byte_pos = px >> 3;
-                unsigned char bit_mask = 0x80 >> (px & 7);
-                unsigned short idx = ((unsigned char)y << 4) + byte_pos;
-                current_buffer[idx] |= bit_mask;
+                if ((x + i) >= 128) break;
+                unsigned short idx = base_idx + ((x + i) >> 3) - byte_pos;
+                current_buffer[idx] |= 0x80 >> ((x + i) & 7);
             }
         }
     } else {
@@ -496,22 +450,14 @@ void draw_line(signed char x, signed char y, unsigned char length, char directio
         if (y + length > 64) length = 64 - y;
         if (length <= 0) return;
         
-        unsigned char byte_pos = x >> 3;
         unsigned char bit_mask = 0x80 >> (x & 7);
-        unsigned short idx = ((unsigned char)y << 4) + byte_pos;
+        unsigned short idx = ((unsigned char)y << 4) + (x >> 3);
+        unsigned char step = (stride == 0) ? 1 : stride + 1;
+        unsigned short row_add = 16 * step;
         
-        if (stride == 0) {
-            // Filled line
-            for (unsigned char i = 0; i < length; i++) {
-                current_buffer[idx] |= bit_mask;
-                idx += 16;  // next row
-            }
-        } else {
-            // Strided line
-            for (unsigned char i = 0; i < length; i += stride + 1) {
-                current_buffer[idx] |= bit_mask;
-                idx += 16 * (stride + 1);  // skip rows
-            }
+        for (unsigned char i = 0; i < length; i += step) {
+            current_buffer[idx] |= bit_mask;
+            idx += row_add;
         }
     }
 }

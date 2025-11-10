@@ -20,7 +20,7 @@ void SYM_H_2bpp(void);
 void SYM_V_2bpp(void);
 void draw_tilemap_1bpp(void);
 void draw_tilemap_2bpp(void);
-void draw_rectangle(int X, int Y, unsigned char width_in_tiles, unsigned char height_in_tiles);
+void draw_rectangle(int X, int Y, unsigned char width, unsigned char height);
 void draw_line(signed char x, signed char y, unsigned char length, char direction, char stride);
 void draw_string(const char* str, char X, char Y);
 

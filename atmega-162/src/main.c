@@ -40,7 +40,5 @@ int main(void)
 
         IO_board_update();
         Joystick_Convert();
-
-        map_touchpad();
     }
 }

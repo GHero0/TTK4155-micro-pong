@@ -15,23 +15,23 @@ Menu* current_menu = NULL;
 // Store menu items in flash memory (single declaration)
 const MenuItem PROGMEM submenu_1_items[] = {
     {"..", go_back_to_parent, NULL, 31},
-    {"Submenu 1-1", NULL, NULL, 30},
-    {"Submenu 1-2", NULL, NULL, 30},
-    {"Submenu 1-3", NULL, NULL, 30},
+    {"Submenu 1-1", NULL, NULL, 255},
+    {"Submenu 1-2", NULL, NULL, 255},
+    {"Submenu 1-3", NULL, NULL, 255},
 };
 
 const MenuItem PROGMEM submenu_2_items[] = {
     {"..", go_back_to_parent, NULL, 31},
-    {"Submenu 2-1", NULL, NULL, 30},
-    {"Submenu 2-2", NULL, NULL, 30},
+    {"Submenu 2-1", NULL, NULL, 255},
+    {"Submenu 2-2", NULL, NULL, 255},
 };
 
 const MenuItem PROGMEM main_menu_items[] = {
+    {"Joystick Cal.", action_calibration_joystick, NULL, 46},
     {"Debug IO-board", action_debug_window, NULL, 15},
-    {"Settings", NULL, &submenu_1, 30},
-    {"Options", NULL, &submenu_2, 30},
-    {"Debug Blue Box", action_placeholder_4, NULL, 46},
-    {"Menu Item 5", NULL, NULL, 255},
+    {"Debug Blue Box", action_placeholder_4, NULL, 14},
+    {"Settings >", NULL, &submenu_1, 30},
+    {"Options >", NULL, &submenu_2, 30},
     {"Menu Item 6", NULL, NULL, 255},
     {"Menu Item 7", NULL, NULL, 255},
     {"Menu Item 8", NULL, NULL, 255},
@@ -91,7 +91,7 @@ unsigned char is_cursor_over_item(unsigned char item_visual_index) {
     const signed char item_height = 17;
 
     const signed char cx = cursor_state.x + 4; // Center of the drawn cursor
-    const signed char cy = cursor_state.y + 4; // Center of the drawn cusror
+    const signed char cy = cursor_state.y + 4; // Center of the drawn cursor
     
     return (cx >= item_x && cx < item_x + item_width &&
             cy >= item_y && cy < item_y + item_height);
@@ -104,9 +104,9 @@ void go_back_to_parent(void) {
     }
 }
 
-// Menu action functions - NOW WITH TRANSITIONS!
+// --- Actions (transitions removed → instant screen switch) ---
 void action_debug_window(void) {
-    Transition_Start(SCREEN_DEBUG_IO_BOARD);
+    current_screen = SCREEN_DEBUG_IO_BOARD;
 }
 
 void action_placeholder_2(void) {
@@ -118,7 +118,11 @@ void action_placeholder_3(void) {
 }
 
 void action_placeholder_4(void) {
-    Transition_Start(SCREEN_DEBUG_BLUE_BOX);
+    current_screen = SCREEN_DEBUG_BLUE_BOX;
+}
+
+void action_calibration_joystick(void) {
+    current_screen = SCREEN_CALIBRATION_JOYSTICK;
 }
 
 // Helper function to enter a submenu
@@ -192,200 +196,125 @@ void read_menu_item(const MenuItem* flash_item, MenuItem* ram_item) {
     memcpy_P(ram_item, flash_item, sizeof(MenuItem));
 }
 
+void draw_menu_item(unsigned char x, unsigned char y, const char* label, unsigned char icon_tile) {
+    unsigned char text_x = x;
+    
+    // Draw icon if it exists
+    if (icon_tile != 255) {
+        fetch_tile_from_tilemap_1bpp(icon_tile);
+        draw_tile_1bpp(x, y);
+        text_x = x + 10;  // Shift text right to make room for icon
+    }
+    
+    // Draw text
+    draw_printf(text_x, y, "%s", label);
+}
+
 void draw_menu(void) {
     if (current_menu == NULL) return;
     
-    // Detect input mode switching
-    static signed char last_cursor_x = 0;
-    static signed char last_cursor_y = 0;
-    static unsigned char prev_nav_for_mode = 0;
+    // Input detection consolidated
+    static struct {
+        signed char x, y;
+        unsigned char nav, R5, R6, cursor_click, NU, ND, NB;
+    } prev = {0};
     
-    // Always update cursor position to detect movement
     signed char old_x = cursor_state.x;
     signed char old_y = cursor_state.y;
     update_cursor_position();
     
-    // Check if cursor actually moved (switch to cursor mode)
+    // Mode switching
     if (cursor_state.x != old_x || cursor_state.y != old_y) {
-        if (cursor_state.x != last_cursor_x || cursor_state.y != last_cursor_y) {
-            menu_control_mode = 0; // Switch to cursor mode
+        if (cursor_state.x != prev.x || cursor_state.y != prev.y) {
+            menu_control_mode = 0;
         }
     }
-    last_cursor_x = cursor_state.x;
-    last_cursor_y = cursor_state.y;
+    prev.x = cursor_state.x;
+    prev.y = cursor_state.y;
     
-    // Check if nav buttons pressed (switch to nav mode)
-    unsigned char nav_pressed = buttons.nav & 0x1E; // NU, NL, ND, NR (bits 1-4)
-    if (nav_pressed && !prev_nav_for_mode) {
-        menu_control_mode = 1; // Switch to nav button mode
-    }
-    prev_nav_for_mode = nav_pressed;
+    unsigned char nav_pressed = buttons.nav & 0x1E;
+    if (nav_pressed && !prev.nav) menu_control_mode = 1;
+    prev.nav = nav_pressed;
     
-    // --- HOVER DETECTION FIXED ---
-    unsigned char cursor_hover_item = 0xFF; // no hover by default
-
+    // Hover detection
+    unsigned char cursor_hover = 0xFF;
     if (menu_control_mode == 0) {
         for (unsigned char i = 0; i < 4; i++) {
-            unsigned char item_index = current_menu->scroll_offset + i;
-            if (item_index < current_menu->total_items) {
+            if ((current_menu->scroll_offset + i) < current_menu->total_items) {
                 if (is_cursor_over_item(i)) {
-                    cursor_hover_item = i;
-                    break; // stop after first match
+                    cursor_hover = current_menu->selected_item = i;
+                    break;
                 }
             }
         }
-
-        // Only update selected_item when actually hovering something
-        if (cursor_hover_item != 0xFF) {
-            current_menu->selected_item = cursor_hover_item;
-        }
     }
-
-    // --- DRAW HIGHLIGHT (only if needed) ---
-    if (menu_control_mode == 1 || cursor_hover_item != 0xFF) {
-        signed char base_y = 1 + (current_menu->selected_item * 16);
-
-        // TOP border of menu item selected
-        draw_line(8, base_y, 112, 0, 0);
-        // BOTTOM border (double line)
-        draw_line(8, base_y + 11, 112, 0, 0);
-        draw_line(8, base_y + 12, 112, 0, 0);
-        // LEFT Border
-        draw_line(7, base_y + 1, 11, 1, 0);
-        // RIGHT Border (double line)
-        draw_line(120, base_y + 1, 11, 1, 0);
-        draw_line(121, base_y + 1, 11, 1, 0);
+    
+    // Draw highlight
+    if (menu_control_mode == 1 || cursor_hover != 0xFF) {
+        draw_rectangle(8, 1 + (current_menu->selected_item << 4), 112, 12);
     }
-
-    // --- DRAW MENU TEXT AND ICONS ---
+    
+    // Draw items
     MenuItem temp_item;
     for (unsigned char i = 0; i < 4; i++) {
-        unsigned char item_index = current_menu->scroll_offset + i;
-        if (item_index < current_menu->total_items) {
-            read_menu_item(&current_menu->items[item_index], &temp_item);
-            
-            // Check if icon exists (255 = no icon)
-            if (temp_item.icon_tile != 255) {
-                // Draw icon (8x8 tile at left side of menu item)
-                fetch_tile_from_tilemap_1bpp(temp_item.icon_tile);
-                draw_tile_1bpp(12, 3 + (i * 16));
-                
-                // Draw text (shifted right to make room for icon)
-                if (temp_item.submenu != NULL) {
-                    draw_printf(22, 3 + (i * 16), "%s >", temp_item.label);
-                } else {
-                    draw_printf(22, 3 + (i * 16), temp_item.label);
-                }
-            } else {
-                // No icon - draw text at original position
-                if (temp_item.submenu != NULL) {
-                    draw_printf(12, 3 + (i * 16), "%s >", temp_item.label);
-                } else {
-                    draw_printf(12, 3 + (i * 16), temp_item.label);
-                }
-            }
+        unsigned char idx = current_menu->scroll_offset + i;
+        if (idx < current_menu->total_items) {
+            read_menu_item(&current_menu->items[idx], &temp_item);
+            draw_menu_item(12, 3 + (i << 4), temp_item.label, temp_item.icon_tile);
         }
     }
-
-    // --- SCROLLBAR ---
-    draw_line(126, 0, 64, 1, 1); // scrollbar track (dotted line)
     
-    unsigned char scrollbar_height = 5;
-    unsigned char track_height = 64 - scrollbar_height;
-    
-    if (current_menu->total_items > 4) {
-        unsigned char max_scroll = current_menu->total_items - 4;
-        unsigned char scroll_y = (current_menu->scroll_offset * track_height) / max_scroll;
-        
-        draw_line(125, scroll_y, scrollbar_height, 1, 0);
-        draw_line(126, scroll_y, scrollbar_height, 1, 0);
-        draw_line(127, scroll_y, scrollbar_height, 1, 0);
-    } else {
-        draw_line(125, 0, scrollbar_height, 1, 0);
-        draw_line(126, 0, scrollbar_height, 1, 0);
-        draw_line(127, 0, scrollbar_height, 1, 0);
-    }
-
-    // --- INPUT HANDLING (Skip during transitions) ---
-    if (Transition_Is_Active()) {
-        // Don't process input during transitions
-        if (menu_control_mode == 0) {
-            draw_menu_cursor();
-        }
-        return;
+    // Scrollbar (simplified)
+    draw_line(126, 0, 64, 1, 1);
+    unsigned char bar_h = 5;
+    unsigned char bar_y = (current_menu->total_items > 4) ? 
+        (current_menu->scroll_offset * (64 - bar_h)) / (current_menu->total_items - 4) : 0;
+    for (unsigned char x = 125; x <= 127; x++) {
+        draw_line(x, bar_y, bar_h, 1, 0);
     }
     
+    // Input handling
     static unsigned char scroll_counter = 0;
-    static unsigned char prev_R6_state = 0;
-    static unsigned char prev_R5_state = 0;
-    static unsigned char prev_cursor_click = 0;
-    static unsigned char prev_NU_state = 0;
-    static unsigned char prev_ND_state = 0;
-    static unsigned char prev_NB_state = 0;
-
+    
     if (Flag_screen) {
         scroll_counter++;
         
-        // Nav button mode navigation
+        // Scrolling
         if (menu_control_mode == 1) {
-            if ((buttons.NU) && !prev_NU_state) menu_scroll_up();
-            if ((buttons.ND) && !prev_ND_state) menu_scroll_down();
-            prev_NU_state = buttons.NU;
-            prev_ND_state = buttons.ND;
+            if (buttons.NU && !prev.NU) menu_scroll_up();
+            if (buttons.ND && !prev.ND) menu_scroll_down();
+            prev.NU = buttons.NU;
+            prev.ND = buttons.ND;
+        } else if (scroll_counter >= 5) {
+            if (joystick_dir == DOWN) menu_scroll_down();
+            else if (joystick_dir == UP) menu_scroll_up();
+            scroll_counter = 0;
         }
-        // Cursor mode navigation (slow scroll)
-        else {
-            if (scroll_counter >= 5) {
-                if (joystick_dir == DOWN) menu_scroll_down();
-                else if (joystick_dir == UP) menu_scroll_up();
-                scroll_counter = 0;
+        
+        // Selection
+        unsigned char select = (menu_control_mode == 1 && ((buttons.NB && !prev.NB) || (buttons.R6 && !prev.R6))) ||
+                              (menu_control_mode == 0 && cursor_hover != 0xFF && cursor_state.clicking && !prev.cursor_click);
+        
+        if (select) {
+            unsigned char abs_idx = current_menu->scroll_offset + 
+                                   (menu_control_mode ? current_menu->selected_item : cursor_hover);
+            if (abs_idx < current_menu->total_items) {
+                read_menu_item(&current_menu->items[abs_idx], &temp_item);
+                if (temp_item.submenu) enter_submenu(temp_item.submenu);
+                else if (temp_item.action) temp_item.action();
             }
         }
         
-        // R6 button press (click)
-        if ((buttons.R6) && !prev_R6_state && cursor_hover_item == 0xFF) {
-            unsigned char absolute_index = current_menu->scroll_offset + current_menu->selected_item;
-            if (absolute_index < current_menu->total_items) {
-                read_menu_item(&current_menu->items[absolute_index], &temp_item);
-                if (temp_item.submenu != NULL) enter_submenu(temp_item.submenu);
-                else if (temp_item.action != NULL) temp_item.action();
-            }
-        }
-        prev_R6_state = buttons.R6;
+        prev.NB = buttons.NB;
+        prev.R6 = buttons.R6;
+        prev.cursor_click = cursor_state.clicking;
         
-        // NB button press (select in nav mode)
-        if ((buttons.NB) && !prev_NB_state && menu_control_mode == 1) {
-            unsigned char absolute_index = current_menu->scroll_offset + current_menu->selected_item;
-            if (absolute_index < current_menu->total_items) {
-                read_menu_item(&current_menu->items[absolute_index], &temp_item);
-                if (temp_item.submenu != NULL) enter_submenu(temp_item.submenu);
-                else if (temp_item.action != NULL) temp_item.action();
-            }
+        // Back button
+        if (buttons.R5 && !prev.R5 && current_menu->parent_menu) {
+            go_back_to_parent();
         }
-        prev_NB_state = buttons.NB;
-        
-        // Cursor click (only in cursor mode)
-        if (menu_control_mode == 0 && cursor_hover_item != 0xFF && cursor_state.clicking && !prev_cursor_click) {
-            unsigned char absolute_index = current_menu->scroll_offset + cursor_hover_item;
-            if (absolute_index < current_menu->total_items) {
-                read_menu_item(&current_menu->items[absolute_index], &temp_item);
-                if (temp_item.submenu != NULL) enter_submenu(temp_item.submenu);
-                else if (temp_item.action != NULL) temp_item.action();
-            }
-        }
-        prev_cursor_click = cursor_state.clicking;
-        
-        // R5 button press (back)
-        if ((buttons.R5) && !prev_R5_state) {
-            if (current_menu->parent_menu != NULL) {
-                go_back_to_parent();
-            }
-        }
-        prev_R5_state = buttons.R5;
+        prev.R5 = buttons.R5;
     }
-
-    // --- DRAW CURSOR ---
-    if (menu_control_mode == 0) {
-        draw_menu_cursor();
-    }
+    
+    if (menu_control_mode == 0) draw_menu_cursor();
 }

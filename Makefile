@@ -29,7 +29,7 @@ help:
 #				ATMEGA162 Configuration
 # ===========================================================
 ATMEGA_CC := avr-gcc
-ATMEGA_CFLAGS := -Os -mmcu=atmega162 -I atmega-162/include -flto -Wall
+ATMEGA_CFLAGS := -Os -mmcu=atmega162 -I atmega-162/include -flto -Wall -ffunction-sections -fdata-sections
 ATMEGA_LDFLAGS := -flto -Wl,--gc-sections -Wl,--relax
 
 ATMEGA_BUILD_DIR := atmega-162/build

@@ -151,7 +151,8 @@ typedef struct {
 typedef enum {
     SCREEN_MENU,
     SCREEN_DEBUG_IO_BOARD,
-    SCREEN_DEBUG_BLUE_BOX
+    SCREEN_DEBUG_BLUE_BOX,
+    SCREEN_CALIBRATION_JOYSTICK
 } ScreenState;
 
 /**
