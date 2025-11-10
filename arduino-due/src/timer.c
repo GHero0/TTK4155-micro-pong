@@ -31,6 +31,9 @@ void Timer_Init(void)
     // TIMER 0 -> Counter Channel 1 === Score delay 
     // =========================================================================
     
+    // Enable Timer Counter 0 channel 1
+    PMC->PMC_PCER0 |= (1 << ID_TC1);
+
     // Configure TC0 Channel 0 for waveform mode with pin output
     TC0->TC_CHANNEL[1].TC_CMR = TC_CMR_TCCLKS_TIMER_CLOCK5  // MCK/1024 = 84MHz/1024
                                | TC_CMR_WAVE                // Waveform mode
