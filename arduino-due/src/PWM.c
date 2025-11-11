@@ -48,36 +48,42 @@ void PWM_Init(void)
 }
 
 
-// Takes value as an unsigned char between [0,100]
-void PWM_Update(unsigned char value){
-    // The period is fixed: 20ms
-    // The only thing that does change it's the pulse width: 0.9ms -  2.1ms 
-    PWM->PWM_CH_NUM[1].PWM_CDTYUPD = 38200 - (value * 24);
+#define SERVO_CENTER 56
+#define SERVO_DEADZONE 2
+#define SERVO_OFFSET 6
+
+void PWM_Update(uint8_t value)
+{
+    int16_t adjusted = value + SERVO_OFFSET;
+
+    // Apply deadzone
+    if (adjusted > SERVO_CENTER - SERVO_DEADZONE && adjusted < SERVO_CENTER + SERVO_DEADZONE)
+        adjusted = SERVO_CENTER;
+
+    PWM->PWM_CH_NUM[1].PWM_CDTYUPD = 38200 - (adjusted * 24);
 }
 
-// =============================================================================
-// FILTERING SERVOMOTOR 
-// =============================================================================
-int16_t servo_buffer[SERVO_FILTER_SIZE] = {0};
-uint8_t servo_index = 0;
-int16_t servo_sum = 0;
-
-// Function to update and get filtered servo value
-uint8_t get_filtered_servo_value(int8_t new_value)
+static inline int clamp_int(int val, int min, int max)
 {
-    // Remove oldest value from sum
-    servo_sum -= servo_buffer[servo_index];
+    if (val < min) return min;
+    if (val > max) return max;
+    return val;
+}
+
+uint8_t map_joystick_to_servo_fractional(int8_t joystick_int, uint8_t joystick_frac)
+{
+    // Clamp integer
+    joystick_int = clamp_int(joystick_int, -100, 100);
     
-    // Add new value
-    servo_buffer[servo_index] = new_value;
-    servo_sum += new_value;
-    
-    // Move to next position (circular buffer)
-    servo_index = (servo_index + 1) % SERVO_FILTER_SIZE;
-    
-    // Calculate average and convert to PWM range [0-100]
-    int16_t average = servo_sum / SERVO_FILTER_SIZE;
-    return 100 - ((average + 100) / 2);
+    // Convert to high-resolution 16-bit fixed point: value * 256 + fraction
+    int32_t value_16bit = ((int32_t)joystick_int << 8) + joystick_frac;
+
+    // Map to 0..100 PWM with flipped direction:
+    // -100 -> 100, 0 -> 50, +100 -> 0
+    uint32_t temp = (uint32_t)(100*256 - (value_16bit + 100*256) / 2);
+
+    // Convert back to 0..100 with rounding
+    return (uint8_t)((temp + 128) / 256);
 }
 
 // fraction is value between [0,100]

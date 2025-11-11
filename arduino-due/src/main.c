@@ -33,29 +33,30 @@ int main(void)
     while (1)
     {
 
-        motor_move_left(speed);		
-		time_spinFor(msecs(onTime));
-		motor_stop();				
-		time_spinFor(msecs(500));
+        // motor_move_left(speed);		
+		// time_spinFor(msecs(onTime));
+		// motor_stop();				
+		// time_spinFor(msecs(500));
 		
-		motor_move_right(speed);
-		time_spinFor(msecs(onTime));
-		motor_stop();
-		time_spinFor(msecs(500));
+		// motor_move_right(speed);
+		// time_spinFor(msecs(onTime));
+		// motor_stop();
+		// time_spinFor(msecs(500));
         
         if (Flag_CAN_MB1)
         {
-            if (mb1_buffer.id == 0){
-                // Filter the joystick input before sending to servo
-                int8_t joystick_value = (signed char)mb1_buffer.data[0];
-                uint8_t filtered_pwm = get_filtered_servo_value(joystick_value);
-                PWM_Update(filtered_pwm);  
+            if (mb1_buffer.id == 0)
+            {
+                int8_t joystick_int = (int8_t)mb1_buffer.data[0];  // integer part
+                uint8_t joystick_frac = mb1_buffer.data[1];       // fractional part
+                uint8_t pwm_value = map_joystick_to_servo_fractional(joystick_int, joystick_frac);
+                PWM_Update(pwm_value);
             }
             Flag_CAN_MB1 = 0;
         }
 
         handle_scoring_system();
         Update_Hand_Position();
-        printf("Encoder Position: %lu\n", hand_position);
+        // printf("Encoder Pos/Speed: %lu/%lu\n", encoder_position,encoder_speed);
     }
 }
