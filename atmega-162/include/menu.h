@@ -14,6 +14,7 @@ void draw_menu_item(unsigned char x, unsigned char y, const char* label, unsigne
 
 // Action functions
 void action_debug_window(void);
+void action_placeholder_1(void);
 void action_placeholder_2(void);
 void action_placeholder_3(void);
 void action_placeholder_4(void);

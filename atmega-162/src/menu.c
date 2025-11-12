@@ -15,9 +15,8 @@ Menu* current_menu = NULL;
 // Store menu items in flash memory (single declaration)
 const MenuItem PROGMEM submenu_1_items[] = {
     {"..", go_back_to_parent, NULL, 31},
-    {"Submenu 1-1", NULL, NULL, 255},
-    {"Submenu 1-2", NULL, NULL, 255},
-    {"Submenu 1-3", NULL, NULL, 255},
+    {"Tilemap 1bpp", action_placeholder_1, NULL, 255},
+    {"Tilemap 2bpp", action_placeholder_2, NULL, 255},
 };
 
 const MenuItem PROGMEM submenu_2_items[] = {
@@ -30,7 +29,7 @@ const MenuItem PROGMEM main_menu_items[] = {
     {"Joystick Cal.", action_calibration_joystick, NULL, 46},
     {"Debug IO-board", action_debug_window, NULL, 15},
     {"Debug Blue Box", action_placeholder_4, NULL, 14},
-    {"Settings >", NULL, &submenu_1, 30},
+    {"Tilemap >", NULL, &submenu_1, 91},
     {"Options >", NULL, &submenu_2, 30},
     {"Menu Item 6", NULL, NULL, 255},
     {"Menu Item 7", NULL, NULL, 255},
@@ -42,7 +41,7 @@ const MenuItem PROGMEM main_menu_items[] = {
 // Menu structures (only state in RAM, items point to PROGMEM)
 Menu submenu_1 = {
     .selected_item = 0,
-    .total_items = 4,
+    .total_items = 3,
     .scroll_offset = 0,
     .items = submenu_1_items,
     .parent_menu = NULL,
@@ -109,12 +108,16 @@ void action_debug_window(void) {
     current_screen = SCREEN_DEBUG_IO_BOARD;
 }
 
+void action_placeholder_1(void) {
+    current_screen = SCREEN_TILEMAP_1BPP;
+}
+
 void action_placeholder_2(void) {
-    // Action for menu item 2
+    current_screen = SCREEN_TILEMAP_2BPP;
 }
 
 void action_placeholder_3(void) {
-    // Action for menu item 3
+    current_screen = SCREEN_DEBUG_IO_BOARD;
 }
 
 void action_placeholder_4(void) {

@@ -474,6 +474,24 @@ void display_current_screen(void) {
             prev_back_button = buttons.R5;
             break;
             
+        case SCREEN_TILEMAP_1BPP:
+            draw_tilemap_1bpp();
+            if (buttons.R5 && !prev_back_button) {
+                current_screen = SCREEN_MENU;
+            }
+            prev_back_button = buttons.R5;
+            break;
+
+        case SCREEN_TILEMAP_2BPP:
+            draw_tilemap_2bpp();
+            if (buttons.R5 && !prev_back_button) {
+                current_screen = SCREEN_MENU;
+            }
+            prev_back_button = buttons.R5;
+            break;
+
+
+
         default:
             current_screen = SCREEN_MENU;
             break;
