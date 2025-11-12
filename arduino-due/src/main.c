@@ -34,15 +34,21 @@ int main(void)
 	float pos_current = 0.0;
 	float pos_ref = 0.0;
 	//float kj = 5.0/1000.0;
-	float kj = 1.0/1000.0;
+	float kj = 1.5/1000.0;
 	int8_t joystick_x = 0;
 	int8_t joystick_y = 0;
 	float controller_out = 0.0;
 	
 	// ############ PI - controller initialization
 	PI_controller pi = {
-		.kp = 18.0/1000.0,	
-		.ki = 6.0/1000.0,		
+// 		.kp = 12.0/1000.0,	
+// 		.ki = 3.0/1000.0,		
+// 		.kp = 12.0/1000.0,
+// 		.ki = 11.0/1000.0,
+		.kp = 25.0/1000.0,
+		.ki = 0.0/1000.0,
+
+
 		.t_sample = 1.0/10000.0,		
 		.out_max = 100.0,
 		.out_min = -100.0,		
@@ -106,14 +112,5 @@ int main(void)
 			motor_stop();
 		}
 
-		 // motor_move_left(speed);
-		 // time_spinFor(msecs(onTime));
-		 // motor_stop();
-		 // time_spinFor(msecs(500));
-		 
-		 // motor_move_right(speed);
-		 // time_spinFor(msecs(onTime));
-		 // motor_stop();
-		 // time_spinFor(msecs(500));
     }
 }
