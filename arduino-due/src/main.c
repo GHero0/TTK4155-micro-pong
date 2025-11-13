@@ -41,8 +41,10 @@ int main(void)
         handle_scoring_system();
 
         if (joystick_x > JOYSTICK_DEADZONE || joystick_x < -JOYSTICK_DEADZONE) {
-            pos_ref -= JOYSTICK_GAIN * joystick_x;
-            pos_ref = clamp_float(pos_ref, POSITION_MIN, POSITION_MAX);  // ← FIX!
+            pos_ref = joystick_x * (-56/2) + 5600/2;
+            // printf("%f\n",pos_ref = joystick_x * (-56/2) + 5600/2);
+            // pos_ref -= JOYSTICK_GAIN * joystick_x;
+            // pos_ref = clamp_float(pos_ref, POSITION_MIN, POSITION_MAX);
         }
 
         float controller_out = PI_out(&pi, pos_ref, pos_current);

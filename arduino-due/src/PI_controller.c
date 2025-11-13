@@ -36,13 +36,9 @@ void PI_init(PI_controller *pi)
 
 float PI_out(PI_controller *pi, float ref_value, float pos_current)
 {
-    // Calculate error
     float error = ref_value - pos_current;
     
-    // Proportional term
     pi->term_p = pi->kp * error;
-    
-    // Integral term (trapezoidal integration)
     pi->term_i += 0.5f * pi->ki * pi->t_sample * (error + pi->error_prev);
     
     // Anti-windup: clamp integral term
