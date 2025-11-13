@@ -61,76 +61,61 @@ void ADC_Handler(void)
 // =============================================================================
 // SCORING SYSTEM 
 // =============================================================================
-uint8_t score = 0;
-bool timer_started = false;
-bool point_was_scored = false;
-
-CANMessage mb0_buffer;
 
 void handle_scoring_system(void)
 {
-    // Handle ADC readings for ball detection
+    // Keep ONLY the static versions
+    static bool send_pending = false;
+    static uint8_t score = 0;
+    static bool timer_started = false;
+    static bool point_was_scored = false;
+    static CANMessage mb0_buffer;
+
+    // Handle ADC ball detection
     if (Flag_ADC)
-    {               
-        if (adc11_result < BALL_DETECT_THRESHOLD)  
+    {
+        if (adc11_result < BALL_DETECT_THRESHOLD)
         {
-            if (!timer_started && !point_was_scored)
-            {   
-                Counter_Lose_Score_Start();  
+            if (!timer_started && !point_was_scored) {
+                Counter_Lose_Score_Start();
                 timer_started = true;
-            }                
+            }
         }
-        else if (adc11_result > BALL_CLEAR_THRESHOLD)  
+        else if (adc11_result > BALL_CLEAR_THRESHOLD)
         {
-            if (timer_started)
-            {   
-                Counter_Lose_Score_Stop();  
+            if (timer_started) {
+                Counter_Lose_Score_Stop();
                 timer_started = false;
             }
-            
-            if (point_was_scored)
-            {
+            if (point_was_scored) {
                 point_was_scored = false;
             }
         }
-        
         Flag_ADC = 0;
     }
-    
+
     // Handle point scoring
-    if (Flag_Point_Lose)
+    if (Flag_Point_Lose && !point_was_scored)
     {
-        if (!point_was_scored)
-        {
-            score++;
-            printf("POINT SCORED! Total: %d\n", score);
-            point_was_scored = true;
-            mb0_buffer.id = 1;
-            mb0_buffer.data_length = 1;
-            mb0_buffer.data[0] = score;
-            // Retry with timeout - don't block forever
-            uint8_t retry = 0;
-            uint8_t result = 1;  // Assume failure
-            
-            while (retry < 100) {  // Max 100 retries
-                result = can_send(&mb0_buffer, 0);
-                if (result == 0) {
-                    // Success!
-                    printf("Score sent successfully\n");
-                    break;
-                }
-                retry++;
-                // Small delay between retries
-                for (volatile int i = 0; i < 100; i++);
-            }
-            
-            if (result != 0) {
-                printf("WARNING: Failed to send score after retries\n");
-                // Don't block the system - score will be sent on next point
-            }
-        }
+        score++;
+        printf("POINT SCORED! Total: %d\n", score);
+        point_was_scored = true;
         
-        timer_started = false;  
+        mb0_buffer.id = 1;
+        mb0_buffer.data_length = 1;
+        mb0_buffer.data[0] = score;
+        send_pending = true;
+        
+        timer_started = false;
         Flag_Point_Lose = 0;
+    }
+    
+    // Non-blocking send (single attempt per cycle)
+    if (send_pending)
+    {
+        if (can_send(&mb0_buffer, 0) == 0) {
+            printf("Score sent: %d\n", score);
+            send_pending = false;
+        }
     }
 }

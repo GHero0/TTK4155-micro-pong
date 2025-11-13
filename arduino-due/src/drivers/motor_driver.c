@@ -26,14 +26,15 @@ void motor_move(int speed, int dir){
 	}
 	else if (dir == 0){
 		PIOC->PIO_CODR = PIO_SODR_P23;	// direction = 0 to the left
-	}	
+	}		
 	
+	if (speed < 0){
+		speed = -speed;
+	}
 	if(speed > 100){
 		speed = 100;
 	}
-	else if (speed < 0){
-		speed = 0;
-	}	
+		
 	PWM_Motor(speed);
 }
 
