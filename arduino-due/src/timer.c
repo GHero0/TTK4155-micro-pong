@@ -34,7 +34,7 @@ void Timer_Init(void)
                                 | TC_CMR_ACPA_CLEAR        // Clear TIOA on RA compare
                                 | TC_CMR_ACPC_SET;         // Set TIOA on RC compare
     // Set up for 1kHz output
-    TC0->TC_CHANNEL[1].TC_RC = 82030; // ~1 s period
+    TC0->TC_CHANNEL[1].TC_RC = 20000; // ~1 s period
     // Enable interrupt on RC Compare
     TC0->TC_CHANNEL[1].TC_IER = TC_IER_CPCS;
     // Enable Timer 1 interrupt in NVIC

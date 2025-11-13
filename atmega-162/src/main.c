@@ -29,23 +29,20 @@ int main(void)
         if (current_screen == SCREEN_DEBUG_BLUE_BOX){
 
             // Left Joystick 
-            msgCAN_TX.message_id = 0;
-            msgCAN_TX.message_data_length = 8;
+            msgCAN_TX.message_id = 10;
+            msgCAN_TX.message_data_length = 4;
             msgCAN_TX.message_data[0] = joystick_pos.X >> 8;
             msgCAN_TX.message_data[1] = joystick_pos.X;
             msgCAN_TX.message_data[2] = joystick_pos.Y >> 8;
             msgCAN_TX.message_data[3] = joystick_pos.Y;    
-            msgCAN_TX.message_data[4] = touch_pad.x;
-            msgCAN_TX.message_data[5] = touch_pad.y;
-            msgCAN_TX.message_data[6] = touch_pad.size;
-            msgCAN_TX.message_data[7] = slider;  
+
 
             CAN_Send_Message(msgCAN_TX);
 
             // Push Button
-            msgCAN_TX.message_id = 2;
+            msgCAN_TX.message_id = 9;
             msgCAN_TX.message_data_length = 1;
-            msgCAN_TX.message_data[0] = buttons.R1; 
+            msgCAN_TX.message_data[0] = buttons.R5; 
 
             CAN_Send_Message(msgCAN_TX);
         }

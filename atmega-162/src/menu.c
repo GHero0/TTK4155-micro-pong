@@ -219,7 +219,7 @@ void draw_menu(void) {
     // Input detection consolidated
     static struct {
         signed char x, y;
-        unsigned char nav, R5, R6, cursor_click, NU, ND, NB;
+        unsigned char nav, R4, R6, cursor_click, NU, ND, NB;
     } prev = {0};
     
     signed char old_x = cursor_state.x;
@@ -313,10 +313,10 @@ void draw_menu(void) {
         prev.cursor_click = cursor_state.clicking;
         
         // Back button
-        if (buttons.R5 && !prev.R5 && current_menu->parent_menu) {
+        if (buttons.R4 && !prev.R4 && current_menu->parent_menu) {
             go_back_to_parent();
         }
-        prev.R5 = buttons.R5;
+        prev.R4 = buttons.R4;
     }
     
     if (menu_control_mode == 0) draw_menu_cursor();

@@ -4,8 +4,11 @@
 // =============================================================================
 // SCORING THRESHOLDS
 // =============================================================================
-#define BALL_DETECT_THRESHOLD 1000    
-#define BALL_CLEAR_THRESHOLD  3700    
+
+#define BALL_DETECT_THRESHOLD 2000    
+#define BALL_CLEAR_THRESHOLD  3000    
+
+#define ADC_AVG_COUNT 100
 
 // =============================================================================
 // PI CONTROLLER values

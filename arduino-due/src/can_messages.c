@@ -13,7 +13,7 @@ void handle_can_messages(void)
 {
     if (!Flag_CAN_MB1) return;
 
-    if (mb1_buffer.id == 0) {
+    if (mb1_buffer.id == 10) {
         // Update joystick values
         joystick_x = (int8_t)mb1_buffer.data[0];
         joystick_y = (int8_t)mb1_buffer.data[2];
@@ -26,7 +26,7 @@ void handle_can_messages(void)
         PWM_Update(pwm_value);
     }
     
-    if (mb1_buffer.id == 2) {
+    if (mb1_buffer.id == 9) {
         Solenoid_Update(mb1_buffer.data[0]);
     }
     

@@ -272,7 +272,7 @@ void debug_io_board(void)
     if (!debug_io_prompt_dismissed) {
         Shade_Background();
         draw_window(X_window_3, Y_window_3, 13, 5);
-        draw_printf(X_window_3 + 3, Y_window_3 + 3, "To exit: set slider\nto 255 and press R5");
+        draw_printf(X_window_3 + 3, Y_window_3 + 3, "To exit: set slider\nto 255 and press R4");
 
         draw_printf(X_window_3 + 67, Y_window_3 + 24, "OK");
         button_indicator(X_window_3 + 80, Y_window_3 + 24, 1, 6);
@@ -350,7 +350,7 @@ void calibration_joystick(void)
     
     uint8_t curr_buttons = (buttons.L6 ? 0x01 : 0) | 
                           (buttons.L7 ? 0x02 : 0) | 
-                          (buttons.R5 ? 0x04 : 0);
+                          (buttons.R4 ? 0x04 : 0);
     uint8_t pressed = curr_buttons & ~prev_buttons;
     
     const unsigned char X1 = 8, Y1 = 16;
@@ -404,7 +404,7 @@ void calibration_joystick(void)
         draw_printf(X3 + 3, Y3 + 24, "Redo");
         button_indicator(X3 + 25, Y3 + 24, 0, 7);
         draw_printf(X3 + 61, Y3 + 24, "Done");
-        button_indicator(X3 + 83, Y3 + 24, 1, 5);
+        button_indicator(X3 + 83, Y3 + 24, 1, 4);
         
         if (pressed & 0x02) { // L7 pressed - Redo
             joy_x_center = 128; joy_y_center = 128;
@@ -412,7 +412,7 @@ void calibration_joystick(void)
             joy_y_min = 0; joy_y_max = 255;
             Joystick_Init();
             cal_state = CAL_CENTER;
-        } else if (pressed & 0x04) { // R5 pressed - Done
+        } else if (pressed & 0x04) { // R4 pressed - Done
             current_screen = SCREEN_MENU;
             cal_state = CAL_CENTER;
             Joystick_Init();
@@ -443,51 +443,51 @@ void display_current_screen(void) {
             
         case SCREEN_DEBUG_IO_BOARD:
             debug_io_board();
-            if (buttons.R5 && !prev_back_button && slider == 255) {
+            if (buttons.R4 && !prev_back_button && slider == 255) {
                 current_screen = SCREEN_MENU;
             }
-            prev_back_button = buttons.R5;
+            prev_back_button = buttons.R4;
             break;
             
         case SCREEN_DEBUG_BLUE_BOX:
             debug_blue_box();
             if (Flag_CAN == 1) {
                 msgCAN_RX = CAN_Receive_Message();
-                if (msgCAN_RX.message_id == 1) {
+                if (msgCAN_RX.message_id == 8) {
                     score = msgCAN_RX.message_data[0];
                 }
                 Flag_CAN = 0;
             }
-            if (buttons.R5 && !prev_back_button) {
+            if (buttons.R4 && !prev_back_button) {
                 current_screen = SCREEN_MENU;
             }
-            prev_back_button = buttons.R5;
+            prev_back_button = buttons.R4;
             break;
         
         case SCREEN_CALIBRATION_JOYSTICK:
             calibration_joystick();
-            if (buttons.R5 && !prev_back_button) {
+            if (buttons.R4 && !prev_back_button) {
                 current_screen = SCREEN_MENU;
                 cal_state = CAL_CENTER;
                 Joystick_Init();
             }
-            prev_back_button = buttons.R5;
+            prev_back_button = buttons.R4;
             break;
             
         case SCREEN_TILEMAP_1BPP:
             draw_tilemap_1bpp();
-            if (buttons.R5 && !prev_back_button) {
+            if (buttons.R4 && !prev_back_button) {
                 current_screen = SCREEN_MENU;
             }
-            prev_back_button = buttons.R5;
+            prev_back_button = buttons.R4;
             break;
 
         case SCREEN_TILEMAP_2BPP:
             draw_tilemap_2bpp();
-            if (buttons.R5 && !prev_back_button) {
+            if (buttons.R4 && !prev_back_button) {
                 current_screen = SCREEN_MENU;
             }
-            prev_back_button = buttons.R5;
+            prev_back_button = buttons.R4;
             break;
 
 
