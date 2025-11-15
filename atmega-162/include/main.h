@@ -6,6 +6,11 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+// =============================================================================
+// INCLUDES
+// =============================================================================
+
+// Personal headers
 #include "SRAM.h"
 #include "inter.h"
 #include "PWM.h"
@@ -19,7 +24,12 @@
 #include "UI.h"
 #include "drivers/CAN.h"
 
-#include "tests/test_UI.h"
+// Libraries
+#include <stdio.h>
+
+// =============================================================================
+// MAIN INIT
+// =============================================================================
 
 void Main_Init(void)
 {
@@ -34,6 +44,7 @@ void Main_Init(void)
     FrameBuffer_Init();
     CAN_Reset();
     CAN_Init();
+    printf("===== SYSTEM INITIALIZED: NODE 1 =====\n");
 }
 
 #endif

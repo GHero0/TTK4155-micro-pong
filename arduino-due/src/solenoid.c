@@ -1,5 +1,5 @@
 #include "solenoid.h"
-#include "sam.h"
+#include <sam.h>
 
 void Solenoid_Init(void)
 {

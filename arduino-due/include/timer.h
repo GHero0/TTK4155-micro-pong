@@ -9,6 +9,7 @@ void Counter_Lose_Score_Restart(void);
 void Counter_Lose_Score_Stop(void);
 
 extern volatile uint8_t Flag_Point_Lose;
+extern volatile uint8_t Flag_PI_update;
 
 
 

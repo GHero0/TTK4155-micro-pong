@@ -1,3 +1,8 @@
+// =============================================================================
+// INCLUDES
+// =============================================================================
+
+// Personal headers
 #include "can_messages.h"
 #include "types.h"
 #include "drivers/can_interrupt.h"
@@ -5,10 +10,22 @@
 #include "solenoid.h"
 #include "can_messages.h"
 
+#include <stdio.h>
+
+// =============================================================================
+// GLOBAL VARIABLES
+// =============================================================================
+
 int8_t joystick_x = 0;
 int8_t joystick_y = 0;
+int8_t game_mode = 0;
+int8_t prev_game_mode = 0;
+CANMessage mb0_buffer = {0};
 
-// ========== CAN Message Handler ==========
+// =============================================================================
+// CAN MESSAGE HANDLER
+// =============================================================================
+
 void handle_can_messages(void)
 {
     if (!Flag_CAN_MB1) return;
@@ -26,6 +43,11 @@ void handle_can_messages(void)
         PWM_Update(pwm_value);
     }
     
+    if (mb1_buffer.id == 7) {
+        prev_game_mode = game_mode;
+        game_mode = mb1_buffer.data[0];
+    }
+
     if (mb1_buffer.id == 9) {
         Solenoid_Update(mb1_buffer.data[0]);
     }

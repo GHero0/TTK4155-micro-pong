@@ -1,43 +1,53 @@
 #ifndef UI_H
 #define UI_H
 
+// =============================================================================
+// INCLUDES
+// =============================================================================
+
+// Personal headers
 #include "types.h"
+
+// =============================================================================
+// GENERIC UI COMPONENTS
+// =============================================================================
 
 void draw_window(int X, int Y, unsigned char width_in_tiles, unsigned char height_in_tiles);
 void joystick_indicator(char X, char Y, unsigned char hand);
+void button_indicator(char X, char Y, unsigned char hand, unsigned char number);
 void draw_printf(char x, char y, const char* fmt, ...);
+void draw_menu_item(unsigned char x, unsigned char y, const char* label, unsigned char icon_tile);
+void Shade_Background(void);
 
-// Menu system functions
-void draw_menu(void);
+// =============================================================================
+// CURSOR FUNCTIONS
+// =============================================================================
+
+void update_cursor_position(void);
 void draw_menu_cursor(void);
+
+// =============================================================================
+// SCREEN RENDERING FUNCTIONS
+// =============================================================================
+
+void debug_io_board(void);
+void debug_blue_box(void);
+void calibration_joystick(void);
+void startup(void);
+
+// =============================================================================
+// SCREEN MANAGER
+// =============================================================================
+
 void display_current_screen(void);
 
-// Menu system
+// =============================================================================
+// GLOBAL STATE
+// =============================================================================
+
 extern ScreenState current_screen;
 extern CursorState cursor_state;
-
-
-// Transition state
-typedef enum {
-    TRANSITION_NONE,
-    TRANSITION_OUT,     // Fading out current screen
-    TRANSITION_IN       // Fading in new screen
-} TransitionState;
-
-// Transition configuration
-typedef struct {
-    TransitionState state;
-    uint8_t frame;              // Current frame of animation
-    uint8_t total_frames;       // Total frames for transition (8 = smooth, 4 = fast)
-    ScreenState target_screen;  // Screen to transition to
-} ScreenTransition;
-
-// Screen transition functions
-void Transition_Init(void);
-void Transition_Start(ScreenState new_screen);
-void Transition_Update(void);
-void Transition_Apply_Dither(uint8_t intensity);
-uint8_t Transition_Is_Active(void);
-
+extern unsigned char prev_R4;
+extern unsigned char score;
 
 #endif

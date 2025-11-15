@@ -1,8 +1,10 @@
 #include "timer.h"
-#include "sam.h"
 #include "types.h"
 
+#include <sam.h>
+
 volatile uint8_t Flag_Point_Lose = false;
+volatile uint8_t Flag_PI_update = false;
 
 void Timer_Init(void)
 {
@@ -51,7 +53,39 @@ void Timer_Init(void)
                   | TC_BMR_EDGPHA;                   // Enable edge detection on PHA and PHB
     TC2->TC_CHANNEL[0].TC_CMR = TC_CMR_TCCLKS_XC0;
     TC2->TC_CHANNEL[0].TC_CCR = TC_CCR_CLKEN | TC_CCR_SWTRG;
+    
+    // =========================================================================
+    // TIMER 0 -> Counter Channel 2 === PI Controller @ 50Hz (NEW)
+    // =========================================================================
+    PMC->PMC_PCER0 |= (1 << ID_TC2);
+    
+    TC0->TC_CHANNEL[2].TC_CMR = TC_CMR_TCCLKS_TIMER_CLOCK4  // MCK/128 = 656.25kHz
+                               | TC_CMR_WAVE                 // Waveform mode
+                               | TC_CMR_WAVSEL_UP_RC         // Count up with RC compare
+                               | TC_CMR_CPCTRG;              // RC compare resets counter
+    
+    // 50Hz = 20ms period
+    // 656.25kHz / 50Hz = 13125 counts
+    TC0->TC_CHANNEL[2].TC_RC = 13125;
+    
+    // Enable RC compare interrupt
+    TC0->TC_CHANNEL[2].TC_IER = TC_IER_CPCS;
+    
+    // Enable interrupt in NVIC
+    NVIC_EnableIRQ(ID_TC2);
+    
+    // Start timer
+    TC0->TC_CHANNEL[2].TC_CCR = TC_CCR_CLKEN | TC_CCR_SWTRG;
 }
+
+void TC2_Handler(void)
+{
+    uint32_t status = TC0->TC_CHANNEL[2].TC_SR;  // Read clears interrupt
+    (void)status;  // Avoid unused variable warning
+    
+    Flag_PI_update = true;
+}
+
 void Counter_Lose_Score_Start(void)
 {
     Flag_Point_Lose = false;

@@ -4,13 +4,24 @@
  * adc channels buffers and flag variables
  */
 
+// =============================================================================
+// INCLUDES
+// =============================================================================
+
+// Personal headers
 #include "inter.h"
-#include <avr/io.h>
-#include <avr/interrupt.h>
 #include "SRAM.h"
 
+// Libraries
+#include <avr/io.h>
+#include <avr/interrupt.h>
 #include <stdio.h>
 
+// =============================================================================
+// GLOBAL VARIABLES
+// =============================================================================
+
+// Interrupt flags
 volatile char Flag_ADC_ready = 0;
 volatile char Flag_screen = 0;
 volatile char Flag_CAN = 0;
@@ -21,6 +32,9 @@ unsigned char adc_ch1 = 0;
 unsigned char adc_ch2 = 0;
 unsigned char adc_ch3 = 0;
 
+// =============================================================================
+// INTERRUPT FUNCTIONS
+// =============================================================================
 
 void Inter_Init(void)
 {

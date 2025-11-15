@@ -10,6 +10,8 @@
 #ifndef PI_CONTROLLER_H_
 #define PI_CONTROLLER_H_
 
+#include "stdbool.h"
+
 typedef struct  
 {
 	float kp;
@@ -35,6 +37,7 @@ float PI_out(PI_controller *pi, float ref_value, float pos_current);
 float get_safe_position(void);
 void update_motor(float controller_output);
 float clamp_float(float value, float min, float max);
+
 
 extern PI_controller pi;
 extern float pos_current;

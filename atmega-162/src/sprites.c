@@ -4,11 +4,21 @@
  * some usefull print functions for the screen
  */
 
+// =============================================================================
+// INCLUDES
+// =============================================================================
+
+// Personal headers
 #include "sprites.h"
 #include "drivers/OLED.h"
 #include "images.h"
 
+// Libraries
 #include <avr/pgmspace.h>
+
+// =============================================================================
+// EXPLANATION OF THE TILE SYSTEM
+// =============================================================================
 
 /*
 * ==============================================================================
@@ -51,6 +61,10 @@
 * ==============================================================================
 */
 
+// =============================================================================
+// STATIC VARIABLES
+// =============================================================================
+
 static unsigned char tile_2bpp[16] = {
     0b11000000, 0b10000000,
     0b11000000, 0b01000000,
@@ -71,36 +85,9 @@ static unsigned char tile_1bpp[8] = {
     0b00000011,
     0b00000011};
 
-#define INV_BITS_2bpp(b) (((b & 0x03) << 6) | ((b & 0x0C) << 2) | ((b & 0x30) >> 2) | ((b & 0xC0) >> 6))
-
-inline void SYM_H_2bpp(void)
-{
-    register unsigned char tmp;
-    
-    for (unsigned char i = 0; i < 16; i += 2)
-    {
-        tmp = tile_2bpp[i];
-        tile_2bpp[i] = INV_BITS_2bpp(tile_2bpp[i + 1]);
-        tile_2bpp[i + 1] = INV_BITS_2bpp(tmp);
-    }
-}
-
-inline void SYM_V_2bpp(void)
-{
-    register unsigned char tmp0, tmp1;
-    
-    // Loop through from outside to inside
-    for (unsigned char i = 0; i < 8; i += 2)
-    {
-        unsigned char mirror_i = 14 - i;
-        tmp0 = tile_2bpp[i];
-        tmp1 = tile_2bpp[i + 1];
-        tile_2bpp[i] = tile_2bpp[mirror_i];
-        tile_2bpp[i + 1] = tile_2bpp[mirror_i + 1];
-        tile_2bpp[mirror_i] = tmp0;
-        tile_2bpp[mirror_i + 1] = tmp1;
-    }
-}
+// =============================================================================
+// 1BPP FUNCTIONS
+// =============================================================================
 
 #define INV_BITS_1bpp(b) ( \
     ((b & 0x80) >> 7) |    \
@@ -140,89 +127,6 @@ inline void SYM_V_1bpp(void)
     tmp = tile_1bpp[3];
     tile_1bpp[3] = tile_1bpp[4];
     tile_1bpp[4] = tmp;
-}
-
-void draw_tile_2bpp(signed char X, signed char Y)
-{
-    unsigned char *fb = current_buffer;
-    
-    for (unsigned char r = 0; r < 8; r++)
-    {
-        signed char py = Y + r;
-        if (py < 0 || py >= 64)
-            continue;
-
-        unsigned short row_offset = (unsigned char)py << 4;
-        unsigned char tr_bytes[2] = {tile_2bpp[r << 1], tile_2bpp[(r << 1) + 1]};
-
-        for (unsigned char i = 0; i < 8; i++)
-        {
-            unsigned char pix = (tr_bytes[i >> 2] >> ((3 - (i & 3)) << 1)) & 3;
-            
-            if (pix == 2)  // Transparent
-                continue;
-            
-            signed char px = X + i;
-            if ((unsigned char)px >= 128)
-                continue;
-            
-            unsigned short idx = row_offset + ((unsigned char)px >> 3);
-            unsigned char mask = 1 << (7 - (px & 7));
-            
-            fb[idx] = (pix == 3) ? (fb[idx] | mask) :
-                     (pix == 0) ? (fb[idx] & ~mask) :
-                                  (fb[idx] ^ mask);
-        }
-    }
-}
-
-void fetch_tile_from_tilemap_2bpp(unsigned short N)
-{
-    unsigned char base_Y = N >> 4;
-    unsigned char base_X = N & 0x0F;
-
-    unsigned short base_addr = (base_Y << 8) + (base_X << 1);
-    const unsigned char *ptr = &tilemap_2bpp[base_addr];
-
-    for (unsigned char i = 0; i < 8; i++)
-    {
-        tile_2bpp[i << 1] = pgm_read_byte(ptr);
-        tile_2bpp[(i << 1) + 1] = pgm_read_byte(ptr + 1);
-        ptr += 32;
-    }
-}
-
-void draw_sprite_2bpp(Sprite Sp, signed char X, signed char Y)
-{
-    signed char base_y = Y;
-
-    for (unsigned char row = 0; row < Sp.height_tile; row++)
-    {
-        int base_x = X;
-        unsigned char row_offset = row * Sp.width_tile;
-
-        for (unsigned char col = 0; col < Sp.width_tile; col++)
-        {
-            unsigned char tile_index = col + row_offset;
-
-            // Read from PROGMEM
-            unsigned char tile_num = pgm_read_byte(&Sp.sprite_tiles[tile_index]);
-            unsigned char trans = pgm_read_byte(&Sp.trans_tiles[tile_index]);
-
-            fetch_tile_from_tilemap_2bpp(tile_num);
-
-            // Handle transformations
-            if (trans & 0x01)
-                SYM_H_2bpp(); // bit 0 = horizontal flip
-            if (trans & 0x02)
-                SYM_V_2bpp(); // bit 1 = vertical flip
-
-            draw_tile_2bpp(base_x, base_y);
-
-            base_x += 8;
-        }
-        base_y += 8;
-    }
 }
 
 void fetch_tile_from_tilemap_1bpp(unsigned short N)
@@ -356,6 +260,124 @@ void draw_tilemap_1bpp(void)
     }
 }
 
+// =============================================================================
+// 2BPP FUNCTIONS
+// =============================================================================
+
+#define INV_BITS_2bpp(b) (((b & 0x03) << 6) | ((b & 0x0C) << 2) | ((b & 0x30) >> 2) | ((b & 0xC0) >> 6))
+
+inline void SYM_H_2bpp(void)
+{
+    register unsigned char tmp;
+    
+    for (unsigned char i = 0; i < 16; i += 2)
+    {
+        tmp = tile_2bpp[i];
+        tile_2bpp[i] = INV_BITS_2bpp(tile_2bpp[i + 1]);
+        tile_2bpp[i + 1] = INV_BITS_2bpp(tmp);
+    }
+}
+
+inline void SYM_V_2bpp(void)
+{
+    register unsigned char tmp0, tmp1;
+    
+    // Loop through from outside to inside
+    for (unsigned char i = 0; i < 8; i += 2)
+    {
+        unsigned char mirror_i = 14 - i;
+        tmp0 = tile_2bpp[i];
+        tmp1 = tile_2bpp[i + 1];
+        tile_2bpp[i] = tile_2bpp[mirror_i];
+        tile_2bpp[i + 1] = tile_2bpp[mirror_i + 1];
+        tile_2bpp[mirror_i] = tmp0;
+        tile_2bpp[mirror_i + 1] = tmp1;
+    }
+}
+
+void draw_tile_2bpp(signed char X, signed char Y)
+{
+    unsigned char *fb = current_buffer;
+    
+    for (unsigned char r = 0; r < 8; r++)
+    {
+        signed char py = Y + r;
+        if (py < 0 || py >= 64)
+            continue;
+
+        unsigned short row_offset = (unsigned char)py << 4;
+        unsigned char tr_bytes[2] = {tile_2bpp[r << 1], tile_2bpp[(r << 1) + 1]};
+
+        for (unsigned char i = 0; i < 8; i++)
+        {
+            unsigned char pix = (tr_bytes[i >> 2] >> ((3 - (i & 3)) << 1)) & 3;
+            
+            if (pix == 2)  // Transparent
+                continue;
+            
+            signed char px = X + i;
+            if ((unsigned char)px >= 128)
+                continue;
+            
+            unsigned short idx = row_offset + ((unsigned char)px >> 3);
+            unsigned char mask = 1 << (7 - (px & 7));
+            
+            fb[idx] = (pix == 3) ? (fb[idx] | mask) :
+                     (pix == 0) ? (fb[idx] & ~mask) :
+                                  (fb[idx] ^ mask);
+        }
+    }
+}
+
+void fetch_tile_from_tilemap_2bpp(unsigned short N)
+{
+    unsigned char base_Y = N >> 4;
+    unsigned char base_X = N & 0x0F;
+
+    unsigned short base_addr = (base_Y << 8) + (base_X << 1);
+    const unsigned char *ptr = &tilemap_2bpp[base_addr];
+
+    for (unsigned char i = 0; i < 8; i++)
+    {
+        tile_2bpp[i << 1] = pgm_read_byte(ptr);
+        tile_2bpp[(i << 1) + 1] = pgm_read_byte(ptr + 1);
+        ptr += 32;
+    }
+}
+
+void draw_sprite_2bpp(Sprite Sp, signed char X, signed char Y)
+{
+    signed char base_y = Y;
+
+    for (unsigned char row = 0; row < Sp.height_tile; row++)
+    {
+        int base_x = X;
+        unsigned char row_offset = row * Sp.width_tile;
+
+        for (unsigned char col = 0; col < Sp.width_tile; col++)
+        {
+            unsigned char tile_index = col + row_offset;
+
+            // Read from PROGMEM
+            unsigned char tile_num = pgm_read_byte(&Sp.sprite_tiles[tile_index]);
+            unsigned char trans = pgm_read_byte(&Sp.trans_tiles[tile_index]);
+
+            fetch_tile_from_tilemap_2bpp(tile_num);
+
+            // Handle transformations
+            if (trans & 0x01)
+                SYM_H_2bpp(); // bit 0 = horizontal flip
+            if (trans & 0x02)
+                SYM_V_2bpp(); // bit 1 = vertical flip
+
+            draw_tile_2bpp(base_x, base_y);
+
+            base_x += 8;
+        }
+        base_y += 8;
+    }
+}
+
 void draw_tilemap_2bpp(void)
 {
     for (unsigned char row = 0; row < 4; row++)
@@ -369,36 +391,9 @@ void draw_tilemap_2bpp(void)
     }
 }
 
-
-void draw_rectangle(int X, int Y, unsigned char width, unsigned char height) {
-    if (X >= 128 || Y >= 64 || X + width <= 0 || Y + height <= 0) return;
-    
-    signed char x1 = X;
-    signed char y1 = Y;
-    signed char x2 = X + width - 1;
-    signed char y2 = Y + height - 1;
-    
-    char draw_top = (Y >= 0 && Y < 64);
-    char draw_bottom = (y2 >= 0 && y2 < 64 && y2 != y1);
-    char draw_left = (X >= 0 && X < 128);
-    char draw_right = (x2 >= 0 && x2 < 128 && x2 != x1);
-    
-    if (draw_top && width > 2) {
-        draw_line(x1 + 1, y1, width - 2, 0, 0);
-    }
-    
-    if (draw_bottom && width > 2) {
-        draw_line(x1 + 1, y2, width - 2, 0, 0);
-    }
-    
-    if (draw_left && height > 2) {
-        draw_line(x1, y1 + 1, height - 2, 1, 0);
-    }
-    
-    if (draw_right && height > 2) {
-        draw_line(x2, y1 + 1, height - 2, 1, 0);
-    }
-}
+// =============================================================================
+// BASIC SHAPE DRAW FUNCTIONS
+// =============================================================================
 
 void draw_line(signed char x, signed char y, unsigned char length, char direction, char stride) {
     if (direction == 0) {
@@ -461,6 +456,40 @@ void draw_line(signed char x, signed char y, unsigned char length, char directio
         }
     }
 }
+
+void draw_rectangle(int X, int Y, unsigned char width, unsigned char height) {
+    if (X >= 128 || Y >= 64 || X + width <= 0 || Y + height <= 0) return;
+    
+    signed char x1 = X;
+    signed char y1 = Y;
+    signed char x2 = X + width - 1;
+    signed char y2 = Y + height - 1;
+    
+    char draw_top = (Y >= 0 && Y < 64);
+    char draw_bottom = (y2 >= 0 && y2 < 64 && y2 != y1);
+    char draw_left = (X >= 0 && X < 128);
+    char draw_right = (x2 >= 0 && x2 < 128 && x2 != x1);
+    
+    if (draw_top && width > 2) {
+        draw_line(x1 + 1, y1, width - 2, 0, 0);
+    }
+    
+    if (draw_bottom && width > 2) {
+        draw_line(x1 + 1, y2, width - 2, 0, 0);
+    }
+    
+    if (draw_left && height > 2) {
+        draw_line(x1, y1 + 1, height - 2, 1, 0);
+    }
+    
+    if (draw_right && height > 2) {
+        draw_line(x2, y1 + 1, height - 2, 1, 0);
+    }
+}
+
+// =============================================================================
+// BASIC CHAR DRAW FUNCTIONS
+// =============================================================================
 
 static void draw_char(char c, char X, char Y)
 {

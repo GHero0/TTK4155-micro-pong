@@ -6,9 +6,20 @@
 #ifndef CAN_H
 #define CAN_H
 
+// =============================================================================
+// INCLUDES
+// =============================================================================
+
+// Personal headers
 #include "types.h"
 
+// Libraries
 #include <stdint.h>
+
+
+// =============================================================================
+// DEFINES
+// =============================================================================
 
 #define BFPCTRL		0x0C
 #define TXRTSCTRL	0x0D
@@ -51,19 +62,19 @@
 // TX Buffer 
 #define TXB0 			0x01
 
-void CAN_Read(unsigned char address_byte, unsigned char *buffer, unsigned char lentgh);
-void CAN_Write(unsigned char address_byte, unsigned char *buffer, unsigned char length);
-void CAN_WriteByte(unsigned char address_byte, unsigned char data);
-void CAN_Request2Send(unsigned char TX_bits);
-unsigned char CAN_ReadStatus(void);
-void CAN_BitModify(unsigned char address_byte, unsigned char mask, unsigned char data);
+
+// =============================================================================
+// FUNCTION DECLARATIONS
+// =============================================================================
+
 void CAN_Reset(void);
 void CAN_Init(void);
 void CAN_Send_Message(CANMessage);
 CANMessage CAN_Receive_Message(void);
-void CAN_Read_TX_Buffer(void);
 
-void CAN_Read_Print_All_Control_Registers(void);
+// =============================================================================
+// GLOBAL VARIABLES
+// =============================================================================
 
 extern CANMessage msgCAN_TX;
 extern CANMessage msgCAN_RX;

@@ -3,10 +3,20 @@
  * @brief Main project loop logic implementation
  */
 
+// =============================================================================
+// INCLUDES
+// =============================================================================
+
+// Personal headers
 #include "main.h"
 
+// Libraries
 #include <stdio.h>
 #include <util/delay.h>
+
+// =============================================================================
+// MAIN FUNCTION
+// =============================================================================
 
 int main(void)
 {
@@ -27,6 +37,15 @@ int main(void)
         }
 
         if (current_screen == SCREEN_DEBUG_BLUE_BOX){
+
+            // Score 
+            if (Flag_CAN == 1) {
+                msgCAN_RX = CAN_Receive_Message();
+                if (msgCAN_RX.message_id == 8) {
+                    score = msgCAN_RX.message_data[0];
+                }
+                Flag_CAN = 0;
+            }
 
             // Left Joystick 
             msgCAN_TX.message_id = 10;

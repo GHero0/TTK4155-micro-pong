@@ -14,9 +14,7 @@ void PWM_Init(void)
     PWM->PWM_CLK = PWM_CLK_PREA(0) | PWM_CLK_DIVA(42); // CLKA = 2 MHz
     PWM->PWM_CH_NUM[1].PWM_CMR = PWM_CMR_CPRE_CLKA;
     PWM->PWM_CH_NUM[1].PWM_CPRD = 40000;
-    PWM->PWM_CH_NUM[1].PWM_CDTY = 37000;
-    PWM->PWM_ENA = (1 << 1);
-    PWM->PWM_CH_NUM[1].PWM_CDTY = 36000;
+    PWM->PWM_CH_NUM[1].PWM_CDTY = 38000;
     PWM->PWM_ENA |= (1 << 1);
     
     // for DC Motor
@@ -34,11 +32,11 @@ void PWM_Update(uint8_t value)
 {
     int16_t adjusted = value + SERVO_OFFSET;
 
-    // Apply deadzone
+    // Apply deadzone and center correctly
     if (adjusted > SERVO_CENTER - SERVO_DEADZONE && adjusted < SERVO_CENTER + SERVO_DEADZONE)
         adjusted = SERVO_CENTER;
 
-    PWM->PWM_CH_NUM[1].PWM_CDTYUPD = 38000 - (adjusted * 24);
+    PWM->PWM_CH_NUM[1].PWM_CDTYUPD = 38000 - (adjusted * 20.0);
 }
 
 void PWM_Motor(int fraction)

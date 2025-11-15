@@ -3,13 +3,23 @@
  * @brief Joystick Handling and calibration calculus
  */
 
+// =============================================================================
+// INCLUDES
+// =============================================================================
+
+// Personal headers
 #include "joystick.h"
 #include "types.h"
 #include "config.h"
 #include "SRAM.h"
 #include "inter.h"
 
+// Libraries
 #include <stdlib.h>
+
+// =============================================================================
+// GLOBAL VARIABLES
+// =============================================================================
 
 // Joystick Controls
 JoyDir joystick_dir = NEUTRAL;
@@ -21,11 +31,19 @@ unsigned char joy_y_min = JOY_Y_MIN;
 unsigned char joy_x_center = JOY_X_CENTER;
 unsigned char joy_y_center = JOY_Y_CENTER;
 
+// =============================================================================
+// STATIC VARIABLES
+// =============================================================================
+
 // Joystick Calibration - separate scales for positive and negative ranges
-unsigned int SCALE_X_POS = 0;  // For positive X (right)
-unsigned int SCALE_X_NEG = 0;  // For negative X (left)
-unsigned int SCALE_Y_POS = 0;  // For positive Y (up)
-unsigned int SCALE_Y_NEG = 0;  // For negative Y (down)
+static unsigned int SCALE_X_POS = 0; // For positive X (right)
+static unsigned int SCALE_X_NEG = 0; // For negative X (left)
+static unsigned int SCALE_Y_POS = 0; // For positive Y (up)
+static unsigned int SCALE_Y_NEG = 0; // For negative Y (down)
+
+// =============================================================================
+// JOYSTICK FUNCTIONS
+// =============================================================================
 
 void Joystick_Init(void)
 {
@@ -33,7 +51,7 @@ void Joystick_Init(void)
     // Positive direction (max from center)
     SCALE_X_POS = (100UL * 256UL) / (joy_x_max - joy_x_center);
     SCALE_Y_POS = (100UL * 256UL) / (joy_y_max - joy_y_center);
-    
+
     // Negative direction (center from min)
     SCALE_X_NEG = (100UL * 256UL) / (joy_x_center - joy_x_min);
     SCALE_Y_NEG = (100UL * 256UL) / (joy_y_center - joy_y_min);
@@ -102,7 +120,7 @@ void Joystick_Convert(void)
         // --- Determine direction ---
         int16_t absX = abs(joystick_pos.X);
         int16_t absY = abs(joystick_pos.Y);
-        
+
         if (absX < (JOY_DEADZONE_X << 8) && absY < (JOY_DEADZONE_Y << 8))
         {
             joystick_dir = NEUTRAL;
@@ -115,7 +133,7 @@ void Joystick_Convert(void)
         {
             joystick_dir = (joystick_pos.Y > 0) ? UP : DOWN;
         }
-        
+
         Flag_ADC_ready = 0;
     }
     *adc = 0x01; // Launch next conversion on ADC

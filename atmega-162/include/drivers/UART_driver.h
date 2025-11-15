@@ -13,6 +13,7 @@ void UART_Init(void);
 void UART_Transmit(unsigned char data);
 unsigned char UART_Receive(void);
 void UART_Transmit_String (char*String);
+unsigned char UART_DataAvailable(void);
 
 // UART & stdio
 int UART_Stdio_Init(void);

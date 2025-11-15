@@ -1,18 +1,34 @@
 /**
  * @file IO_board.c
- * @brief IO_board Driver and global variables declaration
+ * @brief IO-Board Driver. Read Buttons, Slider, Nav and Touch Pad
+ * and can control LEDS through ON/OFF control or PWM.
  */
+
+// =============================================================================
+// INCLUDES
+// =============================================================================
+
+// Personal headers
 #include "drivers/IO_board.h"
+#include "drivers/SPI.h"
 #include "types.h"
 #include "config.h"
-#include "drivers/SPI.h"
 
+// Libraries
 #include <util/delay.h>
 
-Buttons buttons = {{0},{0},{0}};
-TouchPad touch_pad = {0,0,0};
-unsigned char slider = 0;  
+// =============================================================================
+// GLOBAL VARIABLES
+// =============================================================================
+
+Buttons buttons = {{0}, {0}, {0}};
+TouchPad touch_pad = {0, 0, 0};
+unsigned char slider = 0;
 LedState leds[6] = {0};
+
+// =============================================================================
+// IO-BOARD DRIVER FUNCTIONS
+// =============================================================================
 
 static void IO_board_read_buttons(void)
 {

@@ -1,53 +1,52 @@
-#include "types.h"
-#include "sam.h"
-#include "time.h"
-#include "drivers/uart.h"
-#include "drivers/can_controller.h"
-#include "drivers/can_interrupt.h"
-#include "PWM.h"
-#include "ADC.h"
-#include "timer.h"
-#include "config.h"
-#include "encoder.h"
-#include "drivers/motor_driver.h"
-#include "PI_controller.h"
-#include "solenoid.h"
-#include "can_messages.h"
+/**
+ * @file main.c
+ * @brief Main function with light code
+ */
 
-#include <stdio.h>
+// =============================================================================
+// INCLUDES
+// =============================================================================
+
+// Personal headers
+#include "main.h"
+
+// =============================================================================
+// MAIN FUNCTION
+// =============================================================================
 
 int main(void)
 {
-    // System Initialization
-    SystemInit();
-    PWM_Init();
-    Timer_Init();
-    ADC_Init();
-    motor_init();
-    Solenoid_Init();
-    PI_init(&pi);    
-    uart_init(84000000L, 9600);
-    can_init_def_tx_rx_mb(CAN_BR_VALUE);
-    
-    // Disable Watch Dog
-    WDT->WDT_MR = WDT_MR_WDDIS;
-
-    printf("===== SYSTEM INITIALIZED =====\n");
-
+    Main_Init();
     while (1)
     {
-        pos_current = get_safe_position();
-        handle_can_messages();        
+        handle_can_messages();  
         handle_scoring_system();
 
-        if (joystick_x > JOYSTICK_DEADZONE || joystick_x < -JOYSTICK_DEADZONE) {
-            pos_ref = joystick_x * (-56/2) + 5600/2;
-            // printf("%f\n",pos_ref = joystick_x * (-56/2) + 5600/2);
-            // pos_ref -= JOYSTICK_GAIN * joystick_x;
-            // pos_ref = clamp_float(pos_ref, POSITION_MIN, POSITION_MAX);
-        }
+        // PI controller runs ONLY at fixed 50Hz
+        if (Flag_PI_update) 
+        {
+            Flag_PI_update = 0;            
+            pos_current = get_safe_position();
+            
+            // Update reference from joystick
+            if (joystick_x > JOYSTICK_DEADZONE || joystick_x < -JOYSTICK_DEADZONE) 
+            {
+                // Joystick map mode
+                if (game_mode == 1){
+                    pos_ref = joystick_x * (-28.0f) + 2800.0f;
+                    pos_ref = clamp_float(pos_ref, POSITION_MIN, POSITION_MAX);
+                }
 
-        float controller_out = PI_out(&pi, pos_ref, pos_current);
-        update_motor(controller_out);
+                // Relative map mode
+                if (game_mode == 2){
+                    pos_ref -= JOYSTICK_GAIN * joystick_x;
+                    pos_ref = clamp_float(pos_ref, POSITION_MIN, POSITION_MAX);
+                }
+
+            }
+            
+            float controller_out = PI_out(&pi, pos_ref, pos_current);    
+            update_motor(controller_out);     
+        }
     }
 }

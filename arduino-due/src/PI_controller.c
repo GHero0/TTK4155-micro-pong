@@ -4,6 +4,8 @@
  * Created: 12.11.2025 11:49:39
  *  Author: flaucht
  */ 
+
+
 #include "PI_controller.h"
 #include "types.h"
 #include "types.h"
@@ -66,7 +68,6 @@ float PI_out(PI_controller *pi, float ref_value, float pos_current)
     return pi->out;
 }
 
-// ========== Motor Control ==========
 void update_motor(float controller_output)
 {
     if (controller_output > MOTOR_DEADZONE) {

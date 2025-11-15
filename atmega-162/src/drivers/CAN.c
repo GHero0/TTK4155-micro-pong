@@ -3,18 +3,32 @@
  * @brief CAN Driver Implementation
  */
 
+// =============================================================================
+// INCLUDES
+// =============================================================================
+
+// Personal headers
 #include "drivers/CAN.h"
 #include "config.h"
 #include "drivers/SPI.h"
 
+// Libraries
 #include <util/delay.h>
 #include <stdint.h>
 #include <stdio.h>
 
+// =============================================================================
+// GLOBAL VARIABLES
+// =============================================================================
+
 CANMessage msgCAN_TX = {0};
 CANMessage msgCAN_RX = {0};
 
-void CAN_Read(unsigned char address_byte, unsigned char *buffer, unsigned char lentgh)
+// =============================================================================
+// CAN FUNCTIONS
+// =============================================================================
+
+static void CAN_Read(unsigned char address_byte, unsigned char *buffer, unsigned char lentgh)
 {
     SPI_Select_Slave(3);
     SPI_Write_byte(READ); // Read instruction
@@ -28,7 +42,7 @@ void CAN_Read(unsigned char address_byte, unsigned char *buffer, unsigned char l
     SPI_Select_Slave(0);
 }
 	
-void CAN_Write(unsigned char address_byte, unsigned char *buffer, unsigned char length)
+static void CAN_Write(unsigned char address_byte, unsigned char *buffer, unsigned char length)
 {
     SPI_Select_Slave(3);
     SPI_Write_byte(WRITE); // Write instruction
@@ -42,11 +56,11 @@ void CAN_Write(unsigned char address_byte, unsigned char *buffer, unsigned char 
     SPI_Select_Slave(0);
 }
 
-void CAN_WriteByte(unsigned char address_byte, unsigned char data) {
+static void CAN_WriteByte(unsigned char address_byte, unsigned char data) {
     CAN_Write(address_byte, &data, 1);
 }
 
-void CAN_Request2Send(unsigned char TX_bits)
+static void CAN_Request2Send(unsigned char TX_bits)
 {
     SPI_Select_Slave(3);
     // RTS for TXB0 === 0001
@@ -59,7 +73,7 @@ void CAN_Request2Send(unsigned char TX_bits)
     SPI_Select_Slave(0);
 }
 
-unsigned char CAN_ReadStatus(void)
+static unsigned char CAN_ReadStatus(void)
 {
     SPI_Select_Slave(3);
     SPI_Write_byte(READ_STATUS);
@@ -68,7 +82,7 @@ unsigned char CAN_ReadStatus(void)
     return read_status;
 }
 
-void CAN_BitModify(unsigned char address_byte, unsigned char mask, unsigned char data)
+static void CAN_BitModify(unsigned char address_byte, unsigned char mask, unsigned char data)
 {
     SPI_Select_Slave(3);
     SPI_Write_byte(BIT_MODIFY);
@@ -165,6 +179,11 @@ CANMessage CAN_Receive_Message()
 
 	return received_message;
 }
+
+
+// =============================================================================
+// CAN DEBUGGING FUNCTIONS
+// =============================================================================
 
 void CAN_Read_Print_All_Control_Registers()
 {

@@ -1,20 +1,43 @@
+/**
+ * @file ADC.c
+ * @brief ADC Init and Handler for scoring detection
+ */
+
+// =============================================================================
+// INCLUDES
+// =============================================================================
+
+// Personal headers
 #include "ADC.h"
 #include "types.h"
 #include "config.h"
 #include "timer.h"
 #include "drivers/can_controller.h"
-#include "config.h"
 
+// Libraries
 #include <sam.h>
+
+// =============================================================================
+// GLOBAL VARIABLES
+// =============================================================================
 
 volatile uint16_t adc11_result = 0;
 volatile uint8_t Flag_ADC;
+
+// =============================================================================
+// STATIC VARIABLES
+// =============================================================================
 
 // --- Averaging buffer ---
 static uint16_t adc_buffer[ADC_AVG_COUNT];
 static uint32_t adc_sum = 0;
 static uint8_t adc_index = 0;
 static bool adc_buffer_full = false;
+
+
+// =============================================================================
+// ADC FUNCTIONS
+// =============================================================================
 
 void ADC_Init(void)
 {

@@ -5,10 +5,11 @@
  *  Author: flaucht
  */ 
 
-#include "sam.h"
-#include <stdio.h>
 #include "PWM.h"
-#include "time.h"
+
+#include <stdio.h>
+#include <time.h>
+#include <sam.h>
 
 // PWM_init function also has to be called for motor to be initialized work
 void motor_init(){

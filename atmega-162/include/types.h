@@ -9,6 +9,11 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+// =============================================================================
+// INCLUDES
+// =============================================================================
+
+// Libraries
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -154,7 +159,8 @@ typedef enum {
     SCREEN_DEBUG_BLUE_BOX,
     SCREEN_CALIBRATION_JOYSTICK,
     SCREEN_TILEMAP_2BPP,
-    SCREEN_TILEMAP_1BPP
+    SCREEN_TILEMAP_1BPP,
+    SCREEN_STARTUP
 } ScreenState;
 
 /**
@@ -189,5 +195,17 @@ struct Menu {
     const MenuItem* items;
     Menu* parent_menu;
 };
+
+/**
+ * @brief Calibration steps enumeration
+ */
+typedef enum {
+    CAL_CENTER,
+    CAL_X_MIN,
+    CAL_X_MAX,
+    CAL_Y_MIN,
+    CAL_Y_MAX,
+    CAL_DONE
+} CalState;
 
 #endif 

@@ -18,24 +18,24 @@
 #define POSITION_MAX            5600.0f
 #define POSITION_OVERSHOOT      5700
 
-#define JOYSTICK_DEADZONE       1
-#define JOYSTICK_GAIN           0.0015f
+#define JOYSTICK_DEADZONE       0
+#define JOYSTICK_GAIN           1.3f
 #define MOTOR_DEADZONE          0.1f
 
-#define PI_KP                   0.080f
-#define PI_KI                   0.003f
-#define PI_SAMPLE_TIME          0.001f
-#define PI_OUTPUT_MAX           50.0f
-#define PI_OUTPUT_MIN           -50.0f
+#define PI_KP                   0.050f
+#define PI_KI                   0.0002f
+#define PI_SAMPLE_TIME          0.050f 
+#define PI_OUTPUT_MAX           100.0f
+#define PI_OUTPUT_MIN           -100.0f
 
 
 // =============================================================================
 // SERVO MOTOR OFFSET
 // =============================================================================
 
-#define SERVO_CENTER 52
-#define SERVO_DEADZONE 2
-#define SERVO_OFFSET -2
+#define SERVO_CENTER 55
+#define SERVO_DEADZONE 5
+#define SERVO_OFFSET 8
 
 
 #endif

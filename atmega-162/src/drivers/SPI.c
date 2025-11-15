@@ -3,10 +3,20 @@
  * @brief SPI Driver Implementation
  */
 
+// =============================================================================
+// INCLUDES
+// =============================================================================
+
+// Personal headers
 #include "drivers/SPI.h"
 #include "config.h"
 
+// Libraries
 #include <stdio.h>
+
+// =============================================================================
+// SPI DRIVER FUNCTIONS
+// =============================================================================
 
 void SPI_Init(void)
 {
@@ -20,23 +30,27 @@ void SPI_Init(void)
 void SPI_Select_Slave(unsigned char slave)
 {
     PORTB |= (1 << SS1) | (1 << SS2) | (1 << SS3); // deselect all
-    if (slave == 1) PORTB &= ~(1 << SS1);
-    if (slave == 2) PORTB &= ~(1 << SS2);
-    if (slave == 3) PORTB &= ~(1 << SS3);
+    if (slave == 1)
+        PORTB &= ~(1 << SS1);
+    if (slave == 2)
+        PORTB &= ~(1 << SS2);
+    if (slave == 3)
+        PORTB &= ~(1 << SS3);
 }
-
 
 void SPI_Write_byte(unsigned char data)
 {
     SPDR = data;
-    while (!(SPSR & (1 << SPIF)));
+    while (!(SPSR & (1 << SPIF)))
+        ;
     // Wait until transmission complete
 }
 
 unsigned char SPI_Read_byte(void)
 {
     SPDR = 0xFF; // Send dummy byte to generate clock
-    while (!(SPSR & (1 << SPIF)));
+    while (!(SPSR & (1 << SPIF)))
+        ;
     // Wait until reception complete
     return SPDR;
 }

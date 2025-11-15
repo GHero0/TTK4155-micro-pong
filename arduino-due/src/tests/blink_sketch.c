@@ -5,9 +5,9 @@
  *  Author: flaucht
  */ 
 
-#include "sam.h"
+#include <sam.h>
 #include <stdio.h>
-#include "time.h"
+#include <time.h>
 
 void blink_sketch_init(){	
 	//enable output peripheral

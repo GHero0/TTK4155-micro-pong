@@ -36,8 +36,9 @@ ATMEGA_BUILD_DIR := atmega-162/build
 ATMEGA_TARGET_DEVICE := m162
 ATMEGA_PROGRAMMER := atmelice
 
-# Find all .c files in atmega-162/src/, atmega-162/tests/, and subdirectories
-ATMEGA_SOURCES := $(shell find atmega-162/src atmega-162/tests -name '*.c' 2>/dev/null)
+# Find all .c files in atmega-162/src/ and subdirectories
+# Tests are in atmega-162/tests/ and not compiled 
+ATMEGA_SOURCES := $(shell find atmega-162/src -name '*.c' 2>/dev/null)
 ATMEGA_OBJECTS := $(patsubst %.c,$(ATMEGA_BUILD_DIR)/%.o,$(ATMEGA_SOURCES))
 ATMEGA_HEX := $(ATMEGA_BUILD_DIR)/main.hex
 ATMEGA_ELF := $(ATMEGA_BUILD_DIR)/main.elf
