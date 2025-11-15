@@ -1,11 +1,13 @@
-
 <div align = "center">
 <img src="./assets/micro-pong-logo.png" width = 200px>
 </div>
 
+
 <h1 align = 'center'>Micro-Pong</h1> 
 
-This project is developed as part of the **TTK4155** course: *Embedded and Industrial Computer Systems Design*.
+This project is developed as part of the **TTK4155** course: *Embedded and Industrial Computer Systems Design*. Hosted on GitHub: 
+
+[https://github.com/GHero0/TTK4155-micro-pong](https://github.com/GHero0/TTK4155-micro-pong)
 
 ## 📥 Installation
 
