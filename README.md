@@ -1,3 +1,4 @@
+https://github.com/GHero0/TTK4155-micro-pong
 <div align = "center">
 <img src="./assets/micro-pong-logo.png" width = 200px>
 </div>
